@@ -18,6 +18,19 @@ var build = function (options, callback) {
 
 	fse.mkdirsSync(release);
 
+	fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/latest.id", rev);
+	fse.mkdirsSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs");
+	fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs/" + rev + ".branch", branch);
+
+	var done = function (err, result) {
+		fs.writeFile(release + "/report.json", JSON.stringify({err: err, result: result}), function (writeErr) {
+			if (writeErr) {
+				return callback(writeErr);
+			}
+			return callback(err, result);
+		});
+	};
+
 	gitLoader({
 		remote: url + ".git",
 		local: local,
@@ -31,11 +44,11 @@ var build = function (options, callback) {
 		console.log("Done loading from git");
 		fs.exists(exported + "/mbs.json", function (exists) {
 			if (!exists) {
-				return callback(null, "MBSNotFound");
+				return done(null, "MBSNotFound");
 			}
 			fs.readFile(exported + "/mbs.json", function (err, data) {
 				if (err) {
-					return callback(err, "MBSUnableToRead");
+					return done(err, "MBSUnableToRead");
 				}
 
 				var task;
@@ -43,17 +56,15 @@ var build = function (options, callback) {
 					task = JSON.parse(data);
 				} catch(err) {
 					console.log("Malformed data: " + data);
-					return callback(err, "MBSMalformed");
+					return done(err, "MBSMalformed");
 				}
 
 				processor.processTask(task, function (err, result) {
 					if (err) {
-						return callback(err, result);
+						return done(err, result);
 					}
 
-					fs.writeFile(release + "/report.json", JSON.stringify(result), function (err) {
-						return callback(err, result);
-					});
+					return done(err, result);
 				});
 			});
 		});
