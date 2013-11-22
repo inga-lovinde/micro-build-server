@@ -1,0 +1,24 @@
+extends layout
+
+block content
+	h1 Manual build request
+
+	form(method="POST")
+		table
+			tr
+				td URL
+				td: input(type="text", name="url", value="https://github.pos/igor-prokhorov/test-github-integration")
+			tr
+				td Owner
+				td: input(type="text", name="owner", value="igor-prokhorov")
+			tr
+				td Repository
+				td: input(type="text", name="reponame", value="test-github-integration")
+			tr
+				td Version
+				td: input(type="text", name="rev", value="0d0ace9a07a43d9c8db2eb4bc8182ac7bd5a25c9")
+			tr
+				td Branch
+				td: input(type="text", name="branch", value="refs/heads/master")
+			tr
+				td(colspan=2): input(type="submit", value="submit")
