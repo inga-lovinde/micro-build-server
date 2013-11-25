@@ -59,7 +59,11 @@ var build = function (options, callback) {
 					return done(err, "MBSMalformed");
 				}
 
-				processor.processTask(task, function (err, result) {
+				processor.processTask(task, {
+					tmp: tmp,
+					exported: exported,
+					release: release
+				}, function (err, result) {
 					if (err) {
 						return done(err, result);
 					}

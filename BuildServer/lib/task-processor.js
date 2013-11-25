@@ -40,9 +40,10 @@ var TaskProcessor = function (task, outerProcessor, callback) {
 	self.onInfo = onInfo;
 	self.processTask = processTask;
 	self.done = done;
+	self.context = outerProcessor.context;
 };
 
-exports.processTask = function (task, callback) {
+exports.processTask = function (task, context, callback) {
 	var errors = {},
 		warns = {},
 		infos = {},
@@ -66,7 +67,8 @@ exports.processTask = function (task, callback) {
 		processor = new TaskProcessor(task, {
 			onError: messageProcessor(errors),
 			onWarn: messageProcessor(warns),
-			onInfo: messageProcessor(infos)
+			onInfo: messageProcessor(infos),
+			context: context
 		}, function (err) {
 			callback(err, {
 				errors: errors,
