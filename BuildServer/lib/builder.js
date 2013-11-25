@@ -12,7 +12,7 @@ var build = function (options, callback) {
 		rev = options.rev,
 		branch = options.branch,
 		local = options.app.get('gitpath') + "/" + owner + "/" + reponame + ".git",
-		tmp = options.app.get('tmpcodepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev,
+		tmp = options.app.get('tmpcodepath') + "/" + rev,
 		exported = tmp + "/code",
 		release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev;
 
@@ -40,6 +40,7 @@ var build = function (options, callback) {
 	}, function(err) {
 		if (err) {
 			console.log(err);
+			return done(err);
 		}
 		console.log("Done loading from git");
 		fs.exists(exported + "/mbs.json", function (exists) {

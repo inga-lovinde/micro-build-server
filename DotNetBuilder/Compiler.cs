@@ -61,7 +61,7 @@ namespace MicroBuildServer.DotNetBuilder
 			private string GetLine(string format, params object[] args)
 			{
 				var result = new string('\t', indent) + string.Format(format, args);
-				Console.WriteLine(result);
+				//Console.WriteLine(result);
 				return result;
 			}
 		}
@@ -84,10 +84,6 @@ namespace MicroBuildServer.DotNetBuilder
 			parameters.DetailedSummary = true;
 
 			var buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequest);
-
-			Console.WriteLine("BuildResult: {0}", buildResult.OverallResult);
-			Console.WriteLine("Targets built: {0}", string.Join(", ", buildResult.ResultsByTarget.Keys));
-			Console.WriteLine("Build items: {0}", string.Join(", ", buildResult.ResultsByTarget["Build"].Items.Select(x => x.ItemSpec)));
 
 			return new Response
 			{

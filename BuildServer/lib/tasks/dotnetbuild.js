@@ -7,43 +7,44 @@ module.exports = function (params, processor) {
 		process: function () {
 			var result = "",
 				error = "",
-				builder = spawn("../DotNetBuilder/bin/Debug/DotNetBuilder.exe");
+				builder = spawn("../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe", ["compile"]);
 
-			wrapper.stdout.on('data', function (data) {
+			builder.stdout.on('data', function (data) {
 				result += data;
 			});
-			wrapper.stderr.on('data', function (data) {
+			builder.stderr.on('data', function (data) {
 				error += data;
 			});
-			wrapper.on('exit', function (code) {
+			builder.on('exit', function (code) {
 				if (code !== 0) {
 					error = "Return code is " + code + "\r\n" + error;
 					processor.onError(error);
-					return done();
+					return processor.done();
 				}
 
 				var report = JSON.parse(result);
-				foreach (var i = 0; i < report.length; i++) {
-					switch(report[i].Type) {
+				var messages = report.Messages;
+				for (var i = 0; i < messages.length; i++) {
+					switch(messages[i].Type) {
 						case "info":
-							processor.onError(report[i].Body);
+							processor.onInfo(messages[i].Body);
 							break;
 						case "warn":
-							processor.onError(report[i].Body);
+							processor.onWarn(messages[i].Body);
 							break;
 						default:
-							processor.onError(report[i].Body);
+							processor.onError(messages[i].Body);
 							break;
 					}
 				}
-				return done();
+				return processor.done();
 			});
 
-			wrapper.stdin.write({
-				"SolutionPath": process.context.exported + "/" + params.solution,
-				"OutputPath": process.context.release + "/" + params.solution + "/"
-			});
-			wrapper.stdin.end();
+			builder.stdin.write(JSON.stringify({
+				"SolutionPath": processor.context.exported + "/" + params.solution,
+				"OutputPath": processor.context.release + "/" + params.solution + "/"
+			}));
+			builder.stdin.end();
 		}
 	};
 };

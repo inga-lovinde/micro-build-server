@@ -14,7 +14,7 @@ var TaskProcessor = function (task, outerProcessor, callback) {
 			taskWorker.process();
 		},
 		getOuterPrefix = function (prefix) {
-			return task.name + (prefix ? "/" + prefix : "");
+			return (task.name && prefix) ? (task.name + "/" + prefix) : (task.name || "") + (prefix || "");
 		},
 		onError = function (message, prefix) {
 			errors.push(message);

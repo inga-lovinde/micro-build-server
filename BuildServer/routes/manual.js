@@ -6,6 +6,7 @@ exports.get = function (req, res) {
 
 exports.post = function (req, res) {
 	var options = req.body;
+	options.url = "https://github.pos/" + options.owner + "/" + options.reponame;
 	options.app = req.app;
 
 	builder.build(options, function (err, result) {
