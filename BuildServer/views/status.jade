@@ -1,0 +1,23 @@
+extends layout
+
+block content
+	h1 Build status
+	p
+		b Owner: 
+		| #{owner}
+	p
+		b Repository name: 
+		| #{reponame}
+	p
+		b Branch:
+		| #{branch}
+	p
+		b Commit: 
+		| #{rev}
+	if err
+		h2 Error
+		pre #{err}
+	if report
+		h2 Result
+		pre
+			= JSON.stringify(report, null, 4)

@@ -40,7 +40,7 @@ app.get('/', routes.index);
 app.post('/github/postreceive', routes.postreceive);
 app.get('/manual', routes.manual.get);
 app.post('/manual', routes.manual.post);
-app.get('/status/:owner/:reponame/:branch/:rev', routes.status.image);
+app.get('/status/:owner/:reponame/:branch/:rev', routes.status.page);
 app.get('/status.svg', routes.status.image);
 
 http.createServer(app).listen(app.get('port'), function(){

@@ -104,4 +104,17 @@ exports.image = function(req, res) {
 };
 
 exports.page = function(req, res) {
+//	console.log(req);
+	var options = {
+		owner: req.params.owner,
+		reponame: req.params.reponame,
+		branchName: req.params.branch,
+		branch: "/refs/heads/" + req.params.branch,
+		rev: req.params.rev
+	};
+	loadReport(req.app, options, function (err, options) {
+		options.err = err;
+		console.log(options);
+		res.render('status', options);
+	});
 };
