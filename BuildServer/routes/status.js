@@ -80,9 +80,12 @@ exports.image = function(req, res) {
 			options.message = options.report.err;
 		} else if ((options.report.result.warns.$allMessages || []).length > 0) {
 			options.status = "Warning";
-			options.message = options.report.result.warns.$allMessages[0];
+			options.message = options.report.result.warns.$allMessages[0].message;
 		} else {
 			options.status = "OK";
+			if ((options.report.result.infos.$allMessages || []).length > 0) {
+				options.message = options.report.result.infos.$allMessages[options.report.result.infos.$allMessages.length-1].message;
+			}
 		}
 		console.log(options);
 	        res.setHeader('Content-Type', 'image/svg+xml');
