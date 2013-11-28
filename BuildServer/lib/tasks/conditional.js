@@ -11,9 +11,7 @@ module.exports = function (params, processor) {
 				return processor.done();
 			}
 
-			processor.processTask(params.task, function () {
-				processor.done();
-			});
+			processor.processTask(params.task, processor.done.bind(processor));
 		}
 	};
 };
