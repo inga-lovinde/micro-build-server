@@ -40,7 +40,7 @@ var build = function (options, callback) {
 	}, function(err) {
 		if (err) {
 			console.log(err);
-			return done(err);
+			return done("Git fetch error: " + err);
 		}
 		console.log("Done loading from git");
 		fs.exists(exported + "/mbs.json", function (exists) {
@@ -61,6 +61,10 @@ var build = function (options, callback) {
 				}
 
 				processor.processTask(task, {
+					owner: owner,
+					reponame: reponame,
+					branch: branch,
+					rev: rev,
 					tmp: tmp,
 					exported: exported,
 					release: release
