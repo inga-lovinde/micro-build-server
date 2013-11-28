@@ -7,8 +7,8 @@ var TaskProcessor = function (task, outerProcessor, callback) {
 	}
 
 	var self = this,
-		taskImpl = require('./tasks/' + task.type.match(/[\w\-]/g).join("")),
-		taskWorker = taskImpl(task.params, self),
+		taskImpl,
+		taskWorker,
 		errors = [],
 		process = function () {
 			taskWorker.process();
@@ -41,6 +41,9 @@ var TaskProcessor = function (task, outerProcessor, callback) {
 	self.processTask = processTask;
 	self.done = done;
 	self.context = outerProcessor.context;
+
+	taskImpl = require('./tasks/' + task.type.match(/[\w\-]/g).join(""));
+	taskWorker = taskImpl(task.params, self);
 };
 
 exports.processTask = function (task, context, callback) {
