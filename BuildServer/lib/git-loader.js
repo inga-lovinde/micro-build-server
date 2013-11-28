@@ -27,12 +27,12 @@ options = {
 module.exports = function (options, globalCallback) {
 	var url = options.remote,
 		remote = git.remote(url),
-		path = options.local,
+		path = options.local + "/" + options.rev,
 		repo = git.repo(path),
 		exported = options.exported,
 		opts = {
-			want: options.branch,
-			/*onProgress: function (progress) {
+			want: options.branch/*,
+			onProgress: function (progress) {
 				process.stderr.write(progress);
 			}*/
 		},
