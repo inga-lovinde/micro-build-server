@@ -55,9 +55,13 @@ var loadReport = function (app, options, callback) {
 			return callback("ReportFileNotFound", options);
 		}
 
-		fs.readFile(reportFile, function (err, data) {
+		fs.readFile(reportFile, function (err, dataBuffer) {
 			if (err) {
 				return callback(err, options);
+			}
+			var data = dataBuffer.toString();
+			if (!data) {
+				return callback("ReportFileNotFound", options);
 			}
 			options.report = JSON.parse(data);
 			return callback(null, options);
