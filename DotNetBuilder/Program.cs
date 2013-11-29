@@ -23,6 +23,8 @@ namespace MicroBuildServer.DotNetBuilder
 						return Compiler.Compile(JsonConvert.DeserializeObject<CompileRequest>(input));
 					case "test":
 						return Test(JsonConvert.DeserializeObject<TestRequest>(input));
+					case "nuget":
+						return NuGetter.Publish(JsonConvert.DeserializeObject<NuGetRequest>(input));
 					default:
 						throw new ApplicationException("Unsupported type '" + args[0] + "'");
 				}
@@ -37,7 +39,7 @@ namespace MicroBuildServer.DotNetBuilder
 		{
 			var input = Console.In.ReadToEnd();
 			var result = Process(input, args);
-			Console.Write(JsonConvert.SerializeObject(result));
+			Console.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
 		}
 	}
 }
