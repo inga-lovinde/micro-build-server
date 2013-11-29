@@ -13,7 +13,7 @@ namespace MicroBuildServer.DotNetBuilder
 	{
 		private class CompilerLogger : Logger
 		{
-			public readonly IList<Tuple<string, string>> Messages = new List<Tuple<string, string>>();
+			public readonly IList<Response.Message> Messages = new List<Response.Message>();
 
 			private int indent = 0;
 
@@ -32,30 +32,30 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private void OnProjectStarted(object sender, ProjectStartedEventArgs e)
 			{
-				Messages.Add(Tuple.Create("info", GetLine("Started {0}", e.ProjectFile)));
+				Messages.Add(Response.Message.CreateInfo(GetLine("Started {0}", e.ProjectFile)));
 				indent++;
 			}
 
 			private void OnProjectFinished(object sender, ProjectFinishedEventArgs e)
 			{
 				indent--;
-				Messages.Add(Tuple.Create("info", GetLine("Finished {0}", e.ProjectFile)));
+				Messages.Add(Response.Message.CreateInfo(GetLine("Finished {0}", e.ProjectFile)));
 			}
 
 			private void OnError(object sender, BuildErrorEventArgs e)
 			{
-				Messages.Add(Tuple.Create("error", GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Response.Message.CreateError(GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnWarning(object sender, BuildWarningEventArgs e)
 			{
-				Messages.Add(Tuple.Create("warn", GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Response.Message.CreateWarn(GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnMessage(object sender, BuildMessageEventArgs e)
 			{
 				if (e.Importance != MessageImportance.High) return;
-				Messages.Add(Tuple.Create("info", GetLine("{0}: {1}", e.Importance, e.Message)));
+				Messages.Add(Response.Message.CreateInfo(GetLine("{0}: {1}", e.Importance, e.Message)));
 			}
 
 			private string GetLine(string format, params object[] args)
@@ -75,7 +75,10 @@ namespace MicroBuildServer.DotNetBuilder
 			var globalProperty = new Dictionary<string, string>();
 			globalProperty.Add("Configuration", "Release");
 			globalProperty.Add("Platform", "Any CPU");
-			globalProperty.Add("OutputPath", request.OutputPath);
+			if (!string.IsNullOrEmpty(request.OutputPath))
+			{
+				globalProperty.Add("OutputPath", request.OutputPath);
+			}
 
 			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new string[] { "Build" }, null);
 
@@ -84,10 +87,14 @@ namespace MicroBuildServer.DotNetBuilder
 			parameters.DetailedSummary = true;
 
 			var buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequest);
+			if (buildResult.OverallResult == BuildResultCode.Failure)
+			{
+				logger.Messages.Add(Response.Message.CreateError("BuildResult is false"));
+			}
 
 			return new Response
 			{
-				Messages = logger.Messages.Select(x => new Response.Message {Type = x.Item1, Body = x.Item2}).ToArray(),
+				Messages = logger.Messages.ToArray(),
 			};
 		}
 	}
