@@ -17,6 +17,12 @@ block content
 	if err
 		h2 Error
 		pre #{err}
+	if files
+		h2 Artifacts
+		ul
+			each file in files
+				li
+					a(href="/artifact/" + [owner, reponame, branchName, rev, file].join("/")) #{file}
 	if report
 		h2 Result
 		pre
