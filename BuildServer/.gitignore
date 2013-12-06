@@ -16,3 +16,4 @@ node_modules
 
 data
 *.crt
+settings.js
