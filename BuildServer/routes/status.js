@@ -3,6 +3,39 @@
 var fs = require('fs'),
 	url = require('url');
 
+var addBranchInfo = function (app, options, callback) {
+	var branchFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/$revs/" + options.rev + ".branch";
+	fs.exists(branchFile, function (exists) {
+		if (!exists) {
+			return callback("BranchFileNotFound", options);
+		}
+		fs.readFile(branchFile, function (err, data) {
+			if (err) {
+				return callback(err, result);
+			}
+			options.branch = data.toString();
+			options.branchName = options.branch.split("/").pop();
+			return callback(null, options);
+		});
+	});
+};
+
+var addRevInfo = function (app, options, callback) {
+	var revFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/latest.id";
+	fs.exists(revFile, function (exists) {
+		if (!exists) {
+			return callback("RevFileNotFound", options);
+		}
+		fs.readFile(revFile, function (err, data) {
+			if (err) {
+				return callback(err, options);
+			}
+			options.rev = data.toString();
+			return callback(null, options);
+		});
+	});
+};
+
 var parseOptionsFromReferer = function (req, callback) {
 	var pathParts = (url.parse(req.headers.referer || "").pathname || "").split("/");
 	var result = {};
@@ -14,63 +47,46 @@ var parseOptionsFromReferer = function (req, callback) {
 	result.reponame = pathParts[2];
 	if (pathParts[3] && /^[\da-f]{40}$/i.test(pathParts[4])) {
 		result.rev = pathParts[4];
-		var branchFile = req.app.get('releasepath') + "/" + result.owner + "/" + result.reponame + "/$revs/" + result.rev + ".branch";
-		fs.exists(branchFile, function (exists) {
-			if (!exists) {
-				return callback("BranchFileNotFound", result);
-			}
-			fs.readFile(branchFile, function (err, data) {
-				if (err) {
-					return callback(err, result);
-				}
-				result.branch = data.toString();
-				result.branchName = result.branch.split("/").pop();
-				return callback(null, result);
-			});
-		});
+		return addBranchInfo(req.app, result, callback);
 	} else {
 		result.branchName = pathParts[4] || "master";
 		result.branch = "refs/heads/" + result.branchName;
-//		console.log(result);
-		var revFile = req.app.get('releasepath') + "/" + result.owner + "/" + result.reponame + "/" + result.branch + "/latest.id";
-		fs.exists(revFile, function (exists) {
-			if (!exists) {
-				return callback("RevFileNotFound", result);
-			}
-			fs.readFile(revFile, function (err, data) {
-				if (err) {
-					return callback(err, result);
-				}
-				result.rev = data.toString();
-				return callback(null, result);
-			});
-		});
+		return addRevInfo(req.app, result, callback);
 	}
 };
 
 var loadReport = function (app, options, callback) {
-	var reportFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/report.json";
-	fs.exists(reportFile, function (exists) {
-		if (!exists) {
-			return callback("ReportFileNotFound", options);
+	var releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
+
+	fs.readdir(releaseDir, function (err, files) {
+		if (err) {
+			return callback(err, options);
 		}
 
-		fs.readFile(reportFile, function (err, dataBuffer) {
-			if (err) {
-				return callback(err, options);
-			}
-			var data = dataBuffer.toString();
-			if (!data) {
+		var reportFile = reportFile = releaseDir + "/report.json";
+		options.files = files;
+		fs.exists(reportFile, function (exists) {
+			if (!exists) {
 				return callback("ReportFileNotFound", options);
 			}
-			options.report = JSON.parse(data);
-			return callback(null, options);
+
+			fs.readFile(reportFile, function (err, dataBuffer) {
+				if (err) {
+					return callback(err, options);
+				}
+				var data = dataBuffer.toString();
+				if (!data) {
+					return callback("ReportFileNotFound", options);
+				}
+				options.report = JSON.parse(data);
+				return callback(null, options);
+			});
 		});
 	});
 };
 
 exports.image = function(req, res) {
-//	console.log(req.headers);
+	console.log(req.headers);
 	var handle = function (err, options) {
 		if (err === "ReportFileNotFound") {
 			options.status = "Building";
@@ -116,9 +132,20 @@ exports.page = function(req, res) {
 		branch: "/refs/heads/" + req.params.branch,
 		rev: req.params.rev
 	};
-	loadReport(req.app, options, function (err, options) {
-		options.err = err;
-		console.log(options);
-		res.render('status', options);
-	});
+	var finish = function (err, options) {
+		loadReport(req.app, options, function (err, options) {
+			options.err = err;
+			console.log(options);
+			res.render('status', options);
+		});
+	};
+
+	if (/^[\da-f]{40}$/i.test(options.branchName)) {
+		options.rev = options.branchName;
+		options.branchName = undefined;
+		options.branch = undefined;
+		return addBranchInfo(req.app, options, finish);
+	} else {
+		return finish(undefined, options);
+	}
 };

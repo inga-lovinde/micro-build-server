@@ -40,8 +40,9 @@ app.get('/', routes.index);
 app.post('/github/postreceive', routes.postreceive);
 app.get('/manual', routes.manual.get);
 app.post('/manual', routes.manual.post);
-app.get('/status/:owner/:reponame/:branch/:rev', routes.status.page);
+app.get('/status/:owner/:reponame/:branch/:rev?', routes.status.page);
 app.get('/status.svg', routes.status.image);
+app.get('/artifact/:owner/:reponame/:branch/:rev/:file', routes.artifact);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
