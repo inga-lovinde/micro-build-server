@@ -50,8 +50,9 @@ exports.processTask = function (task, context, callback) {
 	var errors = {},
 		warns = {},
 		infos = {},
+		messages = {},
 		messageProcessor = function (list) {
-			return function (message, prefix) {
+			var f = function (list, message, prefix) {
 				var i,
 					parts = prefix.split("/"),
 					innerList = list;
@@ -66,6 +67,11 @@ exports.processTask = function (task, context, callback) {
 				list.$allMessages = list.$allMessages || [];
 				list.$allMessages.push({ prefix: prefix, message: message });
 			};
+
+			return function (message, prefix) {
+				f(list, message, prefix);
+				f(messages, message, prefix);
+			};
 		},
 		processor = new TaskProcessor(task, {
 			onError: messageProcessor(errors),
@@ -76,7 +82,8 @@ exports.processTask = function (task, context, callback) {
 			callback(err, {
 				errors: errors,
 				warns: warns,
-				infos: infos
+				infos: infos,
+				messages: messages
 			});
 		});
 
