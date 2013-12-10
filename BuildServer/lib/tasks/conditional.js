@@ -1,17 +1,12 @@
 "use strict";
 
 module.exports = function (params, processor) {
+	var condition = (!params.owner || params.owner === processor.context.owner) && (!params.branch || params.branch === processor.context.branch || "refs/heads/" + params.branch === processor.context.branch),
+		task = condition ? params.task : params.otherwise;
+
 	return {
 		process: function () {
-			if (params.owner && params.owner != processor.context.owner) {
-				return processor.done();
-			}
-
-			if (params.branch && params.branch != processor.context.branch) {
-				return processor.done();
-			}
-
-			processor.processTask(params.task, processor.done.bind(processor));
+			return processor.processTask(task || {type: "noop"}, processor.done.bind(processor));
 		}
 	};
 };
