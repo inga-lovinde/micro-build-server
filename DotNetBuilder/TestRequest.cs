@@ -7,8 +7,6 @@ namespace MicroBuildServer.DotNetBuilder
 {
 	class TestRequest
 	{
-		public string CodebasePath { get; set; }
-
-		public string TestLibraryName { get; set; }
+		public string TestLibraryPath { get; set; }
 	}
 }

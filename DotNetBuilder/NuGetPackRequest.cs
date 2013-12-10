@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MicroBuildServer.DotNetBuilder
 {
-	class NuGetRequest
+	class NuGetPackRequest
 	{
 		public string BaseDirectory { get; set; }
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NuGet;
+using NuGet.Commands;
 using NuGet.Common;
 
 namespace MicroBuildServer.DotNetBuilder
@@ -57,7 +57,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public Verbosity Verbosity
 			{
-				get { throw new NotImplementedException(); }
+				get { return Verbosity.Detailed; }
 				set { throw new NotImplementedException(); }
 			}
 
@@ -99,7 +99,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void WriteLine(ConsoleColor color, string value, params object[] args)
 			{
-				throw new NotImplementedException();
+				WriteLine(value, args);
 			}
 
 			public void WriteLine(string format, params object[] args)
@@ -163,10 +163,10 @@ namespace MicroBuildServer.DotNetBuilder
 			}
 		}
 
-		public static Response Publish(NuGetRequest request)
+		public static Response Pack(NuGetPackRequest request)
 		{
 			var console = new Console();
-			var command = new NuGet.Commands.PackCommand
+			var command = new PackCommand
 			{
 				BasePath = request.BaseDirectory,
 				OutputDirectory = request.OutputDirectory,
@@ -176,9 +176,41 @@ namespace MicroBuildServer.DotNetBuilder
 				Rules = new IPackageRule[0],
 			};
 			command.Arguments.Add(request.SpecPath);
-			command.Execute();
+
+			try
+			{
+				command.Execute();
+			}
+			catch (Exception e)
+			{
+				console.WriteError(e);
+			}
 
 			return new Response { Messages = console.Messages.ToArray() };
+		}
+
+		public static Response Push(NuGetPushRequest request)
+		{
+			var console = new Console();
+			var command = new PushCommand
+			{
+				Source = request.NugetHost,
+				ApiKey = request.ApiKey,
+				Console = console,
+				Verbosity = Verbosity.Detailed,
+			};
+			command.Arguments.Add(request.Package);
+
+			try
+			{
+				command.Execute();
+			}
+			catch (Exception e)
+			{
+				console.WriteError(e);
+			}
+
+			return new Response {Messages = console.Messages.ToArray()};
 		}
 	}
 }

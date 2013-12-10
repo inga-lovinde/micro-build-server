@@ -8,11 +8,6 @@ namespace MicroBuildServer.DotNetBuilder
 {
 	class Program
 	{
-		private static Response Test(TestRequest request)
-		{
-			throw new NotImplementedException();
-		}
-
 		private static Response Process(string input, string[] args)
 		{
 			try
@@ -21,10 +16,12 @@ namespace MicroBuildServer.DotNetBuilder
 				{
 					case "compile":
 						return Compiler.Compile(JsonConvert.DeserializeObject<CompileRequest>(input));
-					case "test":
-						return Test(JsonConvert.DeserializeObject<TestRequest>(input));
-					case "nuget":
-						return NuGetter.Publish(JsonConvert.DeserializeObject<NuGetRequest>(input));
+					case "nunit":
+						return NUnitTester.Test(JsonConvert.DeserializeObject<TestRequest>(input));
+					case "nugetpack":
+						return NuGetter.Pack(JsonConvert.DeserializeObject<NuGetPackRequest>(input));
+					case "nugetpush":
+						return NuGetter.Push(JsonConvert.DeserializeObject<NuGetPushRequest>(input));
 					default:
 						throw new ApplicationException("Unsupported type '" + args[0] + "'");
 				}

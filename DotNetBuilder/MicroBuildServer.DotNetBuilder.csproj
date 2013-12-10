@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -41,7 +44,37 @@
       <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet">
-      <HintPath>..\.nuget\NuGet.exe</HintPath>
+      <HintPath>..\packages\NuGet.CommandLine.2.7.3\tools\NuGet.exe</HintPath>
+    </Reference>
+    <Reference Include="nunit-console-runner">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit-console-runner.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit-gui-runner">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit-gui-runner.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.core">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.core.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.core.interfaces">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.core.interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.mocks">
+      <HintPath>..\packages\NUnit.2.5.7.10213\lib\nunit.mocks.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.uiexception">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.uiexception.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.uikit">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.uikit.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.util">
+      <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.util.dll</HintPath>
+    </Reference>
+    <Reference Include="pnunit.framework">
+      <HintPath>..\packages\NUnit.2.5.7.10213\lib\pnunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,14 +87,17 @@
   <ItemGroup>
     <Compile Include="Compiler.cs" />
     <Compile Include="CompileRequest.cs" />
-    <Compile Include="NuGetRequest.cs" />
+    <Compile Include="NuGetPackRequest.cs" />
+    <Compile Include="NuGetPushRequest.cs" />
     <Compile Include="NuGetter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Response.cs" />
+    <Compile Include="NUnitTester.cs" />
     <Compile Include="TestRequest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

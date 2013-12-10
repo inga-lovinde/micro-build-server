@@ -5,8 +5,10 @@ using System.Text;
 
 namespace MicroBuildServer.DotNetBuilder
 {
+	[Serializable]
 	class Response
 	{
+		[Serializable]
 		public class Message
 		{
 			public string Type { get; set; }
@@ -25,6 +27,11 @@ namespace MicroBuildServer.DotNetBuilder
 			public static Message CreateError(string body)
 			{
 				return new Message { Type = "error", Body = body };
+			}
+
+			public override string ToString()
+			{
+				return string.Format("{0}: {1}", Type, Body);
 			}
 		}
 
