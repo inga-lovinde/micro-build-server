@@ -7,7 +7,7 @@ module.exports = function (params, processor) {
 		process: function () {
 			var result = "",
 				error = "",
-				builder = spawn("../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe", ["compile"]);
+				builder = spawn("../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe", [params.command]);
 
 			builder.stdout.on('data', function (data) {
 				result += data;
