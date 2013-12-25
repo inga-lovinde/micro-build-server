@@ -64,7 +64,7 @@ var build = function (options, callback) {
 	var done = function (err, result) {
 		var errorMessage = result ? ((result.errors.$allMessages || [])[0] || {}).message : err,
 			warnMessage = result ? ((result.warns.$allMessages || [])[0] || {}).message : err,
-			infoMessage = result ? ((result.infos.$allMessages || [])[0] || {}).message : err;
+			infoMessage = result ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
 
 		fs.writeFile(release + "/report.json", JSON.stringify({err: err, result: result}), function (writeErr) {
 			statusQueue.push(function (callback) {
