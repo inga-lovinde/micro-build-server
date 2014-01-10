@@ -37,13 +37,15 @@ var build = function (options, callback) {
 		reponame = options.reponame,
 		rev = options.rev,
 		branch = options.branch,
+		skipGitLoader = options.skipGitLoader,
 		local = options.app.get('gitpath') + "/" + owner + "/" + reponame + ".git",
 		tmp = options.app.get('tmpcodepath') + "/" + rev,
 		exported = tmp + "/code",
 		release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev,
 		statusQueue = async.queue(function (task, callback) {
 			task(callback);
-		}, 1);
+		}, 1),
+		actualGitLoader = skipGitLoader ? function(options, callback) { process.nextTick(callback); } : gitLoader;
 
 	statusQueue.push(function (callback) {
 		notifyStatus({
@@ -62,9 +64,9 @@ var build = function (options, callback) {
 	fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs/" + rev + ".branch", branch);
 
 	var done = function (err, result) {
-		var errorMessage = result ? ((result.errors.$allMessages || [])[0] || {}).message : err,
-			warnMessage = result ? ((result.warns.$allMessages || [])[0] || {}).message : err,
-			infoMessage = result ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
+		var errorMessage = result && result.errors ? ((result.errors.$allMessages || [])[0] || {}).message : err,
+			warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err,
+			infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
 
 		fs.writeFile(release + "/report.json", JSON.stringify({err: err, result: result}), function (writeErr) {
 			statusQueue.push(function (callback) {
@@ -84,7 +86,7 @@ var build = function (options, callback) {
 		});
 	};
 
-	gitLoader({
+	actualGitLoader({
 		remote: url + ".git",
 		local: local,
 		branch: branch,
