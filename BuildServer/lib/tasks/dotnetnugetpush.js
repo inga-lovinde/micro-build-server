@@ -5,7 +5,7 @@ var settings = require("../../settings");
 
 module.exports = function (params, processor) {
 	var date = new Date(),
-		version = (params.major || "0") + "." + date.getFullYear() + "." + ((date.getMonth() + 1) * 100 + date.getDay()) + "." + ((date.getHours() * 100 + date.getMinutes()) * 100 + date.getSeconds());
+		version = (params.major || "0") + "." + date.getFullYear() + "." + ((date.getMonth() + 1) * 100 + date.getDate()) + "." + ((date.getHours() * 100 + date.getMinutes()) * 100 + date.getSeconds());
 
 	return sequential({
 		tasks: [
