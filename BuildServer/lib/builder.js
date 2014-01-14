@@ -6,6 +6,7 @@ var async = require('async');
 var request = require('request');
 var gitLoader = require('./git-loader');
 var processor = require('./task-processor');
+var mailSender = require('./mail-sender');
 var settings = require('../settings');
 
 var notifyStatus = function (options, callback) {
@@ -70,13 +71,30 @@ var build = function (options, callback) {
 
 		fs.writeFile(release + "/report.json", JSON.stringify({err: err, result: result}), function (writeErr) {
 			statusQueue.push(function (callback) {
-				notifyStatus({
-					state: err ? "error" : "success",
-					description: errorMessage || warnMessage || infoMessage || "Success",
-					owner: owner,
-					reponame: reponame,
-					hash: rev
-				}, callback);
+				async.parallel([
+					function (callback) {
+						notifyStatus({
+							state: err ? "error" : "success",
+							description: errorMessage || warnMessage || infoMessage || "Success",
+							owner: owner,
+							reponame: reponame,
+							hash: rev
+						}, callback);
+					},
+					function (callback) {
+						mailSender.send({
+							from: 'Micro Build Server <test@example.com>',
+							to: '"Receiver Name" <test@example.com>',
+							subject: (err ? "Build failed for " : "Successfully built ") + owner + "/" + reponame + "/" + branch,
+							headers: {
+								'X-Laziness-level': 1000
+							},
+							text: ("Build status URL: https://mbs.pos/status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
+								(err ? ("Error message: " + err + "\r\n\r\n") : "") +
+								((!result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
+						}, callback);
+					}
+				], callback);
 			});
 
 			if (writeErr) {
@@ -91,7 +109,7 @@ var build = function (options, callback) {
 		local: local,
 		branch: branch,
 		hash: rev,
-		exported: tmp + "/code",
+		exported: tmp + "/code"
 	}, function(err) {
 		if (err) {
 			console.log(err);
@@ -110,9 +128,9 @@ var build = function (options, callback) {
 				var task;
 				try {
 					task = JSON.parse(data);
-				} catch(err) {
+				} catch(ex) {
 					console.log("Malformed data: " + data);
-					return done(err, "MBSMalformed");
+					return done(ex, "MBSMalformed");
 				}
 
 				processor.processTask(task, {
@@ -133,6 +151,6 @@ var build = function (options, callback) {
 			});
 		});
 	});
-}
+};
 
 exports.build = build;
