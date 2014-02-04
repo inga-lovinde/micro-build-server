@@ -83,15 +83,15 @@ var build = function (options, callback) {
 					},
 					function (callback) {
 						mailSender.send({
-							from: 'Micro Build Server <test@example.com>',
-							to: '"Receiver Name" <test@example.com>',
+							from: settings.smtp.sender,
+							to: settings.smtp.receiver,
 							subject: (err ? "Build failed for " : "Successfully built ") + owner + "/" + reponame + "/" + branch,
 							headers: {
 								'X-Laziness-level': 1000
 							},
 							text: ("Build status URL: https://mbs.pos/status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
 								(err ? ("Error message: " + err + "\r\n\r\n") : "") +
-								((!result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
+								((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
 						}, callback);
 					}
 				], callback);
