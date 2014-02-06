@@ -23,7 +23,12 @@ block content
 			each file in files
 				li
 					a(href="/artifact/" + [owner, reponame, branchName, rev, file].join("/")) #{file}
+	if (report && report.result && report.result.messages && report.result.messages.$allMessages)
+		h2 Build output
+		pre
+			= report.result.messages.$allMessages.map(function(obj) { return obj && obj.message; }).join("\n")
+
 	if report
-		h2 Result
+		h2 Report
 		pre
 			= JSON.stringify(report, null, 4)
