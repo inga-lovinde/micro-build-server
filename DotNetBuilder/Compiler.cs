@@ -75,12 +75,12 @@ namespace MicroBuildServer.DotNetBuilder
 			var globalProperty = new Dictionary<string, string>();
 			globalProperty.Add("Configuration", "Release");
 			globalProperty.Add("Platform", "Any CPU");
-			if (!string.IsNullOrEmpty(request.OutputPath))
+			if (!string.IsNullOrEmpty(request.OutputDirectory))
 			{
-				globalProperty.Add("OutputPath", request.OutputPath);
+				globalProperty.Add("OutputDirectory", request.OutputDirectory);
 			}
 
-			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new string[] { "Build" }, null);
+			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new [] { request.Target }, null);
 
 			var parameters = new BuildParameters(pc);
 			parameters.Loggers = new ILogger[] { logger };

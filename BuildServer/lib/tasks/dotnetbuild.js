@@ -12,7 +12,8 @@ module.exports = function (params, processor) {
 				type: "dotnetbuilderwrapper",
 				params: {
 					command: "compile",
-					SolutionPath: processor.context.exported + "/" + params.solution
+					SolutionPath: processor.context.exported + "/" + params.solution,
+					Target: "Build"
 				}
 			}
 		]
