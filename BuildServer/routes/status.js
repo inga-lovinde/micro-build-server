@@ -1,7 +1,8 @@
 "use strict";
 
 var fs = require('fs'),
-	url = require('url');
+	url = require('url'),
+	glob = require('glob');
 
 var addBranchInfo = function (app, options, callback) {
 	var branchFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/$revs/" + options.rev + ".branch";
@@ -58,7 +59,7 @@ var parseOptionsFromReferer = function (req, callback) {
 var loadReport = function (app, options, callback) {
 	var releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
 
-	fs.readdir(releaseDir, function (err, files) {
+	glob("**", {cwd: releaseDir, mark: true}, function (err, files) {
 		if (err) {
 			return callback(err, options);
 		}

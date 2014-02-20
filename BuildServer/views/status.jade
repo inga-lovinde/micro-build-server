@@ -21,8 +21,9 @@ block content
 		h2 Artifacts
 		ul
 			each file in files
-				li
-					a(href="/artifact/" + [owner, reponame, branchName, rev, file].join("/")) #{file}
+				if file[file.length-1] != "/"
+					li
+						a(href="/artifact/" + [owner, reponame, branchName, rev, file].join("/")) #{file}
 	if (report && report.result && report.result.messages && report.result.messages.$allMessages)
 		h2 Build output
 		pre
