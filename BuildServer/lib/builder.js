@@ -16,7 +16,7 @@ var notifyStatus = function (options, callback) {
 		json: {
 			state: options.state,
 			target_url: "https://mbs.pos/status/" + options.owner + "/" + options.reponame + "/" + options.hash,
-			description: (options.description || "").substr(0, 140)
+			description: ((options.description || "") + "").substr(0, 140)
 		}
 	}, function (err, response, body) {
 		if (err) {
