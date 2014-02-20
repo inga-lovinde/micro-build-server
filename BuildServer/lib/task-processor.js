@@ -43,7 +43,7 @@ var TaskProcessor = function (task, outerProcessor, callback) {
 	self.context = outerProcessor.context;
 
 	taskImpl = require('./tasks/' + task.type.match(/[\w\-]/g).join(""));
-	taskWorker = taskImpl(task.params, self);
+	taskWorker = taskImpl(task.params || {}, self);
 };
 
 exports.processTask = function (task, context, callback) {
