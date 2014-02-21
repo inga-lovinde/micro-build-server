@@ -7,7 +7,7 @@ module.exports = function(req, res) {
 		branchName: req.params.branch,
 		branch: "/refs/heads/" + req.params.branch,
 		rev: req.params.rev,
-		file: req.params.file
+		file: req.params[0]
 	};
 
 	res.sendfile(req.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/" + options.file);
