@@ -1,0 +1,51 @@
+<Project ToolsVersion="4.0" DefaultTargets="Package" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Web\Microsoft.Web.Publishing.Tasks.dll" />
+
+  <PropertyGroup>
+    <Configuration Condition=" &quot;$(Configuration)&quot; == &quot;&quot; ">Release</Configuration>
+
+    <HomeDirectory>$(MSBuildProjectDirectory)</HomeDirectory>
+    <DeployDirectory>$(HomeDirectory)\Deploy</DeployDirectory>
+    <PublishDirectory>$(DeployDirectory)\Publish</PublishDirectory>
+    <PackagesDirectory>$(OutputDirectory)\Packages</PackagesDirectory>
+    <WebSources>$(HomeDirectory)\Source\Host</WebSources>
+  </PropertyGroup>
+
+  <Target Name="Package">
+
+    <RemoveDir Directories="$(PublishDirectory)" />
+
+    <MSBuild
+      Projects="$(HomeDirectory)\{{solution}}"
+      Properties="Configuration=$(Configuration);DeployOnBuild=true;DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder;_PackageTempDir=$(PublishDirectory)"
+    />
+
+    <TransformXml
+      Source="$(WebSources)\NLog.config"
+      Destination="$(PublishDirectory)\NLog.config"
+      Transform="$(WebSources)\NLog.$(Configuration).config" />
+
+    <CallTarget Targets="RemoveUnwantedFiles" />
+
+    <MakeDir Directories="$(PackagesDirectory)" />
+
+    <Exec Command="msdeploy.exe -verb:sync -source:iisApp=&quot;$(PublishDirectory)&quot; -dest:package=&quot;$(PackagesDirectory)\{{package}}&quot;" />
+
+    <Copy SourceFiles="$(HomeDirectory)\Deploy.bat" DestinationFolder="$(PackagesDirectory)" />
+
+    <RemoveDir Directories="$(PublishDirectory)" />
+
+  </Target>
+
+  <Target Name="RemoveUnwantedFiles">
+
+    <ItemGroup>
+      <Files Include="$(PublishDirectory)\packages.config" />
+    </ItemGroup>
+
+    <Delete Files="@(Files)" />
+
+  </Target>
+
+</Project>
