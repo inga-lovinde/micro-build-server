@@ -1,8 +1,0 @@
-extends layout
-
-block content
-	h1 Manual build request processed!
-	h2 Error
-	pre #{err}
-	h2 Result
-	pre #{result}
