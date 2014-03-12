@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using NuGet;
 using NUnit.Core;
-using NUnit.Framework;
-using System.Reflection;
-using NUnit.Util;
 
 namespace MicroBuildServer.DotNetBuilder
 {
@@ -23,6 +15,11 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private bool runFail;
 			private bool suiteFail;
+
+			private static bool IsSuccess(TestResult result)
+			{
+				return result.IsSuccess || result.ResultState == ResultState.Ignored;
+			}
 
 			private static string FormatResult(TestResult result)
 			{
@@ -38,6 +35,10 @@ namespace MicroBuildServer.DotNetBuilder
 				else if (result.IsFailure)
 				{
 					additional.Add("fail");
+				}
+				else if (result.ResultState == ResultState.Ignored)
+				{
+					additional.Add("ignored");
 				}
 				else
 				{
@@ -61,7 +62,7 @@ namespace MicroBuildServer.DotNetBuilder
 			{
 				var message = string.Format("Run finished: {0}", FormatResult(result));
 
-				if (!result.IsSuccess && !runFail)
+				if (!IsSuccess(result) && !runFail)
 				{
 					Messages.Add(Response.Message.CreateError(message));
 				}
@@ -81,7 +82,7 @@ namespace MicroBuildServer.DotNetBuilder
 			{
 				var message = string.Format("Suite finished: {0}", FormatResult(result));
 
-				if (!result.IsSuccess && !suiteFail)
+				if (!IsSuccess(result) && !suiteFail)
 				{
 					Messages.Add(Response.Message.CreateError(message));
 				}
@@ -106,7 +107,7 @@ namespace MicroBuildServer.DotNetBuilder
 			{
 				var message = string.Format("Test finished: {0}", FormatResult(result));
 
-				if (!result.IsSuccess)
+				if (!IsSuccess(result))
 				{
 					Messages.Add(Response.Message.CreateError(message));
 				}
