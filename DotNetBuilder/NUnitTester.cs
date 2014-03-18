@@ -143,6 +143,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void DoTest()
 			{
+				Console.SetOut(new StubWriter());
 				var listener = new Listener();
 				CoreExtensions.Host.InitializeService();
 				var package = new TestPackage(TestLibraryPath);

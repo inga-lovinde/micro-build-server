@@ -61,7 +61,6 @@ namespace MicroBuildServer.DotNetBuilder
 			private string GetLine(string format, params object[] args)
 			{
 				var result = new string('\t', indent) + string.Format(format, args);
-				//Console.WriteLine(result);
 				return result;
 			}
 		}

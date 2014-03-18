@@ -35,8 +35,10 @@ namespace MicroBuildServer.DotNetBuilder
 		static void Main(string[] args)
 		{
 			var input = Console.In.ReadToEnd();
+			var outWriter = Console.Out;
+			Console.SetOut(new StubWriter());
 			var result = Process(input, args);
-			Console.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
+			outWriter.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
 		}
 	}
 }
