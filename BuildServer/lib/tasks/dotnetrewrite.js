@@ -16,7 +16,7 @@ module.exports = function (params, processor) {
 			var date = new Date(),
 				version = date.getFullYear() + "." +
 					(date.getMonth() + 1) + "." +
-					date.getDay() + "." +
+					date.getDate() + "." +
 					((date.getHours() * 100 + date.getMinutes()) * 100 + date.getSeconds()) + " (" +
 					"built from " + processor.context.rev + "; " +
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
