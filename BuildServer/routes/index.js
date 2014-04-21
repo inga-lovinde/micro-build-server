@@ -11,3 +11,4 @@ exports.postreceive = require('./postreceive');
 exports.manual = require('./manual');
 exports.status = require('./status');
 exports.artifact = require('./artifact');
+exports.release = require('./release');

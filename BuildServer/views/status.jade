@@ -24,6 +24,9 @@ block content
 				if file[file.length-1] != "/"
 					li
 						a(href="/artifact/" + [owner, reponame, branchName, rev, file].join("/")) #{file}
+
+		p: b: a(href="/release/" + [owner, reponame, branchName, rev].join("/")) Download all artifacts as ZIP
+
 	if (report && report.result && report.result.messages && report.result.messages.$allMessages)
 		h2 Build output
 		pre
