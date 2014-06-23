@@ -3,30 +3,23 @@
 var fs = require('fs');
 var fse = require('fs-extra');
 var async = require('async');
-var request = require('request');
 var gitLoader = require('./git-loader');
 var processor = require('./task-processor');
 var mailSender = require('./mail-sender');
 var settings = require('../settings');
 
 var notifyStatus = function (options, callback) {
-	var url = "https://github.pos/api/v3/repos/" + options.owner + "/" + options.reponame + "/statuses/" + options.hash;
-	request.post(url, {
-		auth: settings.getGithubAuth(options.owner),
-		json: {
-			state: options.state,
-			target_url: "https://mbs.pos/status/" + options.owner + "/" + options.reponame + "/" + options.hash,
-			description: ((options.description || "") + "").substr(0, 140)
-		}
-	}, function (err, response, body) {
+	settings.createGithub(options.owner).statuses.create({
+		user: options.owner,
+		repo: options.reponame,
+		sha: options.hash,
+		state: options.state,
+		target_url: "https://mbs.pos/status/" + options.owner + "/" + options.reponame + "/" + options.hash,
+		description: ((options.description || "") + "").substr(0, 140)
+	}, function (err, result) {
 		if (err) {
 			console.log("Error: " + err);
 			return callback(err);
-		}
-		console.log("Status code: " + response.statusCode);
-		console.log(body);
-		if (response.statusCode !== 200) {
-			return callback(body);
 		}
 		return callback();
 	});
