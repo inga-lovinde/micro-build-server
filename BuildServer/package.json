@@ -10,7 +10,7 @@
     "jade": "*",
     "async": "~0.2.9",
     "fs-extra": "~0.8.1",
-    "git-node": "~0.1.1",
+    "nodegit": "~0.1.4",
     "github": "~0.2.0",
     "glob": "~3.2.7",
     "nodemailer": "~0.6.0",

@@ -1,6 +1,6 @@
 "use strict";
 
-var git = require('git-node'),
+var nodegit = require('nodegit'),
 	async = require('async'),
 	fs = require('fs'),
 	fse = require('fs-extra'),
@@ -26,70 +26,71 @@ options = {
 
 module.exports = function (options, globalCallback) {
 	var url = options.remote,
-		remote = git.remote(url),
 		path = options.local + "/" + options.hash,
-		repo = git.repo(path),
 		exported = options.exported,
-		opts = {
-			want: options.branch/*,
-			onProgress: function (progress) {
-				process.stderr.write(progress);
-			}*/
-		},
 		done = function () {
 			globalCallback();
 		};
 
+	removedirs(path);
 	mkdirs(path);
 
-	//console.log("Cloning %s to %s", url, path);
+	if (url.substr(0, 8) == "https://") {
+		url = "git://" + url.substr(8);
+	}
 
-	repo.fetch(remote, opts, function (err) {
+	console.log("Cloning %s to %s", url, path);
+
+	nodegit.Repo.clone(url, path, null /*new nodegit.CloneOptions({"checkout_branch": options.branch})*/, function (err, repo) {
 		if (err) {
 			return globalCallback(err);
 		}
 
-		//console.log("Done fetching");
-
-		removedirs(exported);
-		mkdirs(exported);
-
 		var q = async.queue(function (task, callback) {
 			//console.log("Going to write file " + task.path + " (" + task.buffer.length + " bytes)");
-			fs.writeFile(exported + "/" + task.path, task.buffer, function (err, result) {
-				//console.log("Done writing file " + task.path);
-				callback(err, result);
+			task.entry.getBlob(function (err, blob) {
+				if (err) {
+					return callback(err);
+				}
+
+				fs.writeFile(exported + "/" + task.path, blob.content(), function (err, result) {
+					//console.log("Done writing file " + task.path);
+					callback(err, result);
+				});
 			});
 		}, 10);
 
-		repo.treeWalk(options.hash, function (err, tree) {
+		repo.getCommit(options.hash, function (err, commit) {
 			if (err) {
 				return globalCallback(err);
 			}
 
-			var onEntry = function (err, entry) {
+			removedirs(exported);
+			mkdirs(exported);
+
+			commit.getTree(function (err, tree) {
 				if (err) {
 					return globalCallback(err);
 				}
 
-				if (!entry) {
-					if (q.length() === 0) {
-						process.nextTick(done);
-					} else {
-						q.drain = done;
-					}
-					return;
-				}
-				//console.log(" %s %s (%s)", entry.hash, entry.path, entry.type);
-				if (entry.type === "tree") {
-					mkdirs(exported + "/" + entry.path);
-				} else if (entry.type === "blob") {
-					q.push({path: entry.path, buffer: entry.body });
-				}
-				return tree.read(onEntry);
-			};
-
-			tree.read(onEntry);
+				tree.walk(false)
+					.on('entry', function (entry) {
+						if (entry.isTree()) {
+							mkdirs(exported + "/" + entry.path());
+						} else if (entry.isFile()) {
+							q.push({path: entry.path(), entry: entry });
+						}
+					})
+					.on('end', function () {
+						if (q.length() === 0) {
+							process.nextTick(done);
+						} else {
+							q.drain = done;
+						}
+						return;
+					})
+					.start();
+			});
 		});
 	});
 };
