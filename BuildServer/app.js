@@ -38,6 +38,9 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.post('/github/postreceive', routes.postreceive);
+app.get('/github/postreceive', function (req, res) {
+	res.send("Only automated POST requests are allowed for postreceive route");
+});
 app.get('/manual', routes.manual.get);
 app.post('/manual', routes.manual.post);
 app.get('/status/:owner/:reponame/:branch/:rev?', routes.status.page);
