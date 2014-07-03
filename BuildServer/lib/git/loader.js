@@ -1,10 +1,8 @@
 "use strict";
 
 var nodegit = require('nodegit'),
-	async = require('async'),
-	fs = require('fs'),
 	fse = require('fs-extra'),
-	basename = require('path').basename,
+	gitToFs = require('./copy').gitToFs,
 	mkdirs = function (path) {
 		/*jslint stupid: true */
 		fse.mkdirsSync(path);
@@ -27,10 +25,7 @@ options = {
 module.exports = function (options, globalCallback) {
 	var url = options.remote,
 		path = options.local + "/" + options.hash,
-		exported = options.exported,
-		done = function () {
-			globalCallback();
-		};
+		exported = options.exported;
 
 	removedirs(path);
 	mkdirs(path);
@@ -46,20 +41,6 @@ module.exports = function (options, globalCallback) {
 			return globalCallback(err);
 		}
 
-		var q = async.queue(function (task, callback) {
-			//console.log("Going to write file " + task.path + " (" + task.buffer.length + " bytes)");
-			task.entry.getBlob(function (err, blob) {
-				if (err) {
-					return callback(err);
-				}
-
-				fs.writeFile(exported + "/" + task.path, blob.content(), function (err, result) {
-					//console.log("Done writing file " + task.path);
-					callback(err, result);
-				});
-			});
-		}, 10);
-
 		repo.getCommit(options.hash, function (err, commit) {
 			if (err) {
 				return globalCallback(err);
@@ -68,29 +49,7 @@ module.exports = function (options, globalCallback) {
 			removedirs(exported);
 			mkdirs(exported);
 
-			commit.getTree(function (err, tree) {
-				if (err) {
-					return globalCallback(err);
-				}
-
-				tree.walk(false)
-					.on('entry', function (entry) {
-						if (entry.isTree()) {
-							mkdirs(exported + "/" + entry.path());
-						} else if (entry.isFile()) {
-							q.push({path: entry.path(), entry: entry });
-						}
-					})
-					.on('end', function () {
-						if (q.length() === 0) {
-							process.nextTick(done);
-						} else {
-							q.drain = done;
-						}
-						return;
-					})
-					.start();
-			});
+			gitToFs(commit, exported, globalCallback);
 		});
 	});
 };
