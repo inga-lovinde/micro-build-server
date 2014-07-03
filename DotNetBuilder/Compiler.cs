@@ -54,7 +54,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private void OnMessage(object sender, BuildMessageEventArgs e)
 			{
-				if (e.Importance != MessageImportance.High) return;
+				//if (e.Importance != MessageImportance.High) return;
 				Messages.Add(Response.Message.CreateInfo(GetLine("{0}: {1}", e.Importance, e.Message)));
 			}
 
@@ -68,7 +68,7 @@ namespace MicroBuildServer.DotNetBuilder
 		public static Response Compile(CompileRequest request)
 		{
 			var logger = new CompilerLogger();
-			logger.Verbosity = LoggerVerbosity.Normal;
+			logger.Verbosity = LoggerVerbosity.Detailed;
 
 			var pc = new ProjectCollection();
 			var globalProperty = new Dictionary<string, string>();
