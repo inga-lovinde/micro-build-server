@@ -4,12 +4,12 @@ var builder = require('../lib/builder');
  * POST from github
  */
 
-module.exports = function(req, res){
-	if (!req.body || !req.body.payload) {
-		res.end();
+module.exports = function (req, res) {
+	if (!req.body || (!req.body.payload && !req.body.repository)) {
+		return res.end();
 	}
 
-	var payload = JSON.parse(req.body.payload),
+	var payload = req.body.payload ? JSON.parse(req.body.payload) : req.body,
 		repository = payload.repository;
 
 	builder.build({
