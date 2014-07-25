@@ -41,6 +41,8 @@ module.exports = function (options, globalCallback) {
 			return globalCallback(err);
 		}
 
+		console.log("Cloned %s to %s", url, path);
+
 		repo.getCommit(options.hash, function (err, commit) {
 			if (err) {
 				return globalCallback(err);
