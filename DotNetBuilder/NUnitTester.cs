@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using NUnit.Core;
 
 namespace MicroBuildServer.DotNetBuilder
@@ -136,17 +138,20 @@ namespace MicroBuildServer.DotNetBuilder
 			}
 		}
 
-		[Serializable]
-		private class TestWorker
+		public interface ITestWorker
 		{
-			public string TestLibraryPath { get; set; }
+			void DoTest(string testLibraryPath);
+		}
 
-			public void DoTest()
+		[Serializable]
+		public class TestWorker : MarshalByRefObject, ITestWorker
+		{
+			public void DoTest(string testLibraryPath)
 			{
 				Console.SetOut(new StubWriter());
 				var listener = new Listener();
 				CoreExtensions.Host.InitializeService();
-				var package = new TestPackage(TestLibraryPath);
+				var package = new TestPackage(testLibraryPath);
 				//package.AutoBinPath = true;
 				//package.BasePath = Path.GetDirectoryName(TestLibraryPath);
 				//package.ConfigurationFile = TestLibraryPath + ".config";
@@ -199,13 +204,12 @@ namespace MicroBuildServer.DotNetBuilder
 		{
 			AppDomainSetup setup = new AppDomainSetup();
 			setup.ConfigurationFile = request.TestLibraryPath + ".config";
+			setup.ApplicationBase = Path.GetDirectoryName(request.TestLibraryPath);
 			AppDomain tester = AppDomain.CreateDomain("tester", AppDomain.CurrentDomain.Evidence, setup);
 
-			var worker = new TestWorker();
-			worker.TestLibraryPath = request.TestLibraryPath;
+			var worker = (ITestWorker) tester.CreateInstanceFromAndUnwrap(Assembly.GetExecutingAssembly().Location, typeof (TestWorker).FullName);
 
-			var del = new CrossAppDomainDelegate(worker.DoTest);
-			tester.DoCallBack(del);
+			worker.DoTest(request.TestLibraryPath);
 			return (Response)(tester.GetData(DATA_TEST_RESULTS_KEY));
 		}
 	}
