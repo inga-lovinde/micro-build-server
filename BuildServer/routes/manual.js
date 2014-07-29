@@ -12,8 +12,8 @@ exports.post = function (req, res) {
 	builder.build(options, function (err, result) {
 		console.log("Done processing manual request");
 		console.log("Error: " + err);
-		console.log("Result:");
-		console.log(result);
+		//console.log("Result:");
+		//console.log(result);
 		res.render('manual-done', {err: err, result: result});
 		//res.render("manual-done", { err: err, result: result });
 	});

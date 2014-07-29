@@ -18,7 +18,7 @@ var notifyStatus = function (options, callback) {
 		description: ((options.description || "") + "").substr(0, 140)
 	}, function (err, result) {
 		if (err) {
-			console.log("Error: " + err);
+			console.log("Error while creating status: " + err);
 			return callback(err);
 		}
 		return callback();

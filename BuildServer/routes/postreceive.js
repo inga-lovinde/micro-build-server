@@ -22,8 +22,8 @@ module.exports = function (req, res) {
 	}, function (err, result) {
 		console.log("Done processing request from GitHub");
 		console.log("Error: " + err);
-		console.log("Result:");
-		console.log(result);
+		//console.log("Result:");
+		//console.log(result);
 		res.send("Done processing request from GitHub\r\n" + "Error: " + err + "\r\n" + "Result: " + result);
 	});
 };
