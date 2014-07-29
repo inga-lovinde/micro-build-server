@@ -9,6 +9,12 @@ module.exports = function (req, res) {
 		return res.end();
 	}
 
+	if (req.header("x-github-event") !== "push") {
+		console.log("Got '" + req.header("x-github-event") + "' event:");
+		//console.log(req.body);
+		return res.send("Only push events are supported");
+	}
+
 	var payload = req.body.payload ? JSON.parse(req.body.payload) : req.body,
 		repository = payload.repository;
 
