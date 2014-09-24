@@ -90,6 +90,7 @@
     <Compile Include="NuGetPackRequest.cs" />
     <Compile Include="NuGetPushRequest.cs" />
     <Compile Include="NuGetter.cs" />
+    <Compile Include="PathTools.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Response.cs" />

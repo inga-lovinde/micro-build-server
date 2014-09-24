@@ -166,10 +166,11 @@ namespace MicroBuildServer.DotNetBuilder
 		public static Response Pack(NuGetPackRequest request)
 		{
 			var console = new Console();
+			PackageBuilder builder = new PackageBuilder();
 			var command = new PackCommand
 			{
-				BasePath = request.BaseDirectory,
-				OutputDirectory = request.OutputDirectory,
+				BasePath = PathTools.OptimizePath(request.BaseDirectory),
+				OutputDirectory = PathTools.OptimizePath(request.OutputDirectory),
 				Version = request.Version,
 				Console = console,
 				Verbosity = Verbosity.Detailed,
