@@ -64,7 +64,7 @@ var loadReport = function (app, options, callback) {
 			return callback(err, options);
 		}
 
-		var reportFile = reportFile = releaseDir + "/report.json";
+		var reportFile = releaseDir + "/report.json";
 		options.files = files;
 		fs.exists(reportFile, function (exists) {
 			if (!exists) {
