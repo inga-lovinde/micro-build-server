@@ -108,8 +108,7 @@ exports.image = function(req, res) {
 				options.message = options.report.result.infos.$allMessages[options.report.result.infos.$allMessages.length-1].message;
 			}
 		}
-		console.log(options);
-	        res.setHeader('Content-Type', 'image/svg+xml');
+		res.setHeader('Content-Type', 'image/svg+xml');
 		res.render('status-image', options);
 	};
 
