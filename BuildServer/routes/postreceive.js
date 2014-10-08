@@ -1,8 +1,7 @@
 "use strict";
 
-var fs = require('fs'),
-	builder = require('../lib/builder'),
-	settings = require('../settings');
+var builder = require('../lib/builder'),
+	commenter = require('../lib/commenter');
 
 /*
  * POST from github
@@ -27,62 +26,13 @@ var processPush = function (req, res, payload) {
 	});
 };
 
-var getStatusMessage = function (options, callback) {
-	var releaseDir = options.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev,
-		reportFile = releaseDir + "/report.json";
-	fs.exists(reportFile, function (exists) {
-		if (!exists) {
-			fs.exists(releaseDir, function (dirExists) {
-				if (!dirExists) {
-					return callback("Release directory not found");
-				}
-				if (options.lastAttempt) {
-					return callback("Report file not found");
-				}
-
-				//maybe it is building right now
-				options.lastAttempt = true;
-				setTimeout(function () {
-					getStatusMessage(options, callback);
-				}, 10000);
-			});
-		}
-
-		fs.readFile(reportFile, function (err, dataBuffer) {
-			if (err) {
-				return callback(err);
-			}
-			var data = dataBuffer.toString();
-			if (!data) {
-				return callback("Report file not found");
-			}
-			var report = JSON.parse(data);
-
-			if (report.result === "MBSNotFound") {
-				return callback("mbs.json is not found");
-			}
-			if (report.err) {
-				return callback("ERR: " + report.err);
-			}
-			if ((report.result.warns.$allMessages || []).length > 0) {
-				return callback("WARN: " + report.result.warns.$allMessages[0].message);
-			}
-			if ((report.result.infos.$allMessages || []).length > 0) {
-				return callback(undefined, report.result.infos.$allMessages[report.result.infos.$allMessages.length-1].message);
-			}
-			return callback(undefined, "OK");
-		});
-	});
-};
-
 var processPullRequest = function (req, res, payload) {
 	var action = payload.action,
 		number = payload.number,
 		pullRequest = payload.pull_request,
 		head = pullRequest.head,
 		headRepo = head.repo,
-		options = {
-			app: req.app,
+		headRepoOptions = {
 			url: headRepo.url,
 			owner: headRepo.owner.name || headRepo.owner.login,
 			reponame: headRepo.name,
@@ -90,8 +40,17 @@ var processPullRequest = function (req, res, payload) {
 			branch: "refs/heads/" + head.ref
 		},
 		baseRepo = payload.repository,
-		baseOwner = baseRepo.owner.name || baseRepo.owner.login,
-		baseReponame = baseRepo.name;
+		baseRepoOptions = {
+			owner: baseRepo.owner.name || baseRepo.owner.login,
+			reponame: baseRepo.name
+		},
+		options = {
+			app: req.app,
+			action: action,
+			number: number,
+			headRepoOptions: headRepoOptions,
+			baseRepoOptions: baseRepoOptions
+		};
 
 	if (action !== "opened" && action !== "reopened" && action !== "synchronize") {
 		console.log("Got '" + action + "' event:");
@@ -99,20 +58,12 @@ var processPullRequest = function (req, res, payload) {
 		return res.send("Only opened/reopened/synchronize actions are supported");
 	}
 
-	getStatusMessage(options, function (err, successMessage) {
-		var message = err ? ("Was not built:\r\n\r\n" + err + "\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
-		settings.createGithub(baseOwner).issues.createComment({
-			user: baseOwner,
-			repo: baseReponame,
-			number: number,
-			body: message
-		}, function (err) {
-			if (err) {
-				console.log("Unable to post comment: " + err);
-			}
+	commenter.commentOnPullRequest(options, function (err, data) {
+		if (err) {
+			console.log("Unable to post comment: " + err);
+		}
 
-			res.send(err || "OK");
-		});
+		res.send(err || data);
 	});
 };
 
