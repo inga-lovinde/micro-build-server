@@ -1,22 +1,13 @@
+"use strict";
+
 var builder = require('../lib/builder');
 
 /*
  * POST from github
  */
 
-module.exports = function (req, res) {
-	if (!req.body || (!req.body.payload && !req.body.repository)) {
-		return res.end();
-	}
-
-	if (req.header("x-github-event") !== "push") {
-		console.log("Got '" + req.header("x-github-event") + "' event:");
-		//console.log(req.body);
-		return res.send("Only push events are supported");
-	}
-
-	var payload = req.body.payload ? JSON.parse(req.body.payload) : req.body,
-		repository = payload.repository;
+var processPush = function (req, res, payload) {
+	var repository = payload.repository;
 
 	builder.build({
 		app: req.app,
@@ -32,4 +23,21 @@ module.exports = function (req, res) {
 		//console.log(result);
 		res.send("Done processing request from GitHub\r\n" + "Error: " + err + "\r\n" + "Result: " + result);
 	});
+};
+
+module.exports = function (req, res) {
+	if (!req.body || (!req.body.payload && !req.body.repository)) {
+		return res.end();
+	}
+
+	var eventType = req.header("x-github-event"),
+		payload = req.body.payload ? JSON.parse(req.body.payload || "{}") : req.body;
+
+	if (eventType === "push") {
+		return processPush(req, res, payload);
+	}
+
+	console.log("Got '" + eventType + "' event:");
+	//console.log(req.body);
+	return res.send("Only push events are supported");
 };
