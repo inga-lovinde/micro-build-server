@@ -75,6 +75,7 @@ var build = function (options, callback) {
 						}, callback);
 					},
 					function (callback) {
+						return process.nextTick(callback);
 						mailSender.send({
 							from: settings.smtp.sender,
 							to: settings.smtp.receiver,
