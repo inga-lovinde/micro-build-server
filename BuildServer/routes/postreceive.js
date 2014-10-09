@@ -8,16 +8,19 @@ var builder = require('../lib/builder'),
  */
 
 var processPush = function (req, res, payload) {
-	var repository = payload.repository;
+	var repository = payload.repository,
+		options = {
+			app: req.app,
+			url: repository.url,
+			owner: repository.owner.name,
+			reponame: repository.name,
+			rev: payload.after,
+			branch: payload.ref
+		};
 
-	builder.build({
-		app: req.app,
-		url: repository.url,
-		owner: repository.owner.name,
-		reponame: repository.name,
-		rev: payload.after,
-		branch: payload.ref
-	}, function (err, result) {
+	console.log("Got push event for " + options.owner + "/" + options.reponame + ":" + options.branch);
+
+	builder.build(options, function (err, result) {
 		console.log("Done processing request from GitHub");
 		console.log("Error: " + err);
 		//console.log("Result:");
@@ -37,12 +40,15 @@ var processPullRequest = function (req, res, payload) {
 			owner: headRepo.owner.name || headRepo.owner.login,
 			reponame: headRepo.name,
 			rev: head.sha,
+			branchname: head.ref,
 			branch: "refs/heads/" + head.ref
 		},
-		baseRepo = payload.repository,
+		base = pullRequest.base,
+		baseRepo = base.repo,
 		baseRepoOptions = {
 			owner: baseRepo.owner.name || baseRepo.owner.login,
-			reponame: baseRepo.name
+			reponame: baseRepo.name,
+			branchname: base.ref
 		},
 		options = {
 			app: req.app,
@@ -52,8 +58,10 @@ var processPullRequest = function (req, res, payload) {
 			baseRepoOptions: baseRepoOptions
 		};
 
+	console.log("Got pull request " + action + " event, from " + headRepoOptions.owner + "/" + headRepoOptions.reponame + ":" + headRepoOptions.branchname + " to " + baseRepoOptions.owner + "/" + baseRepoOptions.reponame + ":" + baseRepoOptions.branchname);
+
 	if (action !== "opened" && action !== "reopened" && action !== "synchronize") {
-		console.log("Got '" + action + "' event:");
+		//console.log("Got '" + action + "' event:");
 		//console.log(req.body);
 		return res.send("Only opened/reopened/synchronize actions are supported");
 	}
