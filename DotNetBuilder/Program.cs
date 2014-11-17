@@ -34,6 +34,8 @@ namespace MicroBuildServer.DotNetBuilder
 
 		static void Main(string[] args)
 		{
+			Console.InputEncoding = Encoding.UTF8;
+			Console.OutputEncoding = Encoding.UTF8;
 			var input = Console.In.ReadToEnd();
 			var outWriter = Console.Out;
 			Console.SetOut(new StubWriter());
