@@ -6,9 +6,6 @@
 var https = require('https');
 var fs = require('fs');
 
-https.globalAgent.options.ca = https.globalAgent.options.ca || [];
-https.globalAgent.options.ca.push(fs.readFileSync("POS-CA.crt"));
-
 var express = require('express');
 var routes = require('./routes');
 var http = require('http');
