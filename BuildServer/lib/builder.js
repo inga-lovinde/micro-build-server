@@ -62,7 +62,7 @@ var build = function (options, callback) {
 			warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err,
 			infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
 
-		fs.writeFile(release + "/report.json", JSON.stringify({err: err, result: result}), function (writeErr) {
+		fs.writeFile(release + "/report.json", JSON.stringify({date: Date.now(), err: err, result: result}), function (writeErr) {
 			statusQueue.push(function (callback) {
 				async.parallel([
 					function (callback) {
