@@ -26,6 +26,8 @@
       Destination="$(PublishDirectory)\NLog.config"
       Transform="$(WebSources)\NLog.$(Configuration).config" />
 
+    <Copy SourceFiles="$(HomeDirectory)\version.aspx" DestinationFolder="$(PublishDirectory)" />
+
     <CallTarget Targets="RemoveUnwantedFiles" />
 
     <MakeDir Directories="$(PackagesDirectory)" />
