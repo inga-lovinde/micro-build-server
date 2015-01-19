@@ -6,7 +6,10 @@ module.exports = function (params, processor) {
 	return sequential({
 		tasks: [
 			{
-				type: "dotnetrewrite",
+				type: "dotnetcheckstyle"
+			},
+			{
+				type: "dotnetrewrite"
 			},
 			{
 				type: "dotnetbuilderwrapper",
