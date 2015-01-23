@@ -30,11 +30,13 @@ module.exports = function (params, processor) {
 					return function (callback) {
 						return fs.readFile(processor.context.exported + "/" + file, { encoding: "utf8" }, function (err, data) {
 							if (err) {
-								processor.onError("Unable to rewrite file " + file + ": " + err);
+								processor.onError("Unable to check file " + file + ": " + err);
 							} else if (data.indexOf("\r\n") >= 0) {
 								processor.onError("Windows-style EOL (0D0A) found in file " + file);
+							} else if (data.indexOf("\t") >= 0 && data.indexOf("    ") >= 0) {
+								processor.onError("Both tabs and spaces found in file " + file);
 							} else {
-								processor.onInfo("Rewritten file " + file);
+								processor.onInfo("Checked file " + file);
 							}
 							callback(err);
 						});
