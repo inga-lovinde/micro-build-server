@@ -4,7 +4,7 @@ var fs = require('fs'),
 	builder = require('../lib/builder'),
 	settings = require('../settings');
 
-var featureNamePattern = /^feature-(\d+)(?:-[a-z0-9]+)+$/;
+var featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 var versionNamePattern = /^v\d+(\.\d+)*$/;
 var masterNamePattern = /^master$/;
 
@@ -99,7 +99,7 @@ var checkPullRequest = function (options, callback) {
 	}
 
 	if (!featureNamePattern.test(head.branchname)) {
-		return closePullRequest(options, "Only merging from feature branch is allowed", callback);
+		return closePullRequest(options, "Only merging from feature branch is allowed (pattern: `" + featureNamePattern.toString() + "`)", callback);
 	}
 
 	if (!versionNamePattern.test(base.branchname) && !masterNamePattern.test(base.branchname)) {
