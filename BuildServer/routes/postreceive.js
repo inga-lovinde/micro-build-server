@@ -56,23 +56,43 @@ var processPullRequest = function (req, res, payload) {
 			number: number,
 			headRepoOptions: headRepoOptions,
 			baseRepoOptions: baseRepoOptions
+		},
+		masterOptions = {
+			app: req.app,
+			action: action,
+			number: number,
+			headRepoOptions: baseRepoOptions,
+			baseRepoOptions: baseRepoOptions
 		};
 
-	console.log("Got pull request " + action + " event, from " + headRepoOptions.owner + "/" + headRepoOptions.reponame + ":" + headRepoOptions.branchname + " to " + baseRepoOptions.owner + "/" + baseRepoOptions.reponame + ":" + baseRepoOptions.branchname);
+	console.log("Got pull request " + action + " event, from " + headRepoOptions.owner + "/" + headRepoOptions.reponame + ":" + headRepoOptions.branchname + " (" + headRepoOptions.rev + ") to " + baseRepoOptions.owner + "/" + baseRepoOptions.reponame + ":" + baseRepoOptions.branchname);
 
-	if (action !== "opened" && action !== "reopened" && action !== "synchronize") {
+	if (action !== "opened" && action !== "reopened" && action !== "synchronize" && action !== "closed") {
 		//console.log("Got '" + action + "' event:");
 		//console.log(req.body);
-		return res.send("Only opened/reopened/synchronize actions are supported");
+		return res.send("Only opened/reopened/synchronize/closed actions are supported");
 	}
 
-	commenter.commentOnPullRequest(options, function (err, data) {
-		if (err) {
-			console.log("Unable to post comment: " + err);
-		}
+	if (action === "closed" && !pullRequest.merged) {
+		console.log("Pull request closed without merging");
+		return res.send("Pull request closed without merging");
+	}
 
-		res.send(err || data);
-	});
+	if (action === "closed") {
+		console.log(pullRequest);
+		return res.send("");
+	}
+
+	commenter.commentOnPullRequest(
+		action === "closed" ? masterOptions : options,
+		function (err, data) {
+			if (err) {
+				console.log("Unable to post comment: " + err);
+			}
+
+			res.send(err || data);
+		}
+	);
 };
 
 module.exports = function (req, res) {
