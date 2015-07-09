@@ -44,12 +44,12 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private void OnError(object sender, BuildErrorEventArgs e)
 			{
-				Messages.Add(Response.Message.CreateError(GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Response.Message.CreateError(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnWarning(object sender, BuildWarningEventArgs e)
 			{
-				Messages.Add(Response.Message.CreateWarn(GetLine("{0} ({1}:{2},{3})", e.Message, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Response.Message.CreateWarn(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnMessage(object sender, BuildMessageEventArgs e)
