@@ -1,13 +1,14 @@
 "use strict";
 
 var spawn = require('child_process').spawn;
+var settings = require("../../settings");
 
 module.exports = function (params, processor) {
 	return {
 		process: function () {
 			var result = "",
 				error = "",
-				builder = spawn("../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe", [params.command]);
+				builder = spawn(settings.builderExecutable, [params.command]);
 
 			builder.stdout.on('data', function (data) {
 				result += data;
