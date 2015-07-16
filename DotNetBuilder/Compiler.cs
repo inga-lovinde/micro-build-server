@@ -49,6 +49,11 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private void OnWarning(object sender, BuildWarningEventArgs e)
 			{
+				if (e.Code == "CS1699")
+				{
+					//Use command line option '/keyfile' or appropriate project settings instead of 'AssemblyKeyFileAttribute' (#CS1699)
+					return;
+				}
 				Messages.Add(Response.Message.CreateWarn(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
