@@ -3,6 +3,7 @@
 var fs = require('fs');
 var async = require('async');
 var glob = require('glob');
+var settings = require('../../settings');
 
 module.exports = function (params, processor) {
 	return {
@@ -22,7 +23,10 @@ module.exports = function (params, processor) {
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
 					"branch: " + processor.context.branch + ")";
 
-			var textToAppend = "\r\n[assembly: AssemblyInformationalVersion(\"" + version + "\")]\r\n"
+			var textToAppend = "\r\n[assembly: AssemblyInformationalVersion(\"" + version + "\")]\r\n";
+			if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+				textToAppend += "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKey + "\")]\r\n";
+			}
 
 			glob("**/AssemblyInfo.cs", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {

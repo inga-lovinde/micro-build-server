@@ -9,7 +9,10 @@ module.exports = function (params, processor) {
 				type: "dotnetcheckstyle"
 			},
 			{
-				type: "dotnetrewrite"
+				type: "dotnetrewrite",
+				params: {
+					skipCodeSigning: params.skipCodeSigning
+				}
 			},
 			{
 				type: "dotnetbuilderwrapper",
