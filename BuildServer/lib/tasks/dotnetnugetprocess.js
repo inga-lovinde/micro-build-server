@@ -4,7 +4,7 @@ var conditional = require('./conditional');
 
 module.exports = function (params, processor) {
 	return conditional({
-		"owner": params.masterRepoName,
+		"owner": params.masterRepoOwner,
 		"branch": "master",
 		"task": {
 			"name": "nuget-push",
