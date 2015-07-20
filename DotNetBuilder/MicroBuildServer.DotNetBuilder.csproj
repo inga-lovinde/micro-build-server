@@ -58,6 +58,9 @@
     <Reference Include="nunit.core.interfaces">
       <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.core.interfaces.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.uiexception">
       <HintPath>..\packages\NUnit.Runners.2.6.3\tools\lib\nunit.uiexception.dll</HintPath>
     </Reference>
