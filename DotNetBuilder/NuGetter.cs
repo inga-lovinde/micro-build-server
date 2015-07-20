@@ -220,7 +220,7 @@ namespace MicroBuildServer.DotNetBuilder
 			PackageBuilder builder = new PackageBuilder();
 			var command = new RestoreCommand
 			{
-				SolutionDirectory = PathTools.OptimizePath(request.BaseDirectory),
+				FileSystem = new PhysicalFileSystem(PathTools.OptimizePath(request.BaseDirectory)),
 				Console = console,
 				Verbosity = Verbosity.Detailed,
 			};
