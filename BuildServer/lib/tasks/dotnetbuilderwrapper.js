@@ -10,6 +10,8 @@ module.exports = function (params, processor) {
 				error = "",
 				builder = spawn(settings.builderExecutable, [params.command]);
 
+			processor.onInfo("DotNetBuilderWrapper processing: " + JSON.stringify(params, null, 4));
+
 			builder.stdout.on('data', function (data) {
 				result += data;
 			});
