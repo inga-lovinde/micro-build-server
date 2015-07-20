@@ -83,6 +83,7 @@
     <Compile Include="CompileRequest.cs" />
     <Compile Include="NuGetPackRequest.cs" />
     <Compile Include="NuGetPushRequest.cs" />
+    <Compile Include="NuGetRestoreRequest.cs" />
     <Compile Include="NuGetter.cs" />
     <Compile Include="PathTools.cs" />
     <Compile Include="Program.cs" />

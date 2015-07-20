@@ -213,5 +213,29 @@ namespace MicroBuildServer.DotNetBuilder
 
 			return new Response {Messages = console.Messages.ToArray()};
 		}
+
+		public static Response Restore(NuGetRestoreRequest request)
+		{
+			var console = new Console();
+			PackageBuilder builder = new PackageBuilder();
+			var command = new RestoreCommand
+			{
+				SolutionDirectory = PathTools.OptimizePath(request.BaseDirectory),
+				Console = console,
+				Verbosity = Verbosity.Detailed,
+			};
+			command.Arguments.Add(request.SolutionPath);
+
+			try
+			{
+				command.Execute();
+			}
+			catch (Exception e)
+			{
+				console.WriteError(e);
+			}
+
+			return new Response { Messages = console.Messages.ToArray() };
+		}
 	}
 }

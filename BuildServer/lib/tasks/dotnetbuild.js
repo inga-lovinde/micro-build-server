@@ -15,6 +15,12 @@ module.exports = function (params, processor) {
 				}
 			},
 			{
+				type: "dotnetnugetrestore",
+				params: {
+					solution: params.solution
+				}
+			},
+			{
 				type: "dotnetbuilderwrapper",
 				params: {
 					command: "compile",

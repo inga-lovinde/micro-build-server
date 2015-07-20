@@ -22,6 +22,8 @@ namespace MicroBuildServer.DotNetBuilder
 						return NuGetter.Pack(JsonConvert.DeserializeObject<NuGetPackRequest>(input));
 					case "nugetpush":
 						return NuGetter.Push(JsonConvert.DeserializeObject<NuGetPushRequest>(input));
+					case "nugetrestore":
+						return NuGetter.Restore(JsonConvert.DeserializeObject<NuGetRestoreRequest>(input));
 					default:
 						throw new ApplicationException("Unsupported type '" + args[0] + "'");
 				}
