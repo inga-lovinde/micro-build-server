@@ -196,7 +196,7 @@ exports.commentOnPullRequest = function (options, callback) {
 	return checkPullRequest(options, function (err, successMessage) {
 		getStatusMessageFromRelease(options.app, options.headRepoOptions, function (err, successMessage) {
 			var message = err ? ("Was not built:\r\n\r\n" + err + "\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage),
-				statusUrlMessage = "Build status URL: https://mbs.pos/status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
+				statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
 			return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
 		});
 	});

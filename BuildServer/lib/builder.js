@@ -14,7 +14,7 @@ var notifyStatus = function (options, callback) {
 		repo: options.reponame,
 		sha: options.hash,
 		state: options.state,
-		target_url: "https://mbs.pos/status/" + options.owner + "/" + options.reponame + "/" + options.hash,
+		target_url: settings.siteRoot + "status/" + options.owner + "/" + options.reponame + "/" + options.hash,
 		description: ((options.description || "") + "").substr(0, 140)
 	}, function (err, result) {
 		if (err) {
@@ -83,7 +83,7 @@ var build = function (options, callback) {
 							headers: {
 								'X-Laziness-level': 1000
 							},
-							text: ("Build status URL: https://mbs.pos/status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
+							text: ("Build status URL: " + settings.siteRoot + "status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
 								(err ? ("Error message: " + err + "\r\n\r\n") : "") +
 								((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
 						}, callback);
