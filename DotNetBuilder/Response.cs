@@ -11,12 +11,12 @@ namespace MicroBuildServer.DotNetBuilder
 		[Serializable]
 		public class Message
 		{
-			public string Type { get; set; }
-			public string Body { get; set; }
+			public string Type { get; private set; }
+			public string Body { get; private set; }
 
 			public static Message CreateInfo(string body)
 			{
-				return new Message {Type = "info", Body = body};
+				return new Message { Type = "info", Body = body };
 			}
 
 			public static Message CreateWarn(string body)

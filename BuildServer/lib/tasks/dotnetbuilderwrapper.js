@@ -28,6 +28,11 @@ module.exports = function (params, processor) {
 				var report = JSON.parse(result);
 				var messages = report.Messages;
 				for (var i = 0; i < messages.length; i++) {
+					if (!messages[i]) {
+						processor.onError("Message is null");
+						continue;
+					}
+
 					switch(messages[i].Type) {
 						case "info":
 							processor.onInfo(messages[i].Body);
