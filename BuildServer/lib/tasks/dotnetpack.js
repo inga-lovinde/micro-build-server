@@ -7,9 +7,7 @@ module.exports = function (params, processor) {
 		tasks: [
 			{
 				type: "dotnetrewrite",
-				params: {
-					skipCodeSigning: params.skipCodeSigning
-				}
+				params: params
 			},
 			{
 				type: "dotnetbuilderwrapper",

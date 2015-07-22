@@ -9,9 +9,7 @@ module.exports = function (params, processor) {
 			{
 				type: "dotnetbuild",
 				name: "build",
-				params: {
-					solution: params.solution
-				}
+				params: params
 			},
 			{
 				type: "dotnetnunitall",

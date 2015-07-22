@@ -6,19 +6,16 @@ module.exports = function (params, processor) {
 	return sequential({
 		tasks: [
 			{
-				type: "dotnetcheckstyle"
+				type: "dotnetcheckstyle",
+				params: params
 			},
 			{
 				type: "dotnetrewrite",
-				params: {
-					skipCodeSigning: params.skipCodeSigning
-				}
+				params: params
 			},
 			{
 				type: "dotnetnugetrestore",
-				params: {
-					solution: params.solution
-				}
+				params: params
 			},
 			{
 				type: "dotnetbuilderwrapper",
