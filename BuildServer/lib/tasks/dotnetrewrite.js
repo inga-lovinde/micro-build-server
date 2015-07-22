@@ -23,11 +23,6 @@ module.exports = function (params, processor) {
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
 					"branch: " + processor.context.branch + ")";
 
-			var textToAppend = "\r\n[assembly: AssemblyInformationalVersion(\"" + version + "\")]\r\n";
-			if (!params.skipCodeSigning && !settings.skipCodeSigning) {
-				textToAppend += "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKey + "\")]\r\n";
-			}
-
 			glob("**/AssemblyInfo.cs", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {
 					processor.onError(err);
@@ -43,13 +38,30 @@ module.exports = function (params, processor) {
 
 				return async.parallel(files.map(function (file) {
 					return function (callback) {
-						return fs.appendFile(processor.context.exported + "/" + file, textToAppend, function (err, result) {
+						return async.waterfall([
+							fs.readFile.bind(null, processor.context.exported + "/" + file),
+							function (content, cb) {
+								content += "\r\n";
+								if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+									content = content.replace(
+										/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
+										function (match, p1) {
+											return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
+										}
+									);
+									content += "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKeyFile + "\")]\r\n"
+								}
+								content += "[assembly: AssemblyInformationalVersion(\"" + version + "\")]\r\n";
+								return cb(null, content);
+							},
+							fs.writeFile.bind(null, processor.context.exported + "/" + file)
+						], function (err) {
 							if (err) {
 								processor.onError("Unable to rewrite file " + file + ": " + err);
 							} else {
 								processor.onInfo("Rewritten file " + file);
 							}
-							callback(err, result);
+							callback(err);
 						});
 					}
 				}), processor.done.bind(processor));
