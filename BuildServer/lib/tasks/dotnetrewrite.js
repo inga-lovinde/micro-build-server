@@ -5,6 +5,14 @@ var async = require('async');
 var glob = require('glob');
 var settings = require('../../settings');
 
+var addAssemblyAttribute = function (content, attribute) {
+	var regex = /\[\s*assembly/;
+	if (regex.test(content)) {
+		return content.replace(regex, attribute + "\r\n[assembly");
+	}
+	return content + attribute + "\r\n";
+}
+
 module.exports = function (params, processor) {
 	return {
 		process: function () {
@@ -49,9 +57,9 @@ module.exports = function (params, processor) {
 											return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
 										}
 									);
-									content += "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKeyFile + "\")]\r\n"
+									content = addAssemblyAttribute(content, "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKeyFile + "\")]\r\n");
 								}
-								content += "[assembly: AssemblyInformationalVersion(\"" + version + "\")]\r\n";
+								content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
 								return cb(null, content);
 							},
 							fs.writeFile.bind(null, processor.context.exported + "/" + file)
