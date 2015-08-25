@@ -1,6 +1,7 @@
 "use strict";
 
 var fs = require('fs'),
+	_ = require('underscore'),
 	builder = require('../lib/builder'),
 	settings = require('../settings');
 
@@ -176,11 +177,15 @@ var getStatusMessageFromRelease = function (app, options, callback) {
 				if (report.result === "MBSNotFound") {
 					return callback("mbs.json is not found");
 				}
-				if (report.err) {
-					return callback("ERR: " + report.err);
+				if ((report.result.errors.$allMessages || []).length + (report.result.warns.$allMessages || []).length > 0) {
+					return callback(_.map(
+						report.result.errors.$allMessages || [], function(message) { return "ERR: " + message.message }
+					).concat(_.map(
+						report.result.warns.$allMessages || [], function(message) { return "WARN: " + message.message }
+					)).join("\r\n"));
 				}
-				if ((report.result.warns.$allMessages || []).length > 0) {
-					return callback("WARN: " + report.result.warns.$allMessages[0].message);
+				if (report.err) {
+					return callback("CRITICAL ERROR: " + report.err);
 				}
 				if ((report.result.infos.$allMessages || []).length > 0) {
 					return callback(undefined, report.result.infos.$allMessages[report.result.infos.$allMessages.length-1].message);
