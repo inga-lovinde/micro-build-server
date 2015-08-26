@@ -29,39 +29,37 @@ module.exports = function (params, processor) {
 					((date.getHours() * 100 + date.getMinutes()) * 100 + date.getSeconds()) + " (" +
 					"built from " + processor.context.rev + "; " +
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
-					"branch: " + processor.context.branch + ")";
+					"branch: " + processor.context.branch + ")",
+				processAssemblyInfo = function (content, cb) {
+					content += "\r\n";
+					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
+					return cb(null, content);
+				},
+				processCsproj = function (content, cb) {
+					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+						content = content.replace("</PropertyGroup>", "</PropertyGroup><PropertyGroup><SignAssembly>true</SignAssembly><AssemblyOriginatorKeyFile>" + settings.codeSigningKeyFile + "</AssemblyOriginatorKeyFile></PropertyGroup>");
+					}
+					return cb(null, content);
+				};
 
-			glob("**/AssemblyInfo.cs", {cwd: processor.context.exported}, function (err, files) {
+			glob("**/{AssemblyInfo.cs,*.csproj}", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {
 					processor.onError(err);
 					return processor.done();
 				}
 
-				processor.onInfo("Found " + files.length + " AssemblyInfo.cs files");
+				processor.onInfo("Found " + files.length + " AssemblyInfo.cs/csproj files");
 
 				if (!files || !files.length) {
-					processor.onWarn("No AssemblyInfo.cs found");
+					processor.onWarn("No AssemblyInfo.cs/csproj found");
 					return processor.done();
 				}
 
 				return async.parallel(files.map(function (file) {
 					return function (callback) {
 						return async.waterfall([
-							fs.readFile.bind(null, processor.context.exported + "/" + file),
-							function (content, cb) {
-								content += "\r\n";
-								if (!params.skipCodeSigning && !settings.skipCodeSigning) {
-									content = content.replace(
-										/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
-										function (match, p1) {
-											return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
-										}
-									);
-									content = addAssemblyAttribute(content, "[assembly: AssemblyKeyFileAttribute(\"" + settings.codeSigningKeyFile + "\")]\r\n");
-								}
-								content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
-								return cb(null, content);
-							},
+							fs.readFile.bind(null, processor.context.exported + "/" + file, { encoding: "utf8" }),
+							(file.substr(-7).toLowerCase() == ".csproj") ? processCsproj : processAssemblyInfo,
 							fs.writeFile.bind(null, processor.context.exported + "/" + file)
 						], function (err) {
 							if (err) {
