@@ -9,5 +9,7 @@
 		public string OutputDirectory { get; set; }
 
 		public string SigningKey { get; set; }
+
+		public bool RunCodeAnalysis { get; set; }
 	}
 }
