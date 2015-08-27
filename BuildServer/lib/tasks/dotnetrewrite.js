@@ -37,6 +37,9 @@ module.exports = function (params, processor) {
 				},
 				processCsproj = function (content, cb) {
 					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+						if (content.indexOf("</PropertyGroup>") < 0) {
+							return cb("CSProj file does not contain PropertyGroups");
+						}
 						content = content.replace("</PropertyGroup>", "</PropertyGroup><PropertyGroup><SignAssembly>true</SignAssembly><AssemblyOriginatorKeyFile>" + settings.codeSigningKeyFile + "</AssemblyOriginatorKeyFile></PropertyGroup>");
 					}
 					return cb(null, content);
