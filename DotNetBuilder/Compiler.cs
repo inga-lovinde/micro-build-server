@@ -78,6 +78,11 @@ namespace MicroBuildServer.DotNetBuilder
 			{
 				globalProperty.Add("OutputDirectory", request.OutputDirectory);
 			}
+			if (!string.IsNullOrEmpty(request.SigningKey))
+			{
+				globalProperty.Add("SignAssembly", "true");
+				globalProperty.Add("AssemblyOriginatorKeyFile", request.SigningKey);
+			}
 
 			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new [] { request.Target }, null);
 

@@ -34,27 +34,18 @@ module.exports = function (params, processor) {
 					content += "\r\n";
 					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
 					return cb(null, content);
-				},
-				processCsproj = function (content, cb) {
-					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
-						if (content.indexOf("</PropertyGroup>") < 0) {
-							return cb("CSProj file does not contain PropertyGroups");
-						}
-						content = content.replace("</PropertyGroup>", "</PropertyGroup><PropertyGroup><SignAssembly>true</SignAssembly><AssemblyOriginatorKeyFile>" + settings.codeSigningKeyFile + "</AssemblyOriginatorKeyFile></PropertyGroup>");
-					}
-					return cb(null, content);
 				};
 
-			glob("**/{AssemblyInfo.cs,*.csproj}", {cwd: processor.context.exported}, function (err, files) {
+			glob("**/AssemblyInfo.cs", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {
 					processor.onError(err);
 					return processor.done();
 				}
 
-				processor.onInfo("Found " + files.length + " AssemblyInfo.cs/csproj files");
+				processor.onInfo("Found " + files.length + " AssemblyInfo.cs files");
 
 				if (!files || !files.length) {
-					processor.onWarn("No AssemblyInfo.cs/csproj found");
+					processor.onWarn("No AssemblyInfo.cs found");
 					return processor.done();
 				}
 
@@ -62,7 +53,7 @@ module.exports = function (params, processor) {
 					return function (callback) {
 						return async.waterfall([
 							fs.readFile.bind(null, processor.context.exported + "/" + file, { encoding: "utf8" }),
-							(file.substr(-7).toLowerCase() == ".csproj") ? processCsproj : processAssemblyInfo,
+							processAssemblyInfo,
 							fs.writeFile.bind(null, processor.context.exported + "/" + file)
 						], function (err) {
 							if (err) {

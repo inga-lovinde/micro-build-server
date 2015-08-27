@@ -7,5 +7,7 @@
 		public string Target { get; set; }
 
 		public string OutputDirectory { get; set; }
+
+		public string SigningKey { get; set; }
 	}
 }

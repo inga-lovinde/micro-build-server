@@ -21,6 +21,7 @@ module.exports = function (params, processor) {
 				type: "dotnetcompile",
 				params: {
 					solution: params.solution,
+					skipCodeSigning: params.skipCodeSigning,
 					target: "Build"
 				}
 			}

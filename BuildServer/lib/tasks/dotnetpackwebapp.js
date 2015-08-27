@@ -38,6 +38,7 @@ module.exports = function (params, processor) {
 				type: "dotnetcompile",
 				params: {
 					solution: "MakePackage.msbuild",
+					skipCodeSigning: params.skipCodeSigning,
 					target: "Package",
 					overrideOutputDirectory: processor.context.release
 				}
