@@ -35,12 +35,11 @@ module.exports = function (params, processor) {
 				}
 			},
 			{
-				type: "dotnetbuilderwrapper",
+				type: "dotnetcompile",
 				params: {
-					command: "compile",
-					SolutionPath: processor.context.exported + "/" + "MakePackage.msbuild",
-					Target: "Package",
-					OutputDirectory: processor.context.release
+					solution: "MakePackage.msbuild",
+					target: "Package",
+					overrideOutputDirectory: processor.context.release
 				}
 			}
 		]
