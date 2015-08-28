@@ -6,6 +6,8 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Reflection;
+using System.IO;
 
 namespace MicroBuildServer.DotNetBuilder
 {
@@ -65,6 +67,8 @@ namespace MicroBuildServer.DotNetBuilder
 			}
 		}
 
+		public static readonly string BuilderAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
 		public static Response Compile(CompileRequest request)
 		{
 			var logger = new CompilerLogger();
@@ -88,6 +92,8 @@ namespace MicroBuildServer.DotNetBuilder
 			{
 				globalProperty.Add("RunCodeAnalysis", "true");
 				globalProperty.Add("CodeAnalysisRuleSet", request.CodeAnalysisRuleSet);
+				globalProperty.Add("MBSBuilderPath", BuilderAssemblyDirectory);
+				globalProperty.Add("CustomBeforeMicrosoftCSharpTargets", Path.Combine(BuilderAssemblyDirectory, "ImportStyleCop.targets"));
 			}
 
 			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, "14.0", new [] { request.Target }, null);
