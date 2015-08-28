@@ -74,6 +74,7 @@ namespace MicroBuildServer.DotNetBuilder
 			var globalProperty = new Dictionary<string, string>();
 			globalProperty.Add("Configuration", "Release");
 			globalProperty.Add("Platform", "Any CPU");
+			globalProperty.Add("VisualStudioVersion", "14.0");
 			if (!string.IsNullOrEmpty(request.OutputDirectory))
 			{
 				globalProperty.Add("OutputDirectory", request.OutputDirectory);
@@ -89,7 +90,7 @@ namespace MicroBuildServer.DotNetBuilder
 				globalProperty.Add("CodeAnalysisRuleSet", request.CodeAnalysisRuleSet);
 			}
 
-			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new [] { request.Target }, null);
+			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, "14.0", new [] { request.Target }, null);
 
 			var parameters = new BuildParameters(pc);
 			parameters.Loggers = new ILogger[] { logger };
