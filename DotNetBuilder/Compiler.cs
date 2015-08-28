@@ -83,9 +83,10 @@ namespace MicroBuildServer.DotNetBuilder
 				globalProperty.Add("SignAssembly", "true");
 				globalProperty.Add("AssemblyOriginatorKeyFile", request.SigningKey);
 			}
-			if (request.RunCodeAnalysis)
+			if (!string.IsNullOrEmpty(request.CodeAnalysisRuleSet))
 			{
 				globalProperty.Add("RunCodeAnalysis", "true");
+				globalProperty.Add("CodeAnalysisRuleSet", request.CodeAnalysisRuleSet);
 			}
 
 			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, null, new [] { request.Target }, null);
