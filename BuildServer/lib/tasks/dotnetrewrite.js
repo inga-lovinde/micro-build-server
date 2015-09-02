@@ -31,7 +31,6 @@ module.exports = function (params, processor) {
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
 					"branch: " + processor.context.branch + ")",
 				processAssemblyInfo = function (content, cb) {
-					content += "\r\n";
 					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"v" + version + "\")]");
 					return cb(null, content);
 				};
