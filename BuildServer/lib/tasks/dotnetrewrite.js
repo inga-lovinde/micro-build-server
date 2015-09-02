@@ -32,7 +32,7 @@ module.exports = function (params, processor) {
 					"branch: " + processor.context.branch + ")",
 				processAssemblyInfo = function (content, cb) {
 					content += "\r\n";
-					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
+					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"v" + version + "\")]");
 					return cb(null, content);
 				};
 
