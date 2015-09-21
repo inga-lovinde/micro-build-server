@@ -12,7 +12,8 @@ module.exports = function (params, processor) {
 			"params": {
 				"nuspec": params.nuspecName + ".nuspec",
 				"name": params.nuspecName,
-				"version": params.version
+				"version": params.version,
+				"major": params.major
 			}
 		},
 		"otherwise": {
@@ -20,7 +21,8 @@ module.exports = function (params, processor) {
 			"type": "dotnetnugetpack",
 			"params": {
 				"nuspec": params.nuspecName + ".nuspec",
-				"version": params.version
+				"version": params.version,
+				"major": params.major
 			}
 		}
 	}, processor);
