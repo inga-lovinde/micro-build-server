@@ -31,6 +31,14 @@ module.exports = function (params, processor) {
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
 					"branch: " + processor.context.branch + ")",
 				processAssemblyInfo = function (content, cb) {
+					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+						content = content.replace(
+							/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
+							function (match, p1) {
+								return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
+							}
+						);
+					}
 					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"v" + version + "\")]");
 					return cb(null, content);
 				};
