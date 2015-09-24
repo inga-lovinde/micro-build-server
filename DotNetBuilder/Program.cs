@@ -30,7 +30,9 @@ namespace MicroBuildServer.DotNetBuilder
 			}
 			catch (Exception e)
 			{
-				return new Response { Messages = new[] { Response.Message.CreateError(e.ToString()) } };
+				var messages = new Messages();
+				messages.Add(Message.CreateError(e.ToString()));
+				return new Response(messages);
 			}
 		}
 

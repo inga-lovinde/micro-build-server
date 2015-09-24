@@ -13,7 +13,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 		private class Listener : EventListener
 		{
-			public readonly List<Response.Message> Messages = new List<Response.Message>();
+			public readonly Messages Messages = new Messages();
 
 			private bool runFail;
 			private bool suiteFail;
@@ -56,7 +56,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void RunFinished(Exception exception)
 			{
-				Messages.Add(Response.Message.CreateError("Run finished: " + exception));
+				Messages.Add(Message.CreateError("Run finished: " + exception));
 				runFail = true;
 			}
 
@@ -66,17 +66,17 @@ namespace MicroBuildServer.DotNetBuilder
 
 				if (!IsSuccess(result) && !runFail)
 				{
-					Messages.Add(Response.Message.CreateError(message));
+					Messages.Add(Message.CreateError(message));
 				}
 				else
 				{
-					Messages.Add(Response.Message.CreateInfo(message));
+					Messages.Add(Message.CreateInfo(message));
 				}
 			}
 
 			public void RunStarted(string name, int testCount)
 			{
-				Messages.Add(Response.Message.CreateInfo("Run started: " + name));
+				Messages.Add(Message.CreateInfo("Run started: " + name));
 				runFail = false;
 			}
 
@@ -86,11 +86,11 @@ namespace MicroBuildServer.DotNetBuilder
 
 				if (!IsSuccess(result) && !suiteFail)
 				{
-					Messages.Add(Response.Message.CreateError(message));
+					Messages.Add(Message.CreateError(message));
 				}
 				else
 				{
-					Messages.Add(Response.Message.CreateInfo(message));
+					Messages.Add(Message.CreateInfo(message));
 				}
 
 				if (!result.IsSuccess)
@@ -101,7 +101,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void SuiteStarted(TestName testName)
 			{
-				Messages.Add(Response.Message.CreateInfo("Suite started: " + testName.Name));
+				Messages.Add(Message.CreateInfo("Suite started: " + testName.Name));
 				suiteFail = false;
 			}
 
@@ -111,28 +111,28 @@ namespace MicroBuildServer.DotNetBuilder
 
 				if (!IsSuccess(result))
 				{
-					Messages.Add(Response.Message.CreateError(message));
+					Messages.Add(Message.CreateError(message));
 				}
 				else
 				{
-					Messages.Add(Response.Message.CreateInfo(message));
+					Messages.Add(Message.CreateInfo(message));
 				}
 				suiteFail = true;
 			}
 
 			public void TestOutput(TestOutput testOutput)
 			{
-				Messages.Add(Response.Message.CreateInfo("Test output: " + testOutput.Text));
+				Messages.Add(Message.CreateInfo("Test output: " + testOutput.Text));
 			}
 
 			public void TestStarted(TestName testName)
 			{
-				Messages.Add(Response.Message.CreateInfo("Test started: " + testName.Name));
+				Messages.Add(Message.CreateInfo("Test started: " + testName.Name));
 			}
 
 			public void UnhandledException(Exception exception)
 			{
-				Messages.Add(Response.Message.CreateError("Unhandled exception: " + exception));
+				Messages.Add(Message.CreateError("Unhandled exception: " + exception));
 				suiteFail = true;
 				runFail = true;
 			}
@@ -162,9 +162,12 @@ namespace MicroBuildServer.DotNetBuilder
 				}
 				//DebugTestResult(Console.Out, result);
 
-				var messages = listener.Messages.Any() ? listener.Messages.ToArray() : new[] {Response.Message.CreateError("No messages from listener")};
+				if (!listener.Messages.Any())
+				{
+					listener.Messages.Add(Message.CreateError("No messages from listener"));
+				}
 
-				AppDomain.CurrentDomain.SetData(DATA_TEST_RESULTS_KEY, new Response { Messages = messages });
+				AppDomain.CurrentDomain.SetData(DATA_TEST_RESULTS_KEY, new Response(listener.Messages));
 			}
 		}
 

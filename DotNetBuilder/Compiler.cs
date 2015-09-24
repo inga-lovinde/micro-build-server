@@ -15,7 +15,7 @@ namespace MicroBuildServer.DotNetBuilder
 	{
 		private class CompilerLogger : Logger
 		{
-			public readonly IList<Response.Message> Messages = new List<Response.Message>();
+			public readonly Messages Messages = new Messages();
 
 			private int indent = 0;
 
@@ -34,30 +34,30 @@ namespace MicroBuildServer.DotNetBuilder
 
 			private void OnProjectStarted(object sender, ProjectStartedEventArgs e)
 			{
-				Messages.Add(Response.Message.CreateInfo(GetLine("Started {0}", e.ProjectFile)));
+				Messages.Add(Message.CreateInfo(GetLine("Started {0}", e.ProjectFile)));
 				indent++;
 			}
 
 			private void OnProjectFinished(object sender, ProjectFinishedEventArgs e)
 			{
 				indent--;
-				Messages.Add(Response.Message.CreateInfo(GetLine("Finished {0}", e.ProjectFile)));
+				Messages.Add(Message.CreateInfo(GetLine("Finished {0}", e.ProjectFile)));
 			}
 
 			private void OnError(object sender, BuildErrorEventArgs e)
 			{
-				Messages.Add(Response.Message.CreateError(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Message.CreateError(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnWarning(object sender, BuildWarningEventArgs e)
 			{
-				Messages.Add(Response.Message.CreateWarn(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
+				Messages.Add(Message.CreateWarn(GetLine("{0} (#{1}, {2}:{3},{4})", e.Message, e.Code, e.File, e.LineNumber, e.ColumnNumber)));
 			}
 
 			private void OnMessage(object sender, BuildMessageEventArgs e)
 			{
 				//if (e.Importance != MessageImportance.High) return;
-				Messages.Add(Response.Message.CreateInfo(GetLine("{0}: {1}", e.Importance, e.Message)));
+				Messages.Add(Message.CreateInfo(GetLine("{0}: {1}", e.Importance, e.Message)));
 			}
 
 			private string GetLine(string format, params object[] args)
@@ -105,13 +105,10 @@ namespace MicroBuildServer.DotNetBuilder
 			var buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequest);
 			if (buildResult.OverallResult == BuildResultCode.Failure)
 			{
-				logger.Messages.Add(Response.Message.CreateError("BuildResult is false"));
+				logger.Messages.Add(Message.CreateError("BuildResult is false"));
 			}
 
-			return new Response
-			{
-				Messages = logger.Messages.ToArray(),
-			};
+            return new Response(logger.Messages);
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace MicroBuildServer.DotNetBuilder
 	{
 		private class Console : IConsole
 		{
-			public readonly IList<Response.Message> Messages = new List<Response.Message>();
+			public readonly Messages Messages = new Messages();
 
 			public bool Confirm(string description)
 			{
@@ -74,7 +74,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void Write(string value)
 			{
-				Messages.Add(Response.Message.CreateInfo(value));
+				Messages.Add(Message.CreateInfo(value));
 			}
 
 			public void Write(object value)
@@ -89,7 +89,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void WriteError(string value)
 			{
-				Messages.Add(Response.Message.CreateError(value));
+				Messages.Add(Message.CreateError(value));
 			}
 
 			public void WriteError(object value)
@@ -123,7 +123,7 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void WriteWarning(bool prependWarningText, string value, params object[] args)
 			{
-				throw new NotImplementedException();
+                WriteWarning(value, args);
 			}
 
 			public void WriteWarning(string value, params object[] args)
@@ -133,12 +133,12 @@ namespace MicroBuildServer.DotNetBuilder
 
 			public void WriteWarning(bool prependWarningText, string value)
 			{
-				throw new NotImplementedException();
+                WriteWarning(value);
 			}
 
 			public void WriteWarning(string value)
 			{
-				Messages.Add(Response.Message.CreateWarn(value));
+				Messages.Add(Message.CreateWarn(value));
 			}
 
 			public void Log(MessageLevel level, string message, params object[] args)
@@ -187,7 +187,7 @@ namespace MicroBuildServer.DotNetBuilder
 				console.WriteError(e);
 			}
 
-			return new Response { Messages = console.Messages.ToArray() };
+			return new Response(console.Messages);
 		}
 
 		public static Response Push(NuGetPushRequest request)
@@ -211,7 +211,7 @@ namespace MicroBuildServer.DotNetBuilder
 				console.WriteError(e);
 			}
 
-			return new Response {Messages = console.Messages.ToArray()};
+			return new Response(console.Messages);
 		}
 
 		public static Response Restore(NuGetRestoreRequest request)
@@ -235,7 +235,7 @@ namespace MicroBuildServer.DotNetBuilder
 				console.WriteError(e);
 			}
 
-			return new Response { Messages = console.Messages.ToArray() };
+			return new Response(console.Messages);
 		}
 	}
 }

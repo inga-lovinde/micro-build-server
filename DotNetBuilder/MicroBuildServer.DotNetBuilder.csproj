@@ -97,6 +97,8 @@
   <ItemGroup>
     <Compile Include="Compiler.cs" />
     <Compile Include="CompileRequest.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="Messages.cs" />
     <Compile Include="NuGetPackRequest.cs" />
     <Compile Include="NuGetPushRequest.cs" />
     <Compile Include="NuGetRestoreRequest.cs" />

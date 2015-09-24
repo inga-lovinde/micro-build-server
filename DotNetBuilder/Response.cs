@@ -1,40 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace MicroBuildServer.DotNetBuilder
 {
+	[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 	[Serializable]
 	class Response
 	{
+		[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 		[Serializable]
-		public class Message
+		private class ResponseMessage
 		{
-			public string Type { get; private set; }
-			public string Body { get; private set; }
+			[JsonProperty(Required = Required.Always)]
+			public string Type { get; set; }
 
-			public static Message CreateInfo(string body)
-			{
-				return new Message { Type = "info", Body = body };
-			}
-
-			public static Message CreateWarn(string body)
-			{
-				return new Message { Type = "warn", Body = body };
-			}
-
-			public static Message CreateError(string body)
-			{
-				return new Message { Type = "error", Body = body };
-			}
-
-			public override string ToString()
-			{
-				return string.Format("{0}: {1}", Type, Body);
-			}
+			[JsonProperty(Required = Required.Always)]
+			public string Body { get; set; }
 		}
 
-		public Message[] Messages { get; set; }
+		[JsonProperty(Required = Required.Always, PropertyName = "Messages")]
+		private ResponseMessage[] Messages { get; set; }
+
+		public Response(Messages messages)
+		{
+			Messages = messages.ToArray(message => new ResponseMessage
+			{
+				Type = message.Type,
+				Body = message.Body,
+			});
+		}
 	}
 }
