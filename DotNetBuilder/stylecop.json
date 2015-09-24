@@ -1,0 +1,13 @@
+﻿{
+  "settings": {
+    "documentationRules": {
+      "companyName": "PayOnline",
+      "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
+      "documentInterfaces": true,
+      "documentExposedElements": true,
+      "documentInternalElements": false,
+      "documentPrivateElements": false,
+      "documentPrivateFields": false
+    }
+  }
+}
