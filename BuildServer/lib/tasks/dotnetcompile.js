@@ -10,10 +10,10 @@ module.exports = function (params, processor) {
 		Target: params.target,
 		OutputDirectory: params.overrideOutputDirectory
 	};
-	if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+	if (!settings.skipCodeSigning && !params.skipCodeSigning) {
 		compileParams.SigningKey = settings.codeSigningKeyFile;
 	}
-	if (!params.ignoreCodeAnalysis && !settings.isCodeAnalysisUnsupported) {
+	if (!settings.isCodeAnalysisUnsupported && !params.ignoreCodeAnalysis) {
 		compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
 	}
 	return dotnetbuilderwrapper(compileParams, processor);
