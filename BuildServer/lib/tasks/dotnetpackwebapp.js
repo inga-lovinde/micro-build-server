@@ -39,6 +39,7 @@ module.exports = function (params, processor) {
 				params: {
 					solution: "MakePackage.msbuild",
 					skipCodeSigning: params.skipCodeSigning,
+					isCodeAnalysisUnsupported: params.isCodeAnalysisUnsupported,
 					target: "Package",
 					overrideOutputDirectory: processor.context.release
 				}

@@ -13,7 +13,7 @@ module.exports = function (params, processor) {
 	if (!params.skipCodeSigning && !settings.skipCodeSigning) {
 		compileParams.SigningKey = settings.codeSigningKeyFile;
 	}
-	if (!params.ignoreCodeAnalysis && !settings.ignoreCodeAnalysis) {
+	if (!params.ignoreCodeAnalysis && !settings.isCodeAnalysisUnsupported) {
 		compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
 	}
 	return dotnetbuilderwrapper(compileParams, processor);

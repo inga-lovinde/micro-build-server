@@ -22,7 +22,7 @@ module.exports = function (params, processor) {
 				params: {
 					solution: params.solution,
 					skipCodeSigning: params.skipCodeSigning,
-					ignoreCodeAnalysis: params.ignoreCodeAnalysis,
+					isCodeAnalysisUnsupported: params.isCodeAnalysisUnsupported,
 					target: "Build"
 				}
 			}
