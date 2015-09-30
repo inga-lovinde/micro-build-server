@@ -91,7 +91,7 @@ namespace MicroBuildServer.DotNetBuilder
 			if (!string.IsNullOrEmpty(request.CodeAnalysisRuleSet))
 			{
 				globalProperty.Add("RunCodeAnalysis", "true");
-				globalProperty.Add("CodeAnalysisRuleSet", request.CodeAnalysisRuleSet);
+				globalProperty.Add("CodeAnalysisRuleSet", Path.Combine(BuilderAssemblyDirectory, "AllRules.ruleset"));
 				globalProperty.Add("MBSBuilderPath", BuilderAssemblyDirectory);
 				globalProperty.Add("CustomBeforeMicrosoftCSharpTargets", Path.Combine(BuilderAssemblyDirectory, "ImportStyleCop.targets"));
 			}

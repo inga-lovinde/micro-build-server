@@ -112,6 +112,9 @@
     <Compile Include="TestRequest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AllRules.ruleset">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
