@@ -13,8 +13,16 @@ module.exports = function (params, processor) {
 	if (!settings.skipCodeSigning && !params.skipCodeSigning) {
 		compileParams.SigningKey = settings.codeSigningKeyFile;
 	}
-	if (!settings.isCodeAnalysisUnsupported && !params.ignoreCodeAnalysis) {
-		compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
+	if (settings.isCodeAnalysisUnsupported) {
+		if (params.forceCodeAnalysis) {
+			processor.onError("Code analysis is not supported");
+			processor.done();
+			return;
+		}
+	} else {
+		if (!settings.ignoreCodeAnalysisByDefault || params.forceCodeAnalysis) {
+			compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
+		}
 	}
 	return dotnetbuilderwrapper(compileParams, processor);
 }
