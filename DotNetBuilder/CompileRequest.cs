@@ -10,6 +10,6 @@
 
 		public string SigningKey { get; set; }
 
-		public string CodeAnalysisRuleSet { get; set; }
+		public bool SkipCodeAnalysis { get; set; }
 	}
 }

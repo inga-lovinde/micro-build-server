@@ -19,9 +19,13 @@ module.exports = function (params, processor) {
 			processor.done();
 			return;
 		}
+		compileParams.SkipCodeAnalysis = true;
 	} else {
-		if ((!settings.ignoreCodeAnalysisByDefault && !params.ignoreCodeAnalysis) || params.forceCodeAnalysis) {
-			compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
+		if (settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis) {
+			compileParams.SkipCodeAnalysis = true;
+		}
+		if (params.ignoreCodeAnalysis) {
+			compileParams.SkipCodeAnalysis = true;
 		}
 	}
 	return dotnetbuilderwrapper(compileParams, processor);
