@@ -20,7 +20,7 @@ module.exports = function (params, processor) {
 			return;
 		}
 	} else {
-		if (!settings.ignoreCodeAnalysisByDefault || params.forceCodeAnalysis) {
+		if ((!settings.ignoreCodeAnalysisByDefault && !params.ignoreCodeAnalysis) || params.forceCodeAnalysis) {
 			compileParams.CodeAnalysisRuleSet = settings.codeAnalysisRuleSet;
 		}
 	}
