@@ -24,6 +24,7 @@ module.exports = function (params, processor) {
 					skipCodeSigning: params.skipCodeSigning,
 					forceCodeAnalysis: params.forceCodeAnalysis,
 					ignoreCodeAnalysis: params.ignoreCodeAnalysis,
+					configuration: params.configuration,
 					target: "Build"
 				}
 			}
