@@ -6,14 +6,17 @@ var dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
 module.exports = function (params, processor) {
 	return {
 		process: function () {
-			glob("**/bin/**/*.{Tests,Test,UnitTests}.dll", {cwd: processor.context.exported}, function (err, files) {
+			glob("**/bin/**/*.{Tests,Test,UnitTests}.dll", {
+				dot: true,
+				cwd: processor.context.exported
+			}, function (err, files) {
 				if (err) {
 					processor.onError(err);
 					return processor.done();
 				}
 
 				if (!files || !files.length) {
-					processor.onError("No test assemblies found");
+					processor.onError("No test assemblies found in " + processor.context.exported);
 					return processor.done();
 				}
 
