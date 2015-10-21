@@ -21,12 +21,9 @@ module.exports = function (params, processor) {
 				}
 			},
 			{
-				type: "dotnetbuilderwrapper",
+				type: "dotnetnugetpushonly",
 				params: {
-					command: "nugetpush",
-					Package: nupkg,
-					NugetHost: settings.nugetHost,
-					ApiKey: settings.nugetApiKey
+					Package: nupkg
 				}
 			}
 		]
