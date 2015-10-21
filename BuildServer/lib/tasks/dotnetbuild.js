@@ -17,10 +17,12 @@ module.exports = function (params, processor) {
 		params: params
 	});
 
-	tasks.push({
-		type: "dotnetnugetrestore",
-		params: params
-	});
+	if (!params.skipNugetRestore) {
+		tasks.push({
+			type: "dotnetnugetrestore",
+			params: params
+		});
+	}
 
 	tasks.push({
 		type: "dotnetcompile",
