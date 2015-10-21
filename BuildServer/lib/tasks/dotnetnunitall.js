@@ -6,7 +6,7 @@ var dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
 module.exports = function (params, processor) {
 	return {
 		process: function () {
-			glob("**/bin/**/*.{Tests,Test}.dll", {cwd: processor.context.exported}, function (err, files) {
+			glob("**/bin/**/*.{Tests,Test,UnitTests}.dll", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {
 					processor.onError(err);
 					return processor.done();
