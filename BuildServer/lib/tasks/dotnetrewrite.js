@@ -6,11 +6,7 @@ var glob = require('glob');
 var settings = require('../../settings');
 
 var addAssemblyAttribute = function (content, attribute) {
-	var regex = /\[\s*assembly/;
-	if (regex.test(content)) {
-		return content.replace(regex, attribute + "\r\n[assembly");
-	}
-	return content + attribute + "\r\n";
+	return content + "\n" + attribute + "\n";
 }
 
 module.exports = function (params, processor) {
