@@ -13,7 +13,8 @@ module.exports = function (params, processor) {
 			},
 			{
 				type: "dotnetnunitall",
-				name: "test"
+				name: "test",
+				params: params
 			}
 		]
 	}, processor);

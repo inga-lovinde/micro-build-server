@@ -21,7 +21,7 @@ module.exports = function (params, processor) {
 				}
 
 				return processor.processTask({
-					type: "parallel",
+					type: params.preventParallelTests ? "sequential" : "parallel",
 					params: {
 						tasks: files.map(function (file) {
 							return {
