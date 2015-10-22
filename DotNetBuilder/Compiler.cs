@@ -77,7 +77,7 @@ namespace MicroBuildServer.DotNetBuilder
 			var pc = new ProjectCollection();
 			var globalProperty = new Dictionary<string, string>();
 			globalProperty.Add("Configuration", request.Configuration ?? "Release");
-			globalProperty.Add("Platform", "AnyCPU");
+			//globalProperty.Add("Platform", "AnyCPU");
 			globalProperty.Add("VisualStudioVersion", "14.0");
 			if (!string.IsNullOrEmpty(request.OutputDirectory))
 			{
