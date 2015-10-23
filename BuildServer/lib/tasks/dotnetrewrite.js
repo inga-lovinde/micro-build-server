@@ -35,7 +35,7 @@ module.exports = function (params, processor) {
 							}
 						);
 					}
-					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
+					content = addAssemblyAttribute(content, "[assembly: System.Reflection.AssemblyInformationalVersion(\"" + version + "\")]");
 					return cb(null, content);
 				};
 
