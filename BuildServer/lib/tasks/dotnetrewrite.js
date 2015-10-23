@@ -22,10 +22,10 @@ module.exports = function (params, processor) {
 				version = date.getFullYear() + "." +
 					(date.getMonth() + 1) + "." +
 					date.getDate() + "." +
-					((date.getHours() * 100 + date.getMinutes()) * 100 + date.getSeconds()) + " (" +
+					(date.getHours() * 100 + date.getMinutes()) + "; " +
 					"built from " + processor.context.rev + "; " +
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
-					"branch: " + processor.context.branch + ")",
+					"branch: " + processor.context.branch,
 				processAssemblyInfo = function (content, cb) {
 					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
 						content = content.replace(
@@ -35,7 +35,7 @@ module.exports = function (params, processor) {
 							}
 						);
 					}
-					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"v" + version + "\")]");
+					content = addAssemblyAttribute(content, "[assembly: AssemblyInformationalVersion(\"" + version + "\")]");
 					return cb(null, content);
 				};
 
