@@ -12,7 +12,7 @@ module.exports = function (params, processor) {
 
 			processor.context.dotnetnunitallDone = true;
 
-			glob("**/bin/**/*.{Tests,Test,UnitTests}.dll", {
+			glob("**/{bin,build}/**/*.{Tests,Test,UnitTests}.dll", {
 				dot: true,
 				cwd: processor.context.exported
 			}, function (err, files) {
