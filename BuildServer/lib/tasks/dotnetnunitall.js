@@ -6,6 +6,12 @@ var dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
 module.exports = function (params, processor) {
 	return {
 		process: function () {
+			if (processor.context.dotnetnunitallDone) {
+				processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
+			}
+
+			processor.context.dotnetnunitallDone = true;
+
 			glob("**/bin/**/*.{Tests,Test,UnitTests}.dll", {
 				dot: true,
 				cwd: processor.context.exported
