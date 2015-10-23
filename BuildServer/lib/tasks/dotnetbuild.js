@@ -32,7 +32,7 @@ module.exports = function (params, processor) {
 			forceCodeAnalysis: params.forceCodeAnalysis,
 			ignoreCodeAnalysis: params.ignoreCodeAnalysis,
 			configuration: params.configuration,
-			target: "Build"
+			target: "Rebuild"
 		}
 	});
 
