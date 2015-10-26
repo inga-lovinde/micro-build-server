@@ -1,9 +1,6 @@
 "use strict";
 
-var fs = require('fs');
 var fse = require('fs-extra');
-var async = require('async');
-var glob = require('glob');
 
 module.exports = function (params, processor) {
 	return {
