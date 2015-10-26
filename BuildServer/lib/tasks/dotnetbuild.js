@@ -36,6 +36,10 @@ module.exports = function (params, processor) {
 		}
 	});
 
+	tasks.push({
+		type: "cleanupafterdotnetbuild"
+	});
+
 	return sequential({
 		tasks: tasks
 	}, processor);
