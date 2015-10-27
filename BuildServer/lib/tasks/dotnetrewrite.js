@@ -26,20 +26,26 @@ module.exports = function (params, processor) {
 					"built from " + processor.context.rev + "; " +
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
 					"branch: " + processor.context.branch,
-				processAssemblyInfo = function (content, cb) {
-					if (!params.skipCodeSigning && !settings.skipCodeSigning) {
-						content = content.replace(
-							/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
-							function (match, p1) {
-								return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
-							}
-						);
-					}
-					content = addAssemblyAttribute(content, "[assembly: System.Reflection.AssemblyInformationalVersion(\"" + version + "\")]");
-					return cb(null, content);
+				processAssemblyInfo = function (appendInformationalVersion) {
+					return function (content, cb) {
+						if (!params.skipCodeSigning && !settings.skipCodeSigning) {
+							content = content.replace(
+								/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
+								function (match, p1) {
+									return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
+								}
+							);
+						}
+
+						if (appendInformationalVersion) {
+							content = addAssemblyAttribute(content, "[assembly: System.Reflection.AssemblyInformationalVersion(\"" + version + "\")]");
+						}
+
+						return cb(null, content);
+					};
 				};
 
-			glob("**/AssemblyInfo.cs", {cwd: processor.context.exported}, function (err, files) {
+			glob("**/{InternalsVisible,AssemblyInfo}*.cs", {cwd: processor.context.exported}, function (err, files) {
 				if (err) {
 					processor.onError(err);
 					return processor.done();
@@ -56,7 +62,7 @@ module.exports = function (params, processor) {
 					return function (callback) {
 						return async.waterfall([
 							fs.readFile.bind(null, processor.context.exported + "/" + file, { encoding: "utf8" }),
-							processAssemblyInfo,
+							processAssemblyInfo(file.toLowerCase().indexOf("assemblyinfo.cs") >= 0),
 							fs.writeFile.bind(null, processor.context.exported + "/" + file)
 						], function (err) {
 							if (err) {
