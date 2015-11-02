@@ -53,6 +53,10 @@ module.exports = function (params, processor) {
 								processor.onError("Both tabs and spaces found in file " + file);
 							}
 
+							if (data.indexOf("\t") >= 0) {
+								processor.onError("Tabs found in file " + file);
+							}
+
 							processor.onInfo("Checked file " + file);
 							callback();
 						});
