@@ -95,6 +95,11 @@ namespace MicroBuildServer.DotNetBuilder
 				globalProperty.Add("MBSBuilderPath", BuilderAssemblyDirectory);
 				globalProperty.Add("CustomBeforeMicrosoftCSharpTargets", Path.Combine(BuilderAssemblyDirectory, "ImportStyleCop.targets"));
 			}
+			else
+			{
+				globalProperty.Add("RunCodeAnalysis", "false");
+				globalProperty.Add("CodeAnalysisRuleSet", string.Empty);
+			}
 
 			var buildRequest = new BuildRequestData(request.SolutionPath, globalProperty, "14.0", new [] { request.Target }, null);
 
@@ -108,7 +113,7 @@ namespace MicroBuildServer.DotNetBuilder
 				logger.Messages.Add(Message.CreateError("BuildResult is false"));
 			}
 
-            return new Response(logger.Messages);
+			return new Response(logger.Messages);
 		}
 	}
 }
