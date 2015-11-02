@@ -8,6 +8,9 @@ var processor = require('./task-processor');
 var mailSender = require('./mail-sender');
 var settings = require('../settings');
 
+//var codePostfix = "/code";
+var codePostfix = "";
+
 var notifyStatus = function (options, callback) {
 	settings.createGithub(options.owner).statuses.create({
 		user: options.owner,
@@ -34,7 +37,7 @@ var build = function (options, callback) {
 		skipGitLoader = options.skipGitLoader,
 		local = options.app.get('gitpath') + "/r/",
 		tmp = options.app.get('tmpcodepath') + "/" + rev,
-		exported = tmp + "/code",
+		exported = tmp + codePostfix,
 		release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev,
 		statusQueue = async.queue(function (task, callback) {
 			task(callback);
@@ -103,7 +106,7 @@ var build = function (options, callback) {
 		local: local,
 		branch: branch,
 		hash: rev,
-		exported: tmp + "/code"
+		exported: tmp + codePostfix
 	}, function(err) {
 		if (err) {
 			console.log(err);
