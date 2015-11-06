@@ -6,16 +6,21 @@ var fs = require('fs'),
 	statusProcessor = require('../lib/status-processor');
 
 var parseOptionsFromReferer = function (path, callback) {
-	var pathParts = path.split("/");
+	var pathParts = path.split("/").filter(function (value) { return value; });
 	var result = {};
-	if (pathParts.length < 3) {
+
+	if (pathParts.length < 2) {
 		return callback("BadRequest", result);
 	}
 
-	result.owner = pathParts[1];
-	result.reponame = pathParts[2];
-	result.branchName = pathParts[3];
-	result.rev = pathParts[4];
+	if (pathParts[2] == "tree") {
+		pathParts.splice(2, 1);
+	}
+
+	result.owner = pathParts[0];
+	result.reponame = pathParts[1];
+	result.branchName = pathParts[2];
+	result.rev = pathParts[3];
 	return callback(null, result);
 };
 
