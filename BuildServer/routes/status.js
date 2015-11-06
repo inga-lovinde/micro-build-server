@@ -5,8 +5,8 @@ var fs = require('fs'),
 	glob = require('glob'),
 	statusProcessor = require('../lib/status-processor');
 
-var parseOptionsFromReferer = function (req, callback) {
-	var pathParts = (url.parse(req.headers.referer || "").pathname || "").split("/");
+var parseOptionsFromReferer = function (path, callback) {
+	var pathParts = path.split("/");
 	var result = {};
 	if (pathParts.length < 3) {
 		return callback("BadRequest", result);
@@ -19,8 +19,15 @@ var parseOptionsFromReferer = function (req, callback) {
 	return callback(null, result);
 };
 
+var createShowReport = function (res) {
+	return function (err, options) {
+		options = options || {};
+		options.err = err;
+		res.render('status', options);
+	}
+}
+
 exports.image = function(req, res) {
-	console.log(req.headers);
 	var handle = function (err, options) {
 		if (err === "ReportFileNotFound") {
 			options.status = "Building";
@@ -45,7 +52,7 @@ exports.image = function(req, res) {
 		res.render('status-image', options);
 	};
 
-	parseOptionsFromReferer(req, function (err, options) {
+	parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", function (err, options) {
 		if (err) {
 			return handle(err, options);
 		}
@@ -65,9 +72,16 @@ exports.page = function(req, res) {
 		rev: req.params.rev
 	};
 
-	statusProcessor.getReport(req.app, options, function (err, options) {
-		options = options || {};
-		options.err = err;
-		res.render('status', options);
-	});
+	statusProcessor.getReport(req.app, options, createShowReport(res));
 };
+
+exports.pageFromGithub = function (req, res) {
+	parseOptionsFromReferer(req.params[0], function (err, options) {
+		if (err) {
+			return showReport(err, options);
+		}
+
+		return statusProcessor.getReport(req.app, options, createShowReport(res));
+	});
+}
+
