@@ -12,7 +12,7 @@ var addBranchInfo = function (app, options, callback) {
 		}
 		fs.readFile(branchFile, function (err, data) {
 			if (err) {
-				return callback(err, result);
+				return callback(err, options);
 			}
 			options.branch = data.toString();
 			options.branchName = options.branch.split("/").pop();
@@ -93,7 +93,7 @@ var loadReport = function (app, options, callback) {
 exports.getReport = function (app, options, callback) {
 	parseOptions(app, options, function (err, result) {
 		if (err) {
-			return callback(err);
+			return callback(err, {});
 		}
 
 		return loadReport(app, result, callback);
