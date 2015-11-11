@@ -12,13 +12,22 @@
     <WebSources>$(HomeDirectory)\Source\Host</WebSources>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ConfigurationProperties Condition="'$(Configuration)' != ''">Configuration=$(Configuration)</ConfigurationProperties>
+    <VisualStudioVersionProperties Condition="'$(VisualStudioVersion)' != ''">VisualStudioVersion=$(VisualStudioVersion)</VisualStudioVersionProperties>
+    <SignAssemblyProperties Condition="'$(SignAssembly)' != ''">SignAssembly=$(SignAssembly);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile)</SignAssemblyProperties>
+    <CodeAnalysisProperties>RunCodeAnalysis=false</CodeAnalysisProperties>
+
+    <MbsCustomProperties>$(ConfigurationProperties);$(VisualStudioVersionProperties);$(SignAssemblyProperties);$(CodeAnalysisProperties)</MbsCustomProperties>
+  </PropertyGroup>
+
   <Target Name="Package">
 
     <RemoveDir Directories="$(PublishDirectory)" />
 
     <MSBuild
       Projects="$(HomeDirectory)\{{solution}}"
-      Properties="Configuration=$(Configuration);DeployOnBuild=true;DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder;_PackageTempDir=$(PublishDirectory)"
+      Properties="$(MbsCustomProperties);DeployOnBuild=true;DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder;_PackageTempDir=$(PublishDirectory)"
     />
 
     <TransformXml
@@ -32,7 +41,7 @@
 
     <MakeDir Directories="$(PackagesDirectory)" />
 
-    <Exec Command="msdeploy.exe -verb:sync -source:iisApp=&quot;$(PublishDirectory)&quot; -dest:package=&quot;$(PackagesDirectory)\{{package}}&quot;" />
+    <Exec Command="msdeploy -verb:sync -source:iisApp=&quot;$(PublishDirectory)&quot; -dest:package=&quot;$(PackagesDirectory)\{{package}}&quot;" />
 
     <Copy SourceFiles="$(HomeDirectory)\Deploy.bat" DestinationFolder="$(PackagesDirectory)" />
 
