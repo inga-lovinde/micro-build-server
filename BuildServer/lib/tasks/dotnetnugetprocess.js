@@ -22,6 +22,7 @@ module.exports = function (params, processor) {
 			"type": "dotnetnugetpack",
 			"params": {
 				"nuspec": params.nuspecName + ".nuspec",
+				"name": params.nuspecName,
 				"withoutCommitSha": params.withoutCommitSha,
 				"version": params.version,
 				"major": params.major

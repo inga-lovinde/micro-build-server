@@ -18,6 +18,12 @@ module.exports = function (params, processor) {
 					OutputDirectory: processor.context.exported,
 					Version: version
 				}
+			},
+			{
+				type: "copy",
+				params: {
+					filename: params.name + "." + version + ".nupkg"
+				}
 			}
 		]
 	}, processor);
