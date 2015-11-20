@@ -3,6 +3,7 @@
     "documentationRules": {
       "companyName": "PayOnline",
       "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
+      "fileNamingConvention":  "stylecop",
       "documentInterfaces": true,
       "documentExposedElements": true,
       "documentInternalElements": false,
