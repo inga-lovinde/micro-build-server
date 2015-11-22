@@ -6,7 +6,7 @@
     "start": "forever -c node app.js"
   },
   "dependencies": {
-    "adm-zip": "~0.4.4",
+    "adm-zip": "0.4.4",
     "async": "~0.2.9",
     "express": "3.4.4",
     "fs-extra": "~0.12.0",
