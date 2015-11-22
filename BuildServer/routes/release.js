@@ -5,11 +5,11 @@ var path = require('path'),
 	Zip = require('adm-zip');
 
 var getReport = function(releasePath, callback) {
-	var reportFile = releasePath + "/report.json";
+	var reportFile = releasePath + "report.json";
 
 	fs.exists(reportFile, function (exists) {
 		if (!exists) {
-			return callback("ReportFileNotFound");
+			return callback("ReportFileNotFound: " + reportFile);
 		}
 
 		return fs.readFile(reportFile, function (err, dataBuffer) {

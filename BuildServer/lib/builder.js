@@ -12,16 +12,18 @@ var settings = require('../settings');
 var codePostfix = "";
 
 var notifyStatus = function (options, callback) {
-	settings.createGithub(options.owner).statuses.create({
+	var status = {
 		user: options.owner,
 		repo: options.reponame,
 		sha: options.hash,
 		state: options.state,
 		target_url: settings.siteRoot + "status/" + options.owner + "/" + options.reponame + "/" + options.hash,
 		description: ((options.description || "") + "").substr(0, 140)
-	}, function (err, result) {
+	};
+	settings.createGithub(options.owner).statuses.create(status, function (err, result) {
 		if (err) {
 			console.log("Error while creating status: " + err);
+			console.log(status);
 			return callback(err);
 		}
 		return callback();

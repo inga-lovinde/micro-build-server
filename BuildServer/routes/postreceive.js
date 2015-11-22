@@ -79,7 +79,6 @@ var processPullRequest = function (req, res, payload) {
 	}
 
 	if (action === "closed") {
-		console.log(pullRequest);
 		return res.send("");
 	}
 
