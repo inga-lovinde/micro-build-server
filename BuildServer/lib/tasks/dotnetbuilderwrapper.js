@@ -10,7 +10,7 @@ module.exports = function (params, processor) {
 				error = "",
 				builder = spawn(settings.builderExecutable, [params.command]);
 
-			processor.onInfo("DotNetBuilderWrapper processing: " + JSON.stringify(params, null, 4));
+			processor.onInfo("DotNetBuilderWrapper processing (at " + (new Date().toISOString()) + "): " + JSON.stringify(params, null, 4));
 
 			builder.stdout.on('data', function (data) {
 				result += data;
@@ -45,6 +45,8 @@ module.exports = function (params, processor) {
 							break;
 					}
 				}
+
+				processor.onInfo("Done DotNetBuilderWrapper processing (at " + (new Date().toISOString()) + ")");
 				return processor.done();
 			});
 
