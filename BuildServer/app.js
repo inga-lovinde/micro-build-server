@@ -4,7 +4,9 @@
  */
 
 var https = require('https');
-var fs = require('fs');
+var realFs = require('fs');
+var fs = require('graceful-fs');
+fs.gracefulify(realFs);
 
 var express = require('express');
 var routes = require('./routes');

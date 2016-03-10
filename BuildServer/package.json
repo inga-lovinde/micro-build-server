@@ -12,6 +12,7 @@
     "fs-extra": "~0.12.0",
     "github": "~0.2.4",
     "glob": "~3.2.7",
+    "graceful-fs": "^4.1.2",
     "jade": "*",
     "mustache": "~0.8.1",
     "nodegit": "~0.1.4",
