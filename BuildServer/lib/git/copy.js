@@ -50,7 +50,7 @@ var gitToFsCopier = new Copier({
 	createTargetTree: function (tree, targetDir, callback) {
 		var targetSubdir = path.join(targetDir, tree.name);
 		fs.mkdir(targetSubdir, function (err) {
-			if (err) {
+			if (err && err.code != 'EEXIST' /* workaround for broken trees */) {
 				return callback(err);
 			}
 
