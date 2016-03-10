@@ -7,7 +7,7 @@ module.exports = function (params, processor) {
 	return sequential({
 		tasks: [
 			{
-				type: "dotnetbuild",
+				type: "dotnetbuildwithoutcleanup",
 				name: "build",
 				params: params
 			},
@@ -15,6 +15,10 @@ module.exports = function (params, processor) {
 				type: "dotnetnunitall",
 				name: "test",
 				params: params
+			},
+			{
+				type: "cleanupafterdotnetbuild",
+				name: "cleanup"
 			}
 		]
 	}, processor);
