@@ -92,6 +92,13 @@ var build = function (options, callback) {
 								(err ? ("Error message: " + err + "\r\n\r\n") : "") +
 								((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
 						}, callback);
+					},
+					function (callback) {
+						if (err) {
+							return process.nextTick(callback);
+						}
+
+						return fse.remove(tmp, callback);
 					}
 				], callback);
 			});
