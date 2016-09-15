@@ -83,7 +83,7 @@ exports.page = function(req, res) {
 exports.pageFromGithub = function (req, res) {
 	parseOptionsFromReferer(req.params[0], function (err, options) {
 		if (err) {
-			return showReport(err, options);
+			return createShowReport(err, options);
 		}
 
 		return statusProcessor.getReport(req.app, options, createShowReport(res));
