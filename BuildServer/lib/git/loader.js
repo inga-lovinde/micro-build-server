@@ -36,10 +36,11 @@ module.exports = function (options, globalCallback) {
 
 	console.log("Cloning %s to %s", url, path);
 
-	nodegit.Repo.clone(url, path, null /*new nodegit.CloneOptions({"checkout_branch": options.branch})*/, function (err, repo) {
-		if (err) {
+	nodegit.Clone(url, path)
+		.catch(function(err) {
 			return globalCallback(err);
-		}
+		})
+		.then(function (repo) {
 
 		console.log("Cloned %s to %s", url, path);
 
@@ -53,5 +54,5 @@ module.exports = function (options, globalCallback) {
 
 			gitToFs(commit, exported, globalCallback);
 		});
-	});
+		});
 };

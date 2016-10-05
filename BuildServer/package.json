@@ -15,7 +15,7 @@
     "graceful-fs": "^4.1.2",
     "jade": "*",
     "mustache": "~0.8.1",
-    "nodegit": "~0.1.4",
+    "nodegit": "~0.16.0",
     "nodemailer": "~0.6.0",
     "recursive-tree-copy": "0.0.1",
     "underscore": "^1.8.3"
