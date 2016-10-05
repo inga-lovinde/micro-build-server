@@ -36,23 +36,33 @@ module.exports = function (options, globalCallback) {
 
 	console.log("Cloning %s to %s", url, path);
 
-	nodegit.Clone(url, path)
-		.catch(function(err) {
-			return globalCallback(err);
-		})
+	nodegit.Repository.init(path, 1)
+		.catch(globalCallback)
 		.then(function (repo) {
+			nodegit.Remote.create(repo, "origin", url)
+				.catch(globalCallback)
+				.then(function (remote) {
+					remote.fetch([options.branch])
+						.catch(globalCallback)
+						.then(function (number) {
+							if (number) {
+								return globalCallback("Failed to fetch commit: error number " + number);
+							}
 
-		console.log("Cloned %s to %s", url, path);
+							console.log("Cloned %s to %s", url, path);
 
-		repo.getCommit(options.hash, function (err, commit) {
-			if (err) {
-				return globalCallback(err);
-			}
+							repo.getCommit(options.hash)
+								.catch(globalCallback)
+								.then(function (commit) {
+									removedirs(exported);
+									mkdirs(exported);
 
-			removedirs(exported);
-			mkdirs(exported);
-
-			gitToFs(commit, exported, globalCallback);
-		});
+									gitToFs(commit, exported, function (err, result) {
+										repo.free();
+										return globalCallback(err, result);
+									});
+								});
+						});
+				});
 		});
 };
