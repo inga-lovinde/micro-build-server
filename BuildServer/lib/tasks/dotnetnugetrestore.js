@@ -1,6 +1,6 @@
 "use strict";
 
-var sequential = require('./sequential');
+const sequential = require('./sequential');
 
 module.exports = function (params, processor) {
 	return sequential({

@@ -1,7 +1,6 @@
 "use strict";
 
-var glob = require('glob');
-var deleteFromCode = require('./deletefromcode');
+const glob = require('glob');
 
 module.exports = function (params, processor) {
 	return {
@@ -33,7 +32,7 @@ module.exports = function (params, processor) {
 						})
 					}
 				}, processor.done.bind(processor));
-			})
+			});
 		}
 	};
 };

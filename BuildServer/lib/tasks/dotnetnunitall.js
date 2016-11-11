@@ -1,7 +1,6 @@
 "use strict";
 
-var glob = require('glob');
-var dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
+const glob = require('glob');
 
 module.exports = function (params, processor) {
 	return {
@@ -40,7 +39,7 @@ module.exports = function (params, processor) {
 						})
 					}
 				}, processor.done.bind(processor));
-			})
+			});
 		}
 	};
 };

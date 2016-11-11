@@ -1,11 +1,10 @@
 "use strict";
 
-var fs = require('fs'),
-	url = require('url'),
-	glob = require('glob');
+const fs = require('fs');
+const glob = require('glob');
 
-var addBranchInfo = function (app, options, callback) {
-	var branchFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/$revs/" + options.rev + ".branch";
+const addBranchInfo = function (app, options, callback) {
+	const branchFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/$revs/" + options.rev + ".branch";
 	fs.exists(branchFile, function (exists) {
 		if (!exists) {
 			return callback("BranchFileNotFound", options);
@@ -21,8 +20,8 @@ var addBranchInfo = function (app, options, callback) {
 	});
 };
 
-var addRevInfo = function (app, options, callback) {
-	var revFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/latest.id";
+const addRevInfo = function (app, options, callback) {
+	const revFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/latest.id";
 	fs.exists(revFile, function (exists) {
 		if (!exists) {
 			return callback("RevFileNotFound", options);
@@ -37,13 +36,13 @@ var addRevInfo = function (app, options, callback) {
 	});
 };
 
-var parseOptions = function (app, options, callback) {
-	var result = {};
+const parseOptions = function (app, options, callback) {
+	const result = {};
 
 	result.owner = options.owner;
 	result.reponame = options.reponame;
 
-	if (options.rev && !/^[\da-f]{40}$/i.test(options.rev)) {
+	if (options.rev && !(/^[\da-f]{40}$/i).test(options.rev)) {
 		return callback("Wrong rev format: " + options.rev, options);
 	}
 
@@ -60,15 +59,15 @@ var parseOptions = function (app, options, callback) {
 	}
 };
 
-var loadReport = function (app, options, callback) {
-	var releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
+const loadReport = function (app, options, callback) {
+	const releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
 
 	glob("**", {cwd: releaseDir, mark: true}, function (err, files) {
 		if (err) {
 			return callback(err, options);
 		}
 
-		var reportFile = releaseDir + "/report.json";
+		const reportFile = releaseDir + "/report.json";
 		options.files = files;
 		fs.exists(reportFile, function (exists) {
 			if (!exists) {
@@ -79,7 +78,7 @@ var loadReport = function (app, options, callback) {
 				if (err) {
 					return callback(err, options);
 				}
-				var data = dataBuffer.toString();
+				const data = dataBuffer.toString();
 				if (!data) {
 					return callback("ReportFileNotFound", options);
 				}
@@ -98,4 +97,4 @@ exports.getReport = function (app, options, callback) {
 
 		return loadReport(app, result, callback);
 	});
-}
+};

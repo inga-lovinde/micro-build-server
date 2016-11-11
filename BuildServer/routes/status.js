@@ -1,19 +1,17 @@
 "use strict";
 
-var fs = require('fs'),
-	url = require('url'),
-	glob = require('glob'),
-	statusProcessor = require('../lib/status-processor');
+const url = require('url');
+const statusProcessor = require('../lib/status-processor');
 
-var parseOptionsFromReferer = function (path, callback) {
-	var pathParts = path.split("/").filter(function (value) { return value; });
-	var result = {};
+const parseOptionsFromReferer = function (path, callback) {
+	const pathParts = path.split("/").filter(function (value) { return value; });
+	const result = {};
 
 	if (pathParts.length < 2) {
 		return callback("BadRequest", result);
 	}
 
-	if (pathParts[2] == "tree") {
+	if (pathParts[2] === "tree") {
 		pathParts.splice(2, 1);
 	}
 
@@ -24,16 +22,16 @@ var parseOptionsFromReferer = function (path, callback) {
 	return callback(null, result);
 };
 
-var createShowReport = function (res) {
+const createShowReport = function (res) {
 	return function (err, options) {
 		options = options || {};
 		options.err = err;
 		res.render('status', options);
-	}
-}
+	};
+};
 
 exports.image = function(req, res) {
-	var handle = function (err, options) {
+	const handle = function (err, options) {
 		if (err === "ReportFileNotFound") {
 			options.status = "Building";
 		} else if (err) {
@@ -69,7 +67,7 @@ exports.image = function(req, res) {
 };
 
 exports.page = function(req, res) {
-	var options = {
+	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,
 		branchName: req.params.branch,
@@ -88,5 +86,4 @@ exports.pageFromGithub = function (req, res) {
 
 		return statusProcessor.getReport(req.app, options, createShowReport(res));
 	});
-}
-
+};

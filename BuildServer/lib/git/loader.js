@@ -1,16 +1,16 @@
 "use strict";
 
-var nodegit = require('nodegit'),
-	fse = require('fs-extra'),
-	gitToFs = require('./copy').gitToFs,
-	mkdirs = function (path) {
-		/*jslint stupid: true */
-		fse.mkdirsSync(path);
-	},
-	removedirs = function (path) {
-		/*jslint stupid: true */
-		fse.removeSync(path);
-	};
+const nodegit = require('nodegit');
+const fse = require('fs-extra');
+const gitToFs = require('./copy').gitToFs;
+const mkdirs = function (path) {
+	/*jslint stupid: true */
+	fse.mkdirsSync(path);
+};
+const removedirs = function (path) {
+	/*jslint stupid: true */
+	fse.removeSync(path);
+};
 
 /*
 options = {
@@ -23,14 +23,14 @@ options = {
 */
 
 module.exports = function (options, globalCallback) {
-	var url = options.remote,
-		path = options.local + "/" + options.hash,
-		exported = options.exported;
+	let url = options.remote;
+	const path = options.local + "/" + options.hash;
+	const exported = options.exported;
 
 	removedirs(path);
 	mkdirs(path);
 
-	if (url.substr(0, 8) == "https://") {
+	if (url.substr(0, 8) === "https://") {
 		url = "git://" + url.substr(8);
 	}
 

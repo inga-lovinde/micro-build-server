@@ -1,18 +1,17 @@
 "use strict";
 
-var EventEmitter = require('events').EventEmitter,
-	path = require('path'),
-	fs = require('fs'),
-	nodegit = require('nodegit'),
-	async = require('async'),
-	Copier = require('recursive-tree-copy').Copier;
+const EventEmitter = require('events').EventEmitter;
+const path = require('path');
+const fs = require('fs');
+const async = require('async');
+const Copier = require('recursive-tree-copy').Copier;
 
-var gitToFsCopier = new Copier({
+const gitToFsCopier = new Copier({
 	concurrency: 4,
 	walkSourceTree: function (tree) {
-		var emitter = new EventEmitter();
+		const emitter = new EventEmitter();
 		process.nextTick(function () {
-			var entries;
+			let entries;
 			try {
 				entries = tree.gitTree.entries();
 			} catch(err) {
@@ -48,9 +47,9 @@ var gitToFsCopier = new Copier({
 		return emitter;
 	},
 	createTargetTree: function (tree, targetDir, callback) {
-		var targetSubdir = path.join(targetDir, tree.name);
+		const targetSubdir = path.join(targetDir, tree.name);
 		fs.mkdir(targetSubdir, function (err) {
-			if (err && err.code != 'EEXIST' /* workaround for broken trees */) {
+			if (err && err.code !== 'EEXIST' /* workaround for broken trees */) {
 				return callback(err);
 			}
 
@@ -61,7 +60,7 @@ var gitToFsCopier = new Copier({
 		callback();
 	},
 	copyLeaf: function (entry, targetDir, callback) {
-		var targetPath = path.join(targetDir, entry.name());
+		const targetPath = path.join(targetDir, entry.name());
 		entry.getBlob(function (err, blob) {
 			if (err) {
 				return callback(err);

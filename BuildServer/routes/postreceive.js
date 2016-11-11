@@ -1,22 +1,18 @@
 "use strict";
 
-var builder = require('../lib/builder'),
-	commenter = require('../lib/commenter');
+const builder = require('../lib/builder');
+const commenter = require('../lib/commenter');
 
-/*
- * POST from github
- */
-
-var processPush = function (req, res, payload) {
-	var repository = payload.repository,
-		options = {
-			app: req.app,
-			url: repository.url,
-			owner: repository.owner.name,
-			reponame: repository.name,
-			rev: payload.after,
-			branch: payload.ref
-		};
+const processPush = function (req, res, payload) {
+	const repository = payload.repository;
+	const options = {
+		app: req.app,
+		url: repository.url,
+		owner: repository.owner.name,
+		reponame: repository.name,
+		rev: payload.after,
+		branch: payload.ref
+	};
 
 	console.log("Got push event for " + options.owner + "/" + options.reponame + ":" + options.branch);
 
@@ -29,41 +25,41 @@ var processPush = function (req, res, payload) {
 	});
 };
 
-var processPullRequest = function (req, res, payload) {
-	var action = payload.action,
-		number = payload.number,
-		pullRequest = payload.pull_request,
-		head = pullRequest.head,
-		headRepo = head.repo,
-		headRepoOptions = {
-			url: headRepo.url,
-			owner: headRepo.owner.name || headRepo.owner.login,
-			reponame: headRepo.name,
-			rev: head.sha,
-			branchname: head.ref,
-			branch: "refs/heads/" + head.ref
-		},
-		base = pullRequest.base,
-		baseRepo = base.repo,
-		baseRepoOptions = {
-			owner: baseRepo.owner.name || baseRepo.owner.login,
-			reponame: baseRepo.name,
-			branchname: base.ref
-		},
-		options = {
-			app: req.app,
-			action: action,
-			number: number,
-			headRepoOptions: headRepoOptions,
-			baseRepoOptions: baseRepoOptions
-		},
-		masterOptions = {
-			app: req.app,
-			action: action,
-			number: number,
-			headRepoOptions: baseRepoOptions,
-			baseRepoOptions: baseRepoOptions
-		};
+const processPullRequest = function (req, res, payload) {
+	const action = payload.action;
+	const number = payload.number;
+	const pullRequest = payload.pull_request;
+	const head = pullRequest.head;
+	const headRepo = head.repo;
+	const headRepoOptions = {
+		url: headRepo.url,
+		owner: headRepo.owner.name || headRepo.owner.login,
+		reponame: headRepo.name,
+		rev: head.sha,
+		branchname: head.ref,
+		branch: "refs/heads/" + head.ref
+	};
+	const base = pullRequest.base;
+	const baseRepo = base.repo;
+	const baseRepoOptions = {
+		owner: baseRepo.owner.name || baseRepo.owner.login,
+		reponame: baseRepo.name,
+		branchname: base.ref
+	};
+	const options = {
+		app: req.app,
+		action: action,
+		number: number,
+		headRepoOptions: headRepoOptions,
+		baseRepoOptions: baseRepoOptions
+	};
+	const masterOptions = {
+		app: req.app,
+		action: action,
+		number: number,
+		headRepoOptions: baseRepoOptions,
+		baseRepoOptions: baseRepoOptions
+	};
 
 	console.log("Got pull request " + action + " event, from " + headRepoOptions.owner + "/" + headRepoOptions.reponame + ":" + headRepoOptions.branchname + " (" + headRepoOptions.rev + ") to " + baseRepoOptions.owner + "/" + baseRepoOptions.reponame + ":" + baseRepoOptions.branchname);
 
@@ -99,8 +95,8 @@ module.exports = function (req, res) {
 		return res.end();
 	}
 
-	var eventType = req.header("x-github-event"),
-		payload = req.body.payload ? JSON.parse(req.body.payload || "{}") : req.body;
+	const eventType = req.header("x-github-event");
+	const payload = req.body.payload ? JSON.parse(req.body.payload || "{}") : req.body;
 
 	if (eventType === "push") {
 		return processPush(req, res, payload);

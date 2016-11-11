@@ -1,7 +1,6 @@
 "use strict";
 
-var fse = require('fs-extra');
-var glob = require('glob');
+const glob = require('glob');
 
 module.exports = function (params, processor) {
 	return {

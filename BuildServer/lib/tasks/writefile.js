@@ -1,13 +1,11 @@
 "use strict";
 
-var fs = require('fs');
-var async = require('async');
-var glob = require('glob');
+const fs = require('fs');
 
 module.exports = function (params, processor) {
 	return {
 		process: function () {
-			var filePath = processor.context.exported + "/" + params.filename;
+			const filePath = processor.context.exported + "/" + params.filename;
 			processor.onInfo("Writing to " + filePath);
 
 			fs.writeFile(filePath, params.data, function(err) {

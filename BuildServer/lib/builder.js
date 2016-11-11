@@ -1,18 +1,18 @@
 "use strict";
 
-var fs = require('fs');
-var fse = require('fs-extra');
-var async = require('async');
-var gitLoader = require('./git/loader');
-var processor = require('./task-processor');
-var mailSender = require('./mail-sender');
-var settings = require('../settings');
+const fs = require('fs');
+const fse = require('fs-extra');
+const async = require('async');
+const gitLoader = require('./git/loader');
+const processor = require('./task-processor');
+const mailSender = require('./mail-sender');
+const settings = require('../settings');
 
-//var codePostfix = "/code";
-var codePostfix = "";
+//const codePostfix = "/code";
+const codePostfix = "";
 
-var notifyStatus = function (options, callback) {
-	var status = {
+const notifyStatus = function (options, callback) {
+	const status = {
 		user: options.owner,
 		repo: options.reponame,
 		sha: options.hash,
@@ -30,21 +30,21 @@ var notifyStatus = function (options, callback) {
 	});
 };
 
-var build = function (options, callback) {
-	var url = options.url,
-		owner = options.owner,
-		reponame = options.reponame,
-		rev = options.rev,
-		branch = options.branch,
-		skipGitLoader = options.skipGitLoader,
-		local = options.app.get('gitpath') + "/r/",
-		tmp = options.app.get('tmpcodepath') + "/" + rev.substr(0, 15),
-		exported = tmp + codePostfix,
-		release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev,
-		statusQueue = async.queue(function (task, callback) {
-			task(callback);
-		}, 1),
-		actualGitLoader = skipGitLoader ? function(options, callback) { process.nextTick(callback); } : gitLoader;
+const build = function (options, callback) {
+	const url = options.url;
+	const owner = options.owner;
+	const reponame = options.reponame;
+	const rev = options.rev;
+	const branch = options.branch;
+	const skipGitLoader = options.skipGitLoader;
+	const local = options.app.get('gitpath') + "/r/";
+	const tmp = options.app.get('tmpcodepath') + "/" + rev.substr(0, 15);
+	const exported = tmp + codePostfix;
+	const release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev;
+	const statusQueue = async.queue(function (task, callback) {
+		task(callback);
+	}, 1);
+	const actualGitLoader = skipGitLoader ? function(options, callback) { process.nextTick(callback); } : gitLoader;
 
 	statusQueue.push(function (callback) {
 		notifyStatus({
@@ -62,10 +62,10 @@ var build = function (options, callback) {
 	fse.mkdirsSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs");
 	fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs/" + rev + ".branch", branch);
 
-	var done = function (err, result) {
-		var errorMessage = result && result.errors ? ((result.errors.$allMessages || [])[0] || {}).message : err,
-			warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err,
-			infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
+	const done = function (err, result) {
+		const errorMessage = result && result.errors ? ((result.errors.$allMessages || [])[0] || {}).message : err;
+		const warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err;
+		const infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
 
 		fs.writeFile(release + "/report.json", JSON.stringify({date: Date.now(), err: err, result: result}), function (writeErr) {
 			statusQueue.push(function (callback) {
@@ -80,7 +80,6 @@ var build = function (options, callback) {
 						}, callback);
 					},
 					function (callback) {
-						return process.nextTick(callback);
 						mailSender.send({
 							from: settings.smtp.sender,
 							to: settings.smtp.receiver,
@@ -131,7 +130,7 @@ var build = function (options, callback) {
 					return done(err, "MBSUnableToRead");
 				}
 
-				var task;
+				let task;
 				try {
 					task = JSON.parse(data);
 				} catch(ex) {

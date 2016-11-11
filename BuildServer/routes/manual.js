@@ -1,4 +1,6 @@
-var builder = require('../lib/builder');
+"use strict";
+
+const builder = require('../lib/builder');
 
 exports.get = function (req, res) {
 	res.render('manual');

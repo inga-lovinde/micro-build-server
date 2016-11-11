@@ -1,15 +1,14 @@
 "use strict";
 
-var fs = require('fs'),
-	_ = require('underscore'),
-	builder = require('../lib/builder'),
-	settings = require('../settings');
+const fs = require('fs');
+const _ = require('underscore');
+const settings = require('../settings');
 
-var featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
-var versionNamePattern = /^v\d+(\.\d+)*$/;
-var masterNamePattern = /^master$/;
+const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
+const versionNamePattern = /^v\d+(\.\d+)*$/;
+const masterNamePattern = /^master$/;
 
-var writeComment = function (options, message, callback) {
+const writeComment = function (options, message, callback) {
 	return options.github.issues.createComment({
 		user: options.baseRepoOptions.owner,
 		repo: options.baseRepoOptions.reponame,
@@ -18,7 +17,7 @@ var writeComment = function (options, message, callback) {
 	}, callback);
 };
 
-var closePullRequest = function (options, message, callback) {
+const closePullRequest = function (options, message, callback) {
 	return writeComment(options, message, function (err) {
 		if (err) {
 			return callback(err);
@@ -33,7 +32,7 @@ var closePullRequest = function (options, message, callback) {
 	});
 };
 
-var checkHasIssue = function (options, issueNumber, callback) {
+const checkHasIssue = function (options, issueNumber, callback) {
 	return options.github.issues.getRepoIssue({
 		user: options.baseRepoOptions.owner,
 		repo: options.baseRepoOptions.reponame,
@@ -55,7 +54,7 @@ var checkHasIssue = function (options, issueNumber, callback) {
 	});
 };
 
-var checkHasReleases = function (options, callback) {
+const checkHasReleases = function (options, callback) {
 	return options.github.releases.listReleases({
 		owner: options.baseRepoOptions.owner,
 		repo: options.baseRepoOptions.reponame,
@@ -69,9 +68,9 @@ var checkHasReleases = function (options, callback) {
 	});
 };
 
-var checkPullRequest = function (options, callback) {
-	var head = options.headRepoOptions,
-		base = options.baseRepoOptions;
+const checkPullRequest = function (options, callback) {
+	const head = options.headRepoOptions;
+	const base = options.baseRepoOptions;
 
 	if (head.reponame !== base.reponame) {
 		return closePullRequest(options, "Base and head repository names should match", callback);
@@ -107,7 +106,7 @@ var checkPullRequest = function (options, callback) {
 		return closePullRequest(options, "Only merging to master or version branch is allowed; merging to '" + base.branchname + "'  is not supported", callback);
 	}
 
-	var issueNumber = featureNamePattern.exec(head.branchname)[1];
+	const issueNumber = featureNamePattern.exec(head.branchname)[1];
 	return checkHasIssue(options, issueNumber, function (err, hasIssue, issueTitle) {
 		if (err) {
 			return writeComment(options, "Unable to check for issue:\r\n\r\n" + err.message, callback);
@@ -117,7 +116,7 @@ var checkPullRequest = function (options, callback) {
 			return closePullRequest(options, "Unable to find issue #" + issueNumber, callback);
 		}
 
-		var shouldHaveReleases = versionNamePattern.test(base.branchname);
+		const shouldHaveReleases = versionNamePattern.test(base.branchname);
 		return checkHasReleases(options, function (err, hasReleases) {
 			if (err) {
 				return writeComment(options, "Unable to check for releases", callback);
@@ -140,9 +139,9 @@ var checkPullRequest = function (options, callback) {
 	});
 };
 
-var getStatusMessageFromRelease = function (app, options, callback) {
-	var releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev,
-		reportFile = releaseDir + "/report.json";
+const getStatusMessageFromRelease = function (app, options, callback) {
+	const releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
+	const reportFile = releaseDir + "/report.json";
 
 	options.attemptsGetReport = (options.attemptsGetReport || 0) + 1;
 
@@ -168,20 +167,20 @@ var getStatusMessageFromRelease = function (app, options, callback) {
 				if (err) {
 					return callback(err);
 				}
-				var data = dataBuffer.toString();
+				const data = dataBuffer.toString();
 				if (!data) {
 					return callback("Report file not found");
 				}
-				var report = JSON.parse(data);
+				const report = JSON.parse(data);
 
 				if (report.result === "MBSNotFound") {
 					return callback("mbs.json is not found");
 				}
 				if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
 					return callback(_.map(
-						(report.result.errors || {}).$allMessages || [], function(message) { return "ERR: " + message.message }
+						(report.result.errors || {}).$allMessages || [], function(message) { return "ERR: " + message.message; }
 					).concat(_.map(
-						(report.result.warns || {}).$allMessages || [], function(message) { return "WARN: " + message.message }
+						(report.result.warns || {}).$allMessages || [], function(message) { return "WARN: " + message.message; }
 					)).join("\r\n"));
 				}
 				if (!report.result || report.err) {
@@ -200,8 +199,8 @@ exports.commentOnPullRequest = function (options, callback) {
 	options.github = settings.createGithub(options.baseRepoOptions.owner);
 	return checkPullRequest(options, function (err, successMessage) {
 		getStatusMessageFromRelease(options.app, options.headRepoOptions, function (err, successMessage) {
-			var message = err ? ("Was not built:\r\n\r\n```\r\n" + err.replace(/```/g, '` ` `') + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage),
-				statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
+			const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.replace(/```/g, '` ` `') + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
+			const statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
 			return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
 		});
 	});

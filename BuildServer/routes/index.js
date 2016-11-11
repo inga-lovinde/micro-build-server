@@ -1,10 +1,7 @@
-
-/*
- * GET home page.
- */
+"use strict";
 
 exports.index = function(req, res){
-  res.render('index', { title: 'Express' + req + "qq" });
+	res.render('index', { title: 'Express' + req + "qq" });
 };
 
 exports.postreceive = require('./postreceive');

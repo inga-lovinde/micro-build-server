@@ -1,14 +1,14 @@
 "use strict";
 
-var spawn = require('child_process').spawn;
-var settings = require("../../settings");
+const spawn = require('child_process').spawn;
+const settings = require("../../settings");
 
 module.exports = function (params, processor) {
 	return {
 		process: function () {
-			var result = "",
-				error = "",
-				builder = spawn(settings.builderExecutable, [params.command]);
+			let result = "";
+			let error = "";
+			const builder = spawn(settings.builderExecutable, [params.command]);
 
 			processor.onInfo("DotNetBuilderWrapper processing (at " + (new Date().toISOString()) + "): " + JSON.stringify(params, null, 4));
 
@@ -25,26 +25,22 @@ module.exports = function (params, processor) {
 					return processor.done();
 				}
 
-				var report = JSON.parse(result);
-				var messages = report.Messages;
-				for (var i = 0; i < messages.length; i++) {
-					if (!messages[i]) {
-						processor.onError("Message is null");
-						continue;
+				const report = JSON.parse(result);
+				const messages = report.Messages;
+				messages.forEach(function (message) {
+					if (!message) {
+						return processor.onError("Message is null");
 					}
 
-					switch(messages[i].Type) {
+					switch(message.Type) {
 						case "info":
-							processor.onInfo(messages[i].Body);
-							break;
+							return processor.onInfo(message.Body);
 						case "warn":
-							processor.onWarn(messages[i].Body);
-							break;
+							return processor.onWarn(message.Body);
 						default:
-							processor.onError(messages[i].Body);
-							break;
+							return processor.onError(message.Body);
 					}
-				}
+				});
 
 				processor.onInfo("Done DotNetBuilderWrapper processing (at " + (new Date().toISOString()) + ")");
 				return processor.done();

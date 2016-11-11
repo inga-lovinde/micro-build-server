@@ -1,19 +1,16 @@
+"use strict";
 
-/**
- * Module dependencies.
- */
-
-var https = require('https');
-var realFs = require('fs');
-var fs = require('graceful-fs');
+//const https = require('https');
+const realFs = require('fs');
+const fs = require('graceful-fs');
 fs.gracefulify(realFs);
 
-var express = require('express');
-var routes = require('./routes');
-var http = require('http');
-var path = require('path');
+const express = require('express');
+const routes = require('./routes');
+const http = require('http');
+const path = require('path');
 
-var app = express();
+const app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -31,7 +28,7 @@ app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
-if ('development' == app.get('env')) {
+if ('development' === app.get('env')) {
   app.use(express.errorHandler());
 }
 

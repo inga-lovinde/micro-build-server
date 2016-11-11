@@ -1,6 +1,6 @@
 "use strict";
 
-var dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
+const dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
 
 module.exports = function (params, processor) {
 	return dotNetBuilderWrapper({

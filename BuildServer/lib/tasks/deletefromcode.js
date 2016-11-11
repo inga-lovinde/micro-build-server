@@ -1,6 +1,6 @@
 "use strict";
 
-var fse = require('fs-extra');
+const fse = require('fs-extra');
 
 module.exports = function (params, processor) {
 	return {

@@ -1,13 +1,13 @@
 "use strict";
 
-var fs = require('fs');
-var async = require('async');
-var glob = require('glob');
-var settings = require('../../settings');
+const fs = require('fs');
+const async = require('async');
+const glob = require('glob');
+const settings = require('../../settings');
 
-var addAssemblyAttribute = function (content, attribute) {
+const addAssemblyAttribute = function (content, attribute) {
 	return content + "\n" + attribute + "\n";
-}
+};
 
 module.exports = function (params, processor) {
 	return {
@@ -18,19 +18,20 @@ module.exports = function (params, processor) {
 
 			processor.context.dotnetrewriterDone = true;
 
-			var date = new Date(),
-				version = date.getFullYear() + "." +
+			const date = new Date();
+			const version = date.getFullYear() + "." +
 					(date.getMonth() + 1) + "." +
 					date.getDate() + "." +
 					(date.getHours() * 100 + date.getMinutes()) + "; " +
 					"built from " + processor.context.rev + "; " +
 					"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
-					"branch: " + processor.context.branch,
-				processAssemblyInfo = function (appendInformationalVersion) {
+					"branch: " + processor.context.branch;
+
+			const processAssemblyInfo = function (appendInformationalVersion) {
 					return function (content, cb) {
 						if (!params.skipCodeSigning && !settings.skipCodeSigning) {
 							content = content.replace(
-								/InternalsVisibleTo\s*\(\s*\"([\w.]+)\"\s*\)/g,
+								/InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g,
 								function (match, p1) {
 									return "InternalsVisibleTo(\"" + p1 + ",PublicKey=" + settings.codeSigningPublicKey + "\")";
 								}
@@ -72,9 +73,9 @@ module.exports = function (params, processor) {
 							}
 							callback(err);
 						});
-					}
+					};
 				}), processor.done.bind(processor));
-			})
+			});
 		}
 	};
 };

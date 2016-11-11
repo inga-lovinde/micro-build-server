@@ -1,12 +1,12 @@
 "use strict";
 
-var fse = require('fs-extra');
+const fse = require('fs-extra');
 
 module.exports = function (params, processor) {
 	return {
 		process: function () {
-			var sourceFilePath = processor.context.exported + "/" + params.filename,
-				targetFilePath = processor.context.release + "/" + params.filename;
+			const sourceFilePath = processor.context.exported + "/" + params.filename;
+			const targetFilePath = processor.context.release + "/" + params.filename;
 
 			processor.onInfo("Copying " + sourceFilePath + " to " + targetFilePath);
 

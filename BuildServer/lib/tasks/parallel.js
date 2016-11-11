@@ -1,6 +1,6 @@
 "use strict";
 
-var async = require("async");
+const async = require("async");
 
 module.exports = function (params, processor) {
 	return {
@@ -9,8 +9,8 @@ module.exports = function (params, processor) {
 				return function (callback) {
 					return processor.processTask(task, function (err) {
 						return callback();
-					})
-				}
+					});
+				};
 			}), processor.done.bind(processor));
 		}
 	};

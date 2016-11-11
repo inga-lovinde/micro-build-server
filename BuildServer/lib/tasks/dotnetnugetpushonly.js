@@ -1,8 +1,7 @@
 "use strict";
 
-var sequential = require("./sequential");
-var dotnetbuilderwrapper = require('./dotnetbuilderwrapper');
-var settings = require("../../settings");
+const dotnetbuilderwrapper = require('./dotnetbuilderwrapper');
+const settings = require("../../settings");
 
 module.exports = function (params, processor) {
 	return dotnetbuilderwrapper({

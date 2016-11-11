@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(req, res) {
-	var options = {
+	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,
 		branchName: req.params.branch,

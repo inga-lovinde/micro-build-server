@@ -1,10 +1,10 @@
 "use strict";
 
-var settings = require('../../settings');
-var dotnetbuilderwrapper = require('./dotnetbuilderwrapper');
+const settings = require('../../settings');
+const dotnetbuilderwrapper = require('./dotnetbuilderwrapper');
 
 module.exports = function (params, processor) {
-	var compileParams = {
+	const compileParams = {
 		command: "compile",
 		SolutionPath: processor.context.exported + "/" + params.solution,
 		Configuration: params.configuration,
@@ -30,4 +30,4 @@ module.exports = function (params, processor) {
 		}
 	}
 	return dotnetbuilderwrapper(compileParams, processor);
-}
+};

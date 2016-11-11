@@ -1,11 +1,11 @@
 "use strict";
 
-var path = require('path'),
-	fs = require('fs'),
-	Zip = require('adm-zip');
+const path = require('path');
+const fs = require('fs');
+const Zip = require('adm-zip');
 
-var getReport = function(releasePath, callback) {
-	var reportFile = releasePath + "report.json";
+const getReport = function(releasePath, callback) {
+	const reportFile = releasePath + "report.json";
 
 	fs.exists(reportFile, function (exists) {
 		if (!exists) {
@@ -14,27 +14,27 @@ var getReport = function(releasePath, callback) {
 
 		return fs.readFile(reportFile, function (err, dataBuffer) {
 			if (err) {
-				return callback(err, options);
+				return callback(err, reportFile);
 			}
-			var data = dataBuffer.toString();
+			const data = dataBuffer.toString();
 			if (!data) {
-				return callback("ReportFileNotFound", options);
+				return callback("ReportFileNotFound", reportFile);
 			}
-			var report = JSON.parse(data);
+			const report = JSON.parse(data);
 			return callback(null, report);
 		});
 	});
 };
 
-var getDatePart = function (report) {
+const getDatePart = function (report) {
 	if (!report.date) {
 		return "unknowndate";
 	}
 
-	var date = new Date(report.date),
-		paddingLeft = function (str, paddingValue) {
-			return String(paddingValue + str).slice(-paddingValue.length);
-		};
+	const date = new Date(report.date);
+	const paddingLeft = function (str, paddingValue) {
+		return String(paddingValue + str).slice(-paddingValue.length);
+	};
 
 	return date.getFullYear() + "." +
 		paddingLeft(date.getMonth() + 1, "00") + "." +
@@ -45,7 +45,7 @@ var getDatePart = function (report) {
 };
 
 module.exports = function(req, res, next) {
-	var options = {
+	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,
 		branchName: req.params.branch,
@@ -53,8 +53,8 @@ module.exports = function(req, res, next) {
 		rev: req.params.rev
 	};
 
-	var zip = new Zip(),
-		releasePath = path.normalize(req.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/");
+	const zip = new Zip();
+	const releasePath = path.normalize(req.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/");
 
 	getReport(releasePath, function (err, report) {
 		if (err) {
