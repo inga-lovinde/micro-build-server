@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(req, res) {
+module.exports = (req, res) => {
 	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,

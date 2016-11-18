@@ -3,7 +3,7 @@
 const settings = require('../../settings');
 const dotnetbuilderwrapper = require('./dotnetbuilderwrapper');
 
-module.exports = function (params, processor) {
+module.exports = (params, processor) => {
 	const compileParams = {
 		command: "compile",
 		SolutionPath: processor.context.exported + "/" + params.solution,

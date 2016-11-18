@@ -11,7 +11,7 @@ const settings = require('../settings');
 //const codePostfix = "/code";
 const codePostfix = "";
 
-const notifyStatus = function (options, callback) {
+const notifyStatus = (options, callback) => {
 	const status = {
 		user: options.owner,
 		repo: options.reponame,
@@ -20,7 +20,7 @@ const notifyStatus = function (options, callback) {
 		target_url: settings.siteRoot + "status/" + options.owner + "/" + options.reponame + "/" + options.hash,
 		description: ((options.description || "") + "").substr(0, 140)
 	};
-	settings.createGithub(options.owner).statuses.create(status, function (err, result) {
+	settings.createGithub(options.owner).statuses.create(status, (err, result) => {
 		if (err) {
 			console.log("Error while creating status: " + err);
 			console.log(status);
@@ -30,7 +30,7 @@ const notifyStatus = function (options, callback) {
 	});
 };
 
-const build = function (options, callback) {
+const build = (options, callback) => {
 	const url = options.url;
 	const owner = options.owner;
 	const reponame = options.reponame;
@@ -41,20 +41,16 @@ const build = function (options, callback) {
 	const tmp = options.app.get('tmpcodepath') + "/" + rev.substr(0, 15);
 	const exported = tmp + codePostfix;
 	const release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev;
-	const statusQueue = async.queue(function (task, callback) {
-		task(callback);
-	}, 1);
-	const actualGitLoader = skipGitLoader ? function(options, callback) { process.nextTick(callback); } : gitLoader;
+	const statusQueue = async.queue((task, callback) => task(callback), 1);
+	const actualGitLoader = skipGitLoader ? (options, callback) => process.nextTick(callback) : gitLoader;
 
-	statusQueue.push(function (callback) {
-		notifyStatus({
-			state: "pending",
-			description: "Preparing to build...",
-			owner: owner,
-			reponame: reponame,
-			hash: rev
-		}, callback);
-	});
+	statusQueue.push((callback) => notifyStatus({
+		state: "pending",
+		description: "Preparing to build...",
+		owner: owner,
+		reponame: reponame,
+		hash: rev
+	}, callback));
 
 	fse.mkdirsSync(release);
 
@@ -62,45 +58,39 @@ const build = function (options, callback) {
 	fse.mkdirsSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs");
 	fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs/" + rev + ".branch", branch);
 
-	const done = function (err, result) {
+	const done = (err, result) => {
 		const errorMessage = result && result.errors ? ((result.errors.$allMessages || [])[0] || {}).message : err;
 		const warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err;
 		const infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
 
-		fs.writeFile(release + "/report.json", JSON.stringify({date: Date.now(), err: err, result: result}), function (writeErr) {
-			statusQueue.push(function (callback) {
-				async.parallel([
-					function (callback) {
-						notifyStatus({
-							state: err ? "error" : "success",
-							description: errorMessage || warnMessage || infoMessage || "Success",
-							owner: owner,
-							reponame: reponame,
-							hash: rev
-						}, callback);
+		fs.writeFile(release + "/report.json", JSON.stringify({date: Date.now(), err: err, result: result}), (writeErr) => {
+			statusQueue.push((callback) => async.parallel([
+				(callback) => notifyStatus({
+					state: err ? "error" : "success",
+					description: errorMessage || warnMessage || infoMessage || "Success",
+					owner: owner,
+					reponame: reponame,
+					hash: rev
+				}, callback),
+				(callback) => mailSender.send({
+					from: settings.smtp.sender,
+					to: settings.smtp.receiver,
+					subject: (err ? "Build failed for " : "Successfully built ") + owner + "/" + reponame + "/" + branch,
+					headers: {
+						'X-Laziness-level': 1000
 					},
-					function (callback) {
-						mailSender.send({
-							from: settings.smtp.sender,
-							to: settings.smtp.receiver,
-							subject: (err ? "Build failed for " : "Successfully built ") + owner + "/" + reponame + "/" + branch,
-							headers: {
-								'X-Laziness-level': 1000
-							},
-							text: ("Build status URL: " + settings.siteRoot + "status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
-								(err ? ("Error message: " + err + "\r\n\r\n") : "") +
-								((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(function (msg) { return msg.prefix + "\t" + msg.message; }).join("\r\n"))
-						}, callback);
-					},
-					function (callback) {
-						if (err) {
-							return process.nextTick(callback);
-						}
-
-						return fse.remove(tmp, callback);
+					text: ("Build status URL: " + settings.siteRoot + "status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
+						(err ? ("Error message: " + err + "\r\n\r\n") : "") +
+						((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(msg => msg.prefix + "\t" + msg.message).join("\r\n"))
+				}, callback),
+				(callback) => {
+					if (err) {
+						return process.nextTick(callback);
 					}
-				], callback);
-			});
+
+					return fse.remove(tmp, callback);
+				}
+			], callback));
 
 			if (writeErr) {
 				return callback(writeErr);
@@ -115,17 +105,17 @@ const build = function (options, callback) {
 		branch: branch,
 		hash: rev,
 		exported: tmp + codePostfix
-	}, function(err) {
+	}, (err) => {
 		if (err) {
 			console.log(err);
 			return done("Git fetch error: " + err);
 		}
 		console.log("Done loading from git");
-		fs.exists(exported + "/mbs.json", function (exists) {
+		fs.exists(exported + "/mbs.json", (exists) => {
 			if (!exists) {
 				return done(null, "MBSNotFound");
 			}
-			fs.readFile(exported + "/mbs.json", function (err, data) {
+			fs.readFile(exported + "/mbs.json", (err, data) => {
 				if (err) {
 					return done(err, "MBSUnableToRead");
 				}
@@ -146,7 +136,7 @@ const build = function (options, callback) {
 					tmp: tmp,
 					exported: exported,
 					release: release
-				}, function (err, result) {
+				}, (err, result) => {
 					if (err) {
 						return done(err, result);
 					}

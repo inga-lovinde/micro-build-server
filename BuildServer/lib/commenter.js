@@ -1,74 +1,66 @@
 "use strict";
 
-const fs = require('fs');
-const _ = require('underscore');
-const settings = require('../settings');
+const fs = require("fs");
+const _ = require("underscore");
+const settings = require("../settings");
 
 const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 const versionNamePattern = /^v\d+(\.\d+)*$/;
 const masterNamePattern = /^master$/;
 
-const writeComment = function (options, message, callback) {
-	return options.github.issues.createComment({
+const writeComment = (options, message, callback) => options.github.issues.createComment({
+	user: options.baseRepoOptions.owner,
+	repo: options.baseRepoOptions.reponame,
+	number: options.number,
+	body: message
+}, callback);
+
+const closePullRequest = (options, message, callback) => writeComment(options, message, (err) => {
+	if (err) {
+		return callback(err);
+	}
+
+	return options.github.issues.edit({
 		user: options.baseRepoOptions.owner,
 		repo: options.baseRepoOptions.reponame,
 		number: options.number,
-		body: message
+		state: "closed"
 	}, callback);
-};
+});
 
-const closePullRequest = function (options, message, callback) {
-	return writeComment(options, message, function (err) {
-		if (err) {
-			return callback(err);
-		}
+const checkHasIssue = (options, issueNumber, callback) => options.github.issues.getRepoIssue({
+	user: options.baseRepoOptions.owner,
+	repo: options.baseRepoOptions.reponame,
+	number: issueNumber
+}, (err, result) => {
+	if (err && err.code !== 404) {
+		return callback(err);
+	}
 
-		return options.github.issues.edit({
-			user: options.baseRepoOptions.owner,
-			repo: options.baseRepoOptions.reponame,
-			number: options.number,
-			state: "closed"
-		}, callback);
-	});
-};
+	if (err || result.number.toString() !== issueNumber) {
+		return callback(undefined, false);
+	}
 
-const checkHasIssue = function (options, issueNumber, callback) {
-	return options.github.issues.getRepoIssue({
-		user: options.baseRepoOptions.owner,
-		repo: options.baseRepoOptions.reponame,
-		number: issueNumber
-	}, function (err, result) {
-		if (err && err.code !== 404) {
-			return callback(err);
-		}
+	if (result.pull_request && result.pull_request.url) {
+		return callback(undefined, false);
+	}
 
-		if (err || result.number.toString() !== issueNumber) {
-			return callback(undefined, false);
-		}
+	return callback(undefined, true, result.title);
+});
 
-		if (result.pull_request && result.pull_request.url) {
-			return callback(undefined, false);
-		}
+const checkHasReleases = (options, callback) => options.github.releases.listReleases({
+	owner: options.baseRepoOptions.owner,
+	repo: options.baseRepoOptions.reponame,
+	per_page: 1
+}, (err, result) => {
+	if (err) {
+		return callback(err);
+	}
 
-		return callback(undefined, true, result.title);
-	});
-};
+	return callback(undefined, result && result.length);
+});
 
-const checkHasReleases = function (options, callback) {
-	return options.github.releases.listReleases({
-		owner: options.baseRepoOptions.owner,
-		repo: options.baseRepoOptions.reponame,
-		per_page: 1
-	}, function (err, result) {
-		if (err) {
-			return callback(err);
-		}
-
-		return callback(undefined, result && result.length);
-	});
-};
-
-const checkPullRequest = function (options, callback) {
+const checkPullRequest = (options, callback) => {
 	const head = options.headRepoOptions;
 	const base = options.baseRepoOptions;
 
@@ -81,7 +73,7 @@ const checkPullRequest = function (options, callback) {
 			return closePullRequest(options, "Only merging from version to master is allowed", callback);
 		}
 
-		return checkHasReleases(options, function (err, hasReleases) {
+		return checkHasReleases(options, (err, hasReleases) => {
 			if (err) {
 				return writeComment(options, "Unable to check for releases", callback);
 			}
@@ -107,7 +99,7 @@ const checkPullRequest = function (options, callback) {
 	}
 
 	const issueNumber = featureNamePattern.exec(head.branchname)[1];
-	return checkHasIssue(options, issueNumber, function (err, hasIssue, issueTitle) {
+	return checkHasIssue(options, issueNumber, (err, hasIssue, issueTitle) => {
 		if (err) {
 			return writeComment(options, "Unable to check for issue:\r\n\r\n" + err.message, callback);
 		}
@@ -117,7 +109,7 @@ const checkPullRequest = function (options, callback) {
 		}
 
 		const shouldHaveReleases = versionNamePattern.test(base.branchname);
-		return checkHasReleases(options, function (err, hasReleases) {
+		return checkHasReleases(options, (err, hasReleases) => {
 			if (err) {
 				return writeComment(options, "Unable to check for releases", callback);
 			}
@@ -139,15 +131,15 @@ const checkPullRequest = function (options, callback) {
 	});
 };
 
-const getStatusMessageFromRelease = function (app, options, callback) {
-	const releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
+const getStatusMessageFromRelease = (app, options, callback) => {
+	const releaseDir = app.get("releasepath") + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
 	const reportFile = releaseDir + "/report.json";
 
 	options.attemptsGetReport = (options.attemptsGetReport || 0) + 1;
 
-	fs.exists(reportFile, function (exists) {
+	fs.exists(reportFile, (exists) => {
 		if (!exists) {
-			return fs.exists(releaseDir, function (dirExists) {
+			return fs.exists(releaseDir, (dirExists) => {
 				if (!dirExists) {
 					return callback("Release directory not found. Probably repository hooks are not configured");
 				}
@@ -156,52 +148,46 @@ const getStatusMessageFromRelease = function (app, options, callback) {
 				}
 
 				//maybe it is building right now
-				return setTimeout(function () {
-					getStatusMessageFromRelease(app, options, callback);
-				}, 10000);
+				return setTimeout(() => getStatusMessageFromRelease(app, options, callback), 10000);
 			});
 		}
 
-		return setTimeout(function () {
-			return fs.readFile(reportFile, function (err, dataBuffer) {
-				if (err) {
-					return callback(err);
-				}
-				const data = dataBuffer.toString();
-				if (!data) {
-					return callback("Report file not found");
-				}
-				const report = JSON.parse(data);
+		return setTimeout(() => fs.readFile(reportFile, (err, dataBuffer) => {
+			if (err) {
+				return callback(err);
+			}
+			const data = dataBuffer.toString();
+			if (!data) {
+				return callback("Report file not found");
+			}
+			const report = JSON.parse(data);
 
-				if (report.result === "MBSNotFound") {
-					return callback("mbs.json is not found");
-				}
-				if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
-					return callback(_.map(
-						(report.result.errors || {}).$allMessages || [], function(message) { return "ERR: " + message.message; }
-					).concat(_.map(
-						(report.result.warns || {}).$allMessages || [], function(message) { return "WARN: " + message.message; }
-					)).join("\r\n"));
-				}
-				if (!report.result || report.err) {
-					return callback("CRITICAL ERROR: " + report.err);
-				}
-				if ((report.result.infos.$allMessages || []).length > 0) {
-					return callback(undefined, report.result.infos.$allMessages[report.result.infos.$allMessages.length-1].message);
-				}
-				return callback(undefined, "OK");
-			});
-		}, 1000);
+			if (report.result === "MBSNotFound") {
+				return callback("mbs.json is not found");
+			}
+			if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
+				return callback(_.map(
+					(report.result.errors || {}).$allMessages || [], (message) => "ERR: " + message.message
+				).concat(_.map(
+					(report.result.warns || {}).$allMessages || [], (message) => "WARN: " + message.message
+				)).join("\r\n"));
+			}
+			if (!report.result || report.err) {
+				return callback("CRITICAL ERROR: " + report.err);
+			}
+			if ((report.result.infos.$allMessages || []).length > 0) {
+				return callback(undefined, report.result.infos.$allMessages[report.result.infos.$allMessages.length-1].message);
+			}
+			return callback(undefined, "OK");
+		}), 1000);
 	});
 };
 
-exports.commentOnPullRequest = function (options, callback) {
+exports.commentOnPullRequest = (options, callback) => {
 	options.github = settings.createGithub(options.baseRepoOptions.owner);
-	return checkPullRequest(options, function (err, successMessage) {
-		getStatusMessageFromRelease(options.app, options.headRepoOptions, function (err, successMessage) {
-			const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.replace(/```/g, '` ` `') + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
-			const statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
-			return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
-		});
-	});
+	return checkPullRequest(options, (err, successMessage) => getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
+		const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.replace(/```/g, "` ` `") + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
+		const statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
+		return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
+	}));
 };

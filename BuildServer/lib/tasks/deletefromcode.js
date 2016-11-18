@@ -4,7 +4,7 @@ const fse = require('fs-extra');
 
 module.exports = function (params, processor) {
 	return {
-		process: function () {
+		process: () => {
 			var sourceFilePath = processor.context.exported + "/" + params.filename;
 
 			processor.onInfo("Deleting " + sourceFilePath);

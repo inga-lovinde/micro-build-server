@@ -3,11 +3,11 @@
 const nodegit = require('nodegit');
 const fse = require('fs-extra');
 const gitToFs = require('./copy').gitToFs;
-const mkdirs = function (path) {
+const mkdirs = (path) => {
 	/*jslint stupid: true */
 	fse.mkdirsSync(path);
 };
-const removedirs = function (path) {
+const removedirs = (path) => {
 	/*jslint stupid: true */
 	fse.removeSync(path);
 };
@@ -22,7 +22,7 @@ options = {
 }
 */
 
-module.exports = function (options, globalCallback) {
+module.exports = (options, globalCallback) => {
 	let url = options.remote;
 	const path = options.local + "/" + options.hash;
 	const exported = options.exported;
@@ -38,31 +38,27 @@ module.exports = function (options, globalCallback) {
 
 	nodegit.Repository.init(path, 1)
 		.catch(globalCallback)
-		.then(function (repo) {
-			nodegit.Remote.create(repo, "origin", url)
+		.then((repo) => nodegit.Remote.create(repo, "origin", url)
+			.catch(globalCallback)
+			.then((remote) => remote.fetch([options.branch])
 				.catch(globalCallback)
-				.then(function (remote) {
-					remote.fetch([options.branch])
+				.then((number) => {
+					if (number) {
+						return globalCallback("Failed to fetch commit: error number " + number);
+					}
+
+					console.log("Cloned %s to %s", url, path);
+
+					repo.getCommit(options.hash)
 						.catch(globalCallback)
-						.then(function (number) {
-							if (number) {
-								return globalCallback("Failed to fetch commit: error number " + number);
-							}
+						.then((commit) => {
+							removedirs(exported);
+							mkdirs(exported);
 
-							console.log("Cloned %s to %s", url, path);
-
-							repo.getCommit(options.hash)
-								.catch(globalCallback)
-								.then(function (commit) {
-									removedirs(exported);
-									mkdirs(exported);
-
-									gitToFs(commit, exported, function (err, result) {
-										repo.free();
-										return globalCallback(err, result);
-									});
-								});
+							gitToFs(commit, exported, (err, result) => {
+								repo.free();
+								return globalCallback(err, result);
+							});
 						});
-				});
-		});
+				})));
 };

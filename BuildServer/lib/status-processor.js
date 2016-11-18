@@ -3,13 +3,13 @@
 const fs = require('fs');
 const glob = require('glob');
 
-const addBranchInfo = function (app, options, callback) {
+const addBranchInfo = (app, options, callback) => {
 	const branchFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/$revs/" + options.rev + ".branch";
-	fs.exists(branchFile, function (exists) {
+	fs.exists(branchFile, (exists) => {
 		if (!exists) {
 			return callback("BranchFileNotFound", options);
 		}
-		fs.readFile(branchFile, function (err, data) {
+		fs.readFile(branchFile, (err, data) => {
 			if (err) {
 				return callback(err, options);
 			}
@@ -20,13 +20,13 @@ const addBranchInfo = function (app, options, callback) {
 	});
 };
 
-const addRevInfo = function (app, options, callback) {
+const addRevInfo = (app, options, callback) => {
 	const revFile = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/latest.id";
-	fs.exists(revFile, function (exists) {
+	fs.exists(revFile, (exists) => {
 		if (!exists) {
 			return callback("RevFileNotFound", options);
 		}
-		fs.readFile(revFile, function (err, data) {
+		fs.readFile(revFile, (err, data) => {
 			if (err) {
 				return callback(err, options);
 			}
@@ -36,7 +36,7 @@ const addRevInfo = function (app, options, callback) {
 	});
 };
 
-const parseOptions = function (app, options, callback) {
+const parseOptions = (app, options, callback) => {
 	const result = {};
 
 	result.owner = options.owner;
@@ -59,22 +59,22 @@ const parseOptions = function (app, options, callback) {
 	}
 };
 
-const loadReport = function (app, options, callback) {
+const loadReport = (app, options, callback) => {
 	const releaseDir = app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
 
-	glob("**", {cwd: releaseDir, mark: true}, function (err, files) {
+	glob("**", {cwd: releaseDir, mark: true}, (err, files) => {
 		if (err) {
 			return callback(err, options);
 		}
 
 		const reportFile = releaseDir + "/report.json";
 		options.files = files;
-		fs.exists(reportFile, function (exists) {
+		fs.exists(reportFile, (exists) => {
 			if (!exists) {
 				return callback("ReportFileNotFound", options);
 			}
 
-			fs.readFile(reportFile, function (err, dataBuffer) {
+			fs.readFile(reportFile, (err, dataBuffer) => {
 				if (err) {
 					return callback(err, options);
 				}
@@ -89,12 +89,10 @@ const loadReport = function (app, options, callback) {
 	});
 };
 
-exports.getReport = function (app, options, callback) {
-	parseOptions(app, options, function (err, result) {
-		if (err) {
-			return callback(err, {});
-		}
+exports.getReport = (app, options, callback) => parseOptions(app, options, (err, result) => {
+	if (err) {
+		return callback(err, {});
+	}
 
-		return loadReport(app, result, callback);
-	});
-};
+	return loadReport(app, result, callback);
+});

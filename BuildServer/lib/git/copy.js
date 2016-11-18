@@ -8,9 +8,9 @@ const Copier = require('recursive-tree-copy').Copier;
 
 const gitToFsCopier = new Copier({
 	concurrency: 4,
-	walkSourceTree: function (tree) {
+	walkSourceTree: (tree) => {
 		const emitter = new EventEmitter();
-		process.nextTick(function () {
+		process.nextTick(() => {
 			let entries;
 			try {
 				entries = tree.gitTree.entries();
@@ -18,25 +18,23 @@ const gitToFsCopier = new Copier({
 				return emitter.emit('error', err);
 			}
 
-			async.parallel(entries.map(function (entry) {
-				return function (callback) {
-					if (entry.isTree()) {
-						entry.getTree(function (err, subTree) {
-							if (err) {
-								return callback(err);
-							}
+			async.parallel(entries.map((entry) => (callback) => {
+				if (entry.isTree()) {
+					entry.getTree((err, subTree) => {
+						if (err) {
+							return callback(err);
+						}
 
-							emitter.emit('tree', { gitTree: subTree, name: entry.name() });
-							callback();
-						});
-					} else if (entry.isFile()) {
-						emitter.emit('leaf', entry);
+						emitter.emit('tree', { gitTree: subTree, name: entry.name() });
 						callback();
-					} else {
-						callback();
-					}
-				};
-			}), function (err) {
+					});
+				} else if (entry.isFile()) {
+					emitter.emit('leaf', entry);
+					callback();
+				} else {
+					callback();
+				}
+			}), (err) => {
 				if (err) {
 					return emitter.emit('error', err);
 				}
@@ -46,9 +44,9 @@ const gitToFsCopier = new Copier({
 		});
 		return emitter;
 	},
-	createTargetTree: function (tree, targetDir, callback) {
+	createTargetTree: (tree, targetDir, callback) => {
 		const targetSubdir = path.join(targetDir, tree.name);
-		fs.mkdir(targetSubdir, function (err) {
+		fs.mkdir(targetSubdir, (err) => {
 			if (err && err.code !== 'EEXIST' /* workaround for broken trees */) {
 				return callback(err);
 			}
@@ -56,12 +54,10 @@ const gitToFsCopier = new Copier({
 			callback(undefined, targetSubdir);
 		});
 	},
-	finalizeTargetTree: function (targetSubdir, callback) {
-		callback();
-	},
-	copyLeaf: function (entry, targetDir, callback) {
+	finalizeTargetTree: (targetSubdir, callback) => callback(),
+	copyLeaf: (entry, targetDir, callback) => {
 		const targetPath = path.join(targetDir, entry.name());
-		entry.getBlob(function (err, blob) {
+		entry.getBlob((err, blob) => {
 			if (err) {
 				return callback(err);
 			}
@@ -71,12 +67,10 @@ const gitToFsCopier = new Copier({
 	}
 });
 
-exports.gitToFs = function (commit, exportDir, callback) {
-	commit.getTree(function (err, tree) {
-		if (err) {
-			return callback(err);
-		}
+exports.gitToFs = (commit, exportDir, callback) => commit.getTree((err, tree) => {
+	if (err) {
+		return callback(err);
+	}
 
-		gitToFsCopier.copy({ gitTree: tree, name: "." }, exportDir, callback);
-	});
-};
+	gitToFsCopier.copy({ gitTree: tree, name: "." }, exportDir, callback);
+});

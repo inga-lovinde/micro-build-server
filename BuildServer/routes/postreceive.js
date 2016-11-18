@@ -3,7 +3,7 @@
 const builder = require('../lib/builder');
 const commenter = require('../lib/commenter');
 
-const processPush = function (req, res, payload) {
+const processPush = (req, res, payload) => {
 	const repository = payload.repository;
 	const options = {
 		app: req.app,
@@ -16,7 +16,7 @@ const processPush = function (req, res, payload) {
 
 	console.log("Got push event for " + options.owner + "/" + options.reponame + ":" + options.branch);
 
-	builder.build(options, function (err, result) {
+	builder.build(options, (err, result) => {
 		console.log("Done processing request from GitHub");
 		console.log("Error: " + err);
 		//console.log("Result:");
@@ -25,7 +25,7 @@ const processPush = function (req, res, payload) {
 	});
 };
 
-const processPullRequest = function (req, res, payload) {
+const processPullRequest = (req, res, payload) => {
 	const action = payload.action;
 	const number = payload.number;
 	const pullRequest = payload.pull_request;
@@ -80,7 +80,7 @@ const processPullRequest = function (req, res, payload) {
 
 	commenter.commentOnPullRequest(
 		action === "closed" ? masterOptions : options,
-		function (err, data) {
+		(err, data) => {
 			if (err) {
 				console.log("Unable to post comment: " + err);
 			}
@@ -90,7 +90,7 @@ const processPullRequest = function (req, res, payload) {
 	);
 };
 
-module.exports = function (req, res) {
+module.exports = (req, res) => {
 	if (!req.body || (!req.body.payload && !req.body.repository)) {
 		return res.end();
 	}

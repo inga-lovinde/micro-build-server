@@ -2,7 +2,7 @@
 
 const sequential = require('./sequential');
 
-module.exports = function (params, processor) {
+module.exports = (params, processor) => {
 	let tasks = [];
 
 	if (!params.skipMbsCheckStyle) {

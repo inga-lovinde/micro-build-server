@@ -4,15 +4,15 @@ const path = require('path');
 const fs = require('fs');
 const Zip = require('adm-zip');
 
-const getReport = function(releasePath, callback) {
+const getReport = (releasePath, callback) => {
 	const reportFile = releasePath + "report.json";
 
-	fs.exists(reportFile, function (exists) {
+	fs.exists(reportFile, (exists) => {
 		if (!exists) {
 			return callback("ReportFileNotFound: " + reportFile);
 		}
 
-		return fs.readFile(reportFile, function (err, dataBuffer) {
+		return fs.readFile(reportFile, (err, dataBuffer) => {
 			if (err) {
 				return callback(err, reportFile);
 			}
@@ -26,15 +26,13 @@ const getReport = function(releasePath, callback) {
 	});
 };
 
-const getDatePart = function (report) {
+const getDatePart = (report) => {
 	if (!report.date) {
 		return "unknowndate";
 	}
 
 	const date = new Date(report.date);
-	const paddingLeft = function (str, paddingValue) {
-		return String(paddingValue + str).slice(-paddingValue.length);
-	};
+	const paddingLeft = (str, paddingValue) => String(paddingValue + str).slice(-paddingValue.length);
 
 	return date.getFullYear() + "." +
 		paddingLeft(date.getMonth() + 1, "00") + "." +
@@ -44,7 +42,7 @@ const getDatePart = function (report) {
 		paddingLeft(date.getSeconds(), "00");
 };
 
-module.exports = function(req, res, next) {
+module.exports = (req, res, next) => {
 	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,
@@ -56,17 +54,15 @@ module.exports = function(req, res, next) {
 	const zip = new Zip();
 	const releasePath = path.normalize(req.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/");
 
-	getReport(releasePath, function (err, report) {
+	getReport(releasePath, (err, report) => {
 		if (err) {
 			return next(err);
 		}
 
 		zip.addLocalFolder(releasePath);
-		zip.toBuffer(function (buffer) {
+		zip.toBuffer((buffer) => {
 			res.attachment(options.reponame + '.' + getDatePart(report) + '.' + options.rev + '.zip', '.');
 			res.send(buffer);
-		}, function (error) {
-			next(error);
-		}, function () { }, function () { });
+		}, (error) => next(error), () => { }, () => { });
 	});
 };

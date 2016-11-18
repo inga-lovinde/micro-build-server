@@ -3,8 +3,8 @@
 const url = require('url');
 const statusProcessor = require('../lib/status-processor');
 
-const parseOptionsFromReferer = function (path, callback) {
-	const pathParts = path.split("/").filter(function (value) { return value; });
+const parseOptionsFromReferer = (path, callback) => {
+	const pathParts = path.split("/").filter((value) => value);
 	const result = {};
 
 	if (pathParts.length < 2) {
@@ -22,16 +22,14 @@ const parseOptionsFromReferer = function (path, callback) {
 	return callback(null, result);
 };
 
-const createShowReport = function (res) {
-	return function (err, options) {
-		options = options || {};
-		options.err = err;
-		res.render('status', options);
-	};
+const createShowReport = (res) => (err, options) => {
+	options = options || {};
+	options.err = err;
+	res.render('status', options);
 };
 
-exports.image = function(req, res) {
-	const handle = function (err, options) {
+exports.image = (req, res) => {
+	const handle = (err, options) => {
 		if (err === "ReportFileNotFound") {
 			options.status = "Building";
 		} else if (err) {
@@ -55,18 +53,16 @@ exports.image = function(req, res) {
 		res.render('status-image', options);
 	};
 
-	parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", function (err, options) {
+	parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", (err, options) => {
 		if (err) {
 			return handle(err, options);
 		}
 
-		statusProcessor.getReport(req.app, options, function (err, options) {
-			handle(err, options);
-		});
+		statusProcessor.getReport(req.app, options, (err, options) => handle(err, options));
 	});
 };
 
-exports.page = function(req, res) {
+exports.page = (req, res) => {
 	const options = {
 		owner: req.params.owner,
 		reponame: req.params.reponame,
@@ -78,12 +74,10 @@ exports.page = function(req, res) {
 	statusProcessor.getReport(req.app, options, createShowReport(res));
 };
 
-exports.pageFromGithub = function (req, res) {
-	parseOptionsFromReferer(req.params[0], function (err, options) {
-		if (err) {
-			return createShowReport(err, options);
-		}
+exports.pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
+	if (err) {
+		return createShowReport(err, options);
+	}
 
-		return statusProcessor.getReport(req.app, options, createShowReport(res));
-	});
-};
+	return statusProcessor.getReport(req.app, options, createShowReport(res));
+});
