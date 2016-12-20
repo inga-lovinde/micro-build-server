@@ -5,6 +5,9 @@ const sequential = require('./sequential');
 module.exports = (params, processor) => sequential({
 	tasks: [
 		{
+			type: "uglifyjsall"
+		},
+		{
 			type: "zip",
 			params: {
 				directory: "",
