@@ -13,14 +13,14 @@ const codePostfix = "";
 
 const notifyStatus = (options, callback) => {
 	const status = {
-		user: options.owner,
+		owner: options.owner,
 		repo: options.reponame,
 		sha: options.hash,
 		state: options.state,
 		target_url: settings.siteRoot + "status/" + options.owner + "/" + options.reponame + "/" + options.hash,
 		description: ((options.description || "") + "").substr(0, 140)
 	};
-	settings.createGithub(options.owner).statuses.create(status, (err, result) => {
+	settings.createGithub(options.owner).repos.createStatus(status, (err, result) => {
 		if (err) {
 			console.log("Error while creating status: " + err);
 			console.log(status);
