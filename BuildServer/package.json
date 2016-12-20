@@ -8,16 +8,21 @@
   "dependencies": {
     "adm-zip": "0.4.7",
     "async": "~2.1.4",
+    "body-parser": "^1.15.2",
     "express": "4.14.0",
     "fs-extra": "^1.0.0",
     "github": "~7.1.0",
     "glob": "~7.1.1",
     "graceful-fs": "^4.1.11",
     "jade": "*",
+    "method-override": "^2.3.7",
+    "morgan": "^1.7.0",
     "mustache": "~2.3.0",
     "nodegit": "~0.16.0",
     "nodemailer": "~2.7.0",
     "recursive-tree-copy": "0.0.1",
+    "serve-favicon": "^2.3.2",
+    "serve-static": "^1.11.1",
     "underscore": "^1.8.3"
   }
 }
