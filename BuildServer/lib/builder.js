@@ -43,6 +43,14 @@ const build = (options, callback) => {
 	const release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev;
 	const statusQueue = async.queue((task, callback) => task(callback), 1);
 	const actualGitLoader = skipGitLoader ? (options, callback) => process.nextTick(callback) : gitLoader;
+	const date = new Date();
+	const versionInfo = date.getFullYear() + "." +
+		(date.getMonth() + 1) + "." +
+		date.getDate() + "." +
+		(date.getHours() * 100 + date.getMinutes()) + "; " +
+		"built from " + rev + "; " +
+		"repository: " + owner + "/" + reponame + "; " +
+		"branch: " + branch;
 
 	statusQueue.push((callback) => notifyStatus({
 		state: "pending",
@@ -135,7 +143,8 @@ const build = (options, callback) => {
 					rev: rev,
 					tmp: tmp,
 					exported: exported,
-					release: release
+					release: release,
+					versionInfo: versionInfo
 				}, (err, result) => {
 					if (err) {
 						return done(err, result);

@@ -11,6 +11,13 @@ module.exports = (params, processor) => sequential({
 			type: "cssnanoall"
 		},
 		{
+			type: "writefile",
+			params: {
+				filename: "version.txt",
+				data: processor.context.versionInfo
+			}
+		},
+		{
 			type: "zip",
 			params: {
 				directory: "",

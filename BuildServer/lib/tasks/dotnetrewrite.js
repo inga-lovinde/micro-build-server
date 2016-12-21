@@ -15,15 +15,6 @@ module.exports = (params, processor) => ({
 
 		processor.context.dotnetrewriterDone = true;
 
-		const date = new Date();
-		const version = date.getFullYear() + "." +
-				(date.getMonth() + 1) + "." +
-				date.getDate() + "." +
-				(date.getHours() * 100 + date.getMinutes()) + "; " +
-				"built from " + processor.context.rev + "; " +
-				"repository: " + processor.context.owner + "/" + processor.context.reponame + "; " +
-				"branch: " + processor.context.branch;
-
 		const processAssemblyInfo = (appendInformationalVersion) => (content, cb) => {
 			if (!params.skipCodeSigning && !settings.skipCodeSigning) {
 				content = content.replace(
@@ -33,7 +24,7 @@ module.exports = (params, processor) => ({
 			}
 
 			if (appendInformationalVersion) {
-				content = addAssemblyAttribute(content, "[assembly: System.Reflection.AssemblyInformationalVersion(\"" + version + "\")]");
+				content = addAssemblyAttribute(content, "[assembly: System.Reflection.AssemblyInformationalVersion(\"" + processor.context.versionInfo + "\")]");
 			}
 
 			return cb(null, content);
