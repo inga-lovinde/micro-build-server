@@ -186,7 +186,7 @@ const getStatusMessageFromRelease = (app, options, callback) => {
 exports.commentOnPullRequest = (options, callback) => {
 	options.github = settings.createGithub(options.baseRepoOptions.owner);
 	return checkPullRequest(options, (err, successMessage) => getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
-		const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.replace(/```/g, "` ` `") + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
+		const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.substring(0, 64000).replace(/```/g, "` ` `") + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
 		const statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
 		return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
 	}));
