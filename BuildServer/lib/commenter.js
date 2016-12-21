@@ -139,7 +139,7 @@ const getStatusMessageFromRelease = (app, options, callback) => {
 
 	fs.exists(reportFile, (exists) => {
 		if (!exists) {
-			return fs.exists(releaseDir, (dirExists) => {
+			return setTimeout(() => fs.exists(releaseDir, (dirExists) => {
 				if (!dirExists) {
 					return callback("Release directory not found. Probably repository hooks are not configured");
 				}
@@ -149,7 +149,7 @@ const getStatusMessageFromRelease = (app, options, callback) => {
 
 				//maybe it is building right now
 				return setTimeout(() => getStatusMessageFromRelease(app, options, callback), 10000);
-			});
+			}), 2000);
 		}
 
 		return setTimeout(() => fs.readFile(reportFile, (err, dataBuffer) => {
