@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const Zip = require('adm-zip');
+const Archiver = require('archiver');
 
 const getReport = (releasePath, callback) => {
 	const reportFile = releasePath + "report.json";
@@ -51,7 +51,6 @@ module.exports = (req, res, next) => {
 		rev: req.params.rev
 	};
 
-	const zip = new Zip();
 	const releasePath = path.normalize(req.app.get('releasepath') + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev + "/");
 
 	getReport(releasePath, (err, report) => {
@@ -59,10 +58,11 @@ module.exports = (req, res, next) => {
 			return next(err);
 		}
 
-		zip.addLocalFolder(releasePath);
-		zip.toBuffer((buffer) => {
-			res.attachment(options.reponame + '.' + getDatePart(report) + '.' + options.rev + '.zip', '.');
-			res.send(buffer);
-		}, (error) => next(error), () => { }, () => { });
+		const archive = new Archiver("zip");
+		archive.on("error", next);
+		res.attachment(options.reponame + '.' + getDatePart(report) + '.' + options.rev + '.zip', '.');
+		archive.pipe(res);
+		archive.directory(releasePath, false);
+		archive.finalize();
 	});
 };
