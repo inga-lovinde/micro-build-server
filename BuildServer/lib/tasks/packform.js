@@ -5,6 +5,12 @@ const sequential = require('./sequential');
 module.exports = (params, processor) => sequential({
 	tasks: [
 		{
+			type: "eslintbrowserall",
+			params: {
+				excludeFiles: params.eslintExcludeFiles
+			}
+		},
+		{
 			type: "uglifyjsall"
 		},
 		{

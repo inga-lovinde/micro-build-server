@@ -1,0 +1,12 @@
+{
+	"env": {
+		"browser": true
+	},
+	"useEslintrc": false,
+	"extends": "eslint:all",
+	"rules": {
+		"quotes": ["warn", "double"],
+		"no-var": "off",
+		"require-jsdoc": "off"
+	}
+}
