@@ -8,6 +8,9 @@ module.exports = (params, processor) => sequential({
 			type: "uglifyjsall"
 		},
 		{
+			type: "cssnanoall"
+		},
+		{
 			type: "zip",
 			params: {
 				directory: "",
