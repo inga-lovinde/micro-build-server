@@ -9,7 +9,7 @@ const versionNamePattern = /^v\d+(\.\d+)*$/;
 const masterNamePattern = /^master$/;
 
 const writeComment = (options, message, callback) => options.github.issues.createComment({
-	user: options.baseRepoOptions.owner,
+	owner: options.baseRepoOptions.owner,
 	repo: options.baseRepoOptions.reponame,
 	number: options.number,
 	body: message
@@ -21,15 +21,15 @@ const closePullRequest = (options, message, callback) => writeComment(options, m
 	}
 
 	return options.github.issues.edit({
-		user: options.baseRepoOptions.owner,
+		owner: options.baseRepoOptions.owner,
 		repo: options.baseRepoOptions.reponame,
 		number: options.number,
 		state: "closed"
 	}, callback);
 });
 
-const checkHasIssue = (options, issueNumber, callback) => options.github.issues.getRepoIssue({
-	user: options.baseRepoOptions.owner,
+const checkHasIssue = (options, issueNumber, callback) => options.github.issues.get({
+	owner: options.baseRepoOptions.owner,
 	repo: options.baseRepoOptions.reponame,
 	number: issueNumber
 }, (err, result) => {
@@ -48,7 +48,7 @@ const checkHasIssue = (options, issueNumber, callback) => options.github.issues.
 	return callback(undefined, true, result.title);
 });
 
-const checkHasReleases = (options, callback) => options.github.releases.listReleases({
+const checkHasReleases = (options, callback) => options.github.repos.getReleases({
 	owner: options.baseRepoOptions.owner,
 	repo: options.baseRepoOptions.reponame,
 	per_page: 1
