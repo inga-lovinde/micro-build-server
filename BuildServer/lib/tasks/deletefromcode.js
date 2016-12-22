@@ -2,7 +2,7 @@
 
 const fse = require('fs-extra');
 
-module.exports = function (params, processor) {
+module.exports = (params, processor) => {
     return {
         process: () => {
             var sourceFilePath = processor.context.exported + "/" + params.filename;
