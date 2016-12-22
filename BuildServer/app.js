@@ -34,17 +34,17 @@ app.use(serveStatic(path.join(__dirname, 'public')));
 
 // development only
 if ('development' === app.get('env')) {
-  app.use(errorhandler());
+    app.use(errorhandler());
 }
 
 app.route('/').get(routes.index);
 app.route('/github/postreceive')
-	.post(routes.postreceive)
-	.get((req, res)  => res.send("Only automated POST requests are allowed for postreceive route"));
+    .post(routes.postreceive)
+    .get((req, res)  => res.send("Only automated POST requests are allowed for postreceive route"));
 
 app.route('/manual')
-	.get(routes.manual.get)
-	.post(routes.manual.post);
+    .get(routes.manual.get)
+    .post(routes.manual.post);
 
 app.route('/status/:owner/:reponame/:branch/:rev?').get(routes.status.page);
 app.route('/pos-github.payonline.ru/*').get(routes.status.pageFromGithub);

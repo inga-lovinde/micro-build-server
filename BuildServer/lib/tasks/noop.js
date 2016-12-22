@@ -1,5 +1,5 @@
 "use strict";
 
 module.exports = (params, processor) => ({
-	process: () => processor.done()
+    process: () => processor.done()
 });
