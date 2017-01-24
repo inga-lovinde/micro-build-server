@@ -28,5 +28,29 @@
     "serve-static": "^1.11.1",
     "uglify-js": "^2.7.5",
     "underscore": "^1.8.3"
+  },
+  "eslintConfig": {
+    "env": {
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 6
+    },
+    "extends": "eslint:all",
+    "rules": {
+      "quotes": ["warn", "double"],
+      "require-jsdoc": "off",
+      "func-names": ["warn", "never"],
+      "max-len": ["warn", { "code": 140 }],
+      "operator-linebreak": ["warn", "before"],
+      "padded-blocks": ["warn", "never"],
+      "dot-notation": ["warn", { "allowPattern": "^[a-z]+(_[a-z]+)+$" }],
+      "linebreak-style": ["warn", "windows"],
+      "no-console": "off",
+      "dot-location": ["warn", "property"],
+      "object-curly-spacing": ["warn", "always"],
+      "one-var": ["warn", { "initialized": "never" }],
+      "no-extra-parens": ["warn", "all", { "nestedBinaryExpressions": false }]
+    }
   }
 }
