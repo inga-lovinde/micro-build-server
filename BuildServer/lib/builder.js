@@ -1,31 +1,34 @@
 "use strict";
 
-const fs = require('fs');
-const fse = require('fs-extra');
-const async = require('async');
-const gitLoader = require('./git/loader');
-const processor = require('./task-processor');
-const mailSender = require('./mail-sender');
-const settings = require('../settings');
+const path = require("path");
+const fs = require("fs");
+const fse = require("fs-extra");
+const async = require("async");
+const gitLoader = require("./git/loader");
+const processor = require("./task-processor");
+const mailSender = require("./mail-sender");
+const settings = require("../settings");
 
-//const codePostfix = "/code";
 const codePostfix = "";
 
 const notifyStatus = (options, callback) => {
     const status = {
-        owner: options.owner,
-        repo: options.reponame,
-        sha: options.hash,
-        state: options.state,
-        target_url: settings.siteRoot + "status/" + options.owner + "/" + options.reponame + "/" + options.hash,
-        description: ((options.description || "") + "").substr(0, 140)
+        "description": String(options.description || "").substr(0, 140),
+        "owner": options.owner,
+        "repo": options.reponame,
+        "sha": options.hash,
+        "state": options.state,
+        "target_url": `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`
     };
-    settings.createGithub(options.owner).repos.createStatus(status, (err, result) => {
+
+    settings.createGithub(options.owner).repos.createStatus(status, (err) => {
         if (err) {
-            console.log("Error while creating status: " + err);
+            console.log(`Error while creating status: ${err}`);
             console.log(status);
+
             return callback(err);
         }
+
         return callback();
     });
 };
@@ -37,59 +40,76 @@ const build = (options, callback) => {
     const rev = options.rev;
     const branch = options.branch;
     const skipGitLoader = options.skipGitLoader;
-    const local = options.app.get('gitpath') + "/r/";
-    const tmp = options.app.get('tmpcodepath') + "/" + rev.substr(0, 15);
+    const local = path.join(options.app.get("gitpath"), "r");
+    const tmp = path.join(options.app.get("tmpcodepath"), rev.substr(0, 15));
     const exported = tmp + codePostfix;
-    const release = options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/" + rev;
+    const release = path.join(options.app.get("releasepath"), owner, reponame, branch, rev);
     const statusQueue = async.queue((task, callback) => task(callback), 1);
-    const actualGitLoader = skipGitLoader ? (options, callback) => process.nextTick(callback) : gitLoader;
+    const actualGitLoader = skipGitLoader
+        ? (options, callback) => process.nextTick(callback)
+        : gitLoader;
     const date = new Date();
-    const versionInfo = date.getFullYear() + "." +
-        (date.getMonth() + 1) + "." +
-        date.getDate() + "." +
-        (date.getHours() * 100 + date.getMinutes()) + "; " +
-        "built from " + rev + "; " +
-        "repository: " + owner + "/" + reponame + "; " +
-        "branch: " + branch;
+    const versionMajor = date.getFullYear();
+    const versionMinor = date.getMonth() + 1;
+    const versionBuild = date.getDate();
+    const versionRev = (date.getHours() * 100) + date.getMinutes();
+    const version = `${versionMajor}.${versionMinor}.${versionBuild}.${versionRev}`;
+    const versionInfo = `${version}; built from ${rev}; repository: ${owner}/${reponame}; branch: ${branch}`;
 
     statusQueue.push((callback) => notifyStatus({
-        state: "pending",
-        description: "Preparing to build...",
-        owner: owner,
-        reponame: reponame,
-        hash: rev
+        "description": "Preparing to build...",
+        "hash": rev,
+        owner,
+        reponame,
+        "state": "pending"
     }, callback));
 
     fse.mkdirsSync(release);
 
-    fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/" + branch + "/latest.id", rev);
-    fse.mkdirsSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs");
-    fs.writeFileSync(options.app.get('releasepath') + "/" + owner + "/" + reponame + "/$revs/" + rev + ".branch", branch);
+    fs.writeFileSync(path.join(options.app.get("releasepath"), owner, reponame, branch, "latest.id"), rev);
+    fse.mkdirsSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs"));
+    fs.writeFileSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs", `${rev}.branch`), branch);
 
     const done = (err, result) => {
-        const errorMessage = result && result.errors ? ((result.errors.$allMessages || [])[0] || {}).message : err;
-        const warnMessage = result && result.warns ? ((result.warns.$allMessages || [])[0] || {}).message : err;
-        const infoMessage = result && result.infos ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message : err;
+        const errorMessage = result && result.errors
+            ? ((result.errors.$allMessages || [])[0] || {}).message
+            : err;
+        const warnMessage = result && result.warns
+            ? ((result.warns.$allMessages || [])[0] || {}).message
+            : err;
+        const infoMessage = result && result.infos
+            ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message
+            : err;
 
-        fs.writeFile(release + "/report.json", JSON.stringify({date: Date.now(), err: err, result: result}), (writeErr) => {
+        fs.writeFile(path.join(release, "report.json"), JSON.stringify({
+            "date": Date.now(),
+            err,
+            result
+        }), (writeErr) => {
             statusQueue.push((callback) => async.parallel([
                 (callback) => notifyStatus({
-                    state: err ? "error" : "success",
-                    description: errorMessage || warnMessage || infoMessage || "Success",
-                    owner: owner,
-                    reponame: reponame,
-                    hash: rev
+                    "description": errorMessage || warnMessage || infoMessage || "Success",
+                    "hash": rev,
+                    owner,
+                    reponame,
+                    "state": err
+                        ? "error"
+                        : "success"
                 }, callback),
                 (callback) => mailSender.send({
-                    from: settings.smtp.sender,
-                    to: settings.smtp.receiver,
-                    subject: (err ? "Build failed for " : "Successfully built ") + owner + "/" + reponame + "/" + branch,
-                    headers: {
-                        'X-Laziness-level': 1000
-                    },
-                    text: ("Build status URL: " + settings.siteRoot + "status/" + owner + "/" + reponame + "/" + rev + "\r\n\r\n") +
-                        (err ? ("Error message: " + err + "\r\n\r\n") : "") +
-                        ((!result || !result.messages || !result.messages.$allMessages) ? JSON.stringify(result, null, 4) : result.messages.$allMessages.map(msg => msg.prefix + "\t" + msg.message).join("\r\n"))
+                    "from": settings.smtp.sender,
+                    "headers": { "X-Laziness-level": 1000 },
+                    "subject": `${err ? "Build failed for" : "Successfully built"} ${owner}/${reponame}/${branch}`,
+                    "text": `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n`
+                        + (
+                            err
+                                ? `Error message: ${err}\r\n\r\n`
+                                : "")
+                        + (
+                            (!result || !result.messages || !result.messages.$allMessages)
+                                ? JSON.stringify(result, null, 4)
+                                : result.messages.$allMessages.map((msg) => `${msg.prefix}\t${msg.message}`).join("\r\n")),
+                    "to": settings.smtp.receiver
                 }, callback),
                 (callback) => {
                     if (err) {
@@ -103,48 +123,55 @@ const build = (options, callback) => {
             if (writeErr) {
                 return callback(writeErr);
             }
+
             return callback(err, result);
         });
     };
 
     actualGitLoader({
-        remote: url + ".git",
-        local: local,
-        branch: branch,
-        hash: rev,
-        exported: tmp + codePostfix
+        branch,
+        exported,
+        "hash": rev,
+        local,
+        "remote": `${url}.git`
     }, (err) => {
         if (err) {
             console.log(err);
-            return done("Git fetch error: " + err);
+
+            return done(`Git fetch error: ${err}`);
         }
+
         console.log("Done loading from git");
-        fs.exists(exported + "/mbs.json", (exists) => {
+
+        return fs.exists(path.join(exported, "mbs.json"), (exists) => {
             if (!exists) {
                 return done(null, "MBSNotFound");
             }
-            fs.readFile(exported + "/mbs.json", (err, data) => {
+
+            return fs.readFile(path.join(exported, "mbs.json"), (err, data) => {
                 if (err) {
                     return done(err, "MBSUnableToRead");
                 }
 
-                let task;
+                let task = null;
+
                 try {
                     task = JSON.parse(data);
-                } catch(ex) {
-                    console.log("Malformed data: " + data);
+                } catch (ex) {
+                    console.log(`Malformed data: ${data}`);
+
                     return done(ex, "MBSMalformed");
                 }
 
-                processor.processTask(task, {
-                    owner: owner,
-                    reponame: reponame,
-                    branch: branch,
-                    rev: rev,
-                    tmp: tmp,
-                    exported: exported,
-                    release: release,
-                    versionInfo: versionInfo
+                return processor.processTask(task, {
+                    branch,
+                    exported,
+                    owner,
+                    release,
+                    reponame,
+                    rev,
+                    tmp,
+                    versionInfo
                 }, (err, result) => {
                     if (err) {
                         return done(err, result);

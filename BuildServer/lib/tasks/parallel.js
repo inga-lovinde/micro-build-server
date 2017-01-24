@@ -2,6 +2,6 @@
 
 const async = require("async");
 
-module.exports = (params, processor) => ({
-    process: () => async.parallel(params.tasks.map((task) => (callback) => processor.processTask(task, (err) => callback())), processor.done.bind(processor))
-});
+const mapper = (processor) => (task) => (callback) => processor.processTask(task, callback);
+
+module.exports = (params, processor) => ({ "process": () => async.parallel(params.tasks.map(mapper(processor)), () => processor.done()) });

@@ -1,31 +1,31 @@
 "use strict";
 
-const url = require('url');
-const statusProcessor = require('../lib/status-processor');
+const url = require("url");
+const statusProcessor = require("../lib/status-processor");
 
 const parseOptionsFromReferer = (path, callback) => {
     const pathParts = path.split("/").filter((value) => value);
     const result = {};
+    const [, secondPart, thirdPart] = pathParts;
 
-    if (pathParts.length < 2) {
+    if (!secondPart) {
         return callback("BadRequest", result);
     }
 
-    if (pathParts[2] === "tree") {
-        pathParts.splice(2, 1);
+    if (thirdPart === "tree") {
+        [result.owner, result.reponame, , result.branchName, result.rev] = pathParts;
+    } else {
+        [result.owner, result.reponame, result.branchName, result.rev] = pathParts;
     }
 
-    result.owner = pathParts[0];
-    result.reponame = pathParts[1];
-    result.branchName = pathParts[2];
-    result.rev = pathParts[3];
     return callback(null, result);
 };
 
-const createShowReport = (res) => (err, options) => {
-    options = options || {};
+const createShowReport = (res) => (err, inputOptions) => {
+    const options = inputOptions || {};
+
     options.err = err;
-    res.render('status', options);
+    res.render("status", options);
 };
 
 exports.image = (req, res) => {
@@ -40,17 +40,19 @@ exports.image = (req, res) => {
         } else if (options.report.err) {
             options.status = "Error";
             options.message = options.report.err;
-        } else if ((options.report.result.warns.$allMessages || []).length > 0) {
+        } else if ((options.report.result.warns.$allMessages || []).length) {
+            const [firstWarn] = options.report.result.warns.$allMessages;
+
             options.status = "Warning";
-            options.message = options.report.result.warns.$allMessages[0].message;
+            options.message = firstWarn.message;
         } else {
             options.status = "OK";
-            if ((options.report.result.infos.$allMessages || []).length > 0) {
-                options.message = options.report.result.infos.$allMessages[options.report.result.infos.$allMessages.length-1].message;
+            if ((options.report.result.infos.$allMessages || []).length) {
+                options.message = options.report.result.infos.$allMessages[options.report.result.infos.$allMessages.length - 1].message;
             }
         }
-        res.setHeader('Content-Type', 'image/svg+xml');
-        res.render('status-image', options);
+        res.setHeader("Content-Type", "image/svg+xml");
+        res.render("status-image", options);
     };
 
     parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", (err, options) => {
@@ -58,17 +60,17 @@ exports.image = (req, res) => {
             return handle(err, options);
         }
 
-        statusProcessor.getReport(req.app, options, (err, options) => handle(err, options));
+        return statusProcessor.getReport(req.app, options, handle);
     });
 };
 
 exports.page = (req, res) => {
     const options = {
-        owner: req.params.owner,
-        reponame: req.params.reponame,
-        branchName: req.params.branch,
-        branch: "/refs/heads/" + req.params.branch,
-        rev: req.params.rev
+        "branch": `/refs/heads/${req.params.branch}`,
+        "branchName": req.params.branch,
+        "owner": req.params.owner,
+        "reponame": req.params.reponame,
+        "rev": req.params.rev
     };
 
     statusProcessor.getReport(req.app, options, createShowReport(res));

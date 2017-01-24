@@ -1,14 +1,15 @@
 "use strict";
 
-const glob = require('glob');
+const glob = require("glob");
 
 module.exports = (params, processor) => ({
-    process: () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
-        dot: true,
-        cwd: processor.context.exported
+    "process": () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
+        "cwd": processor.context.exported,
+        "dot": true
     }, (err, files) => {
         if (err) {
             processor.onError(err);
+
             return processor.done();
         }
 
@@ -17,16 +18,14 @@ module.exports = (params, processor) => ({
         }
 
         return processor.processTask({
-            type: "parallel",
-            params: {
-                tasks: files.map((file) => ({
-                    name: file,
-                    type: "deletefromcode",
-                    params: {
-                        filename: file
-                    }
+            "params": {
+                "tasks": files.map((file) => ({
+                    "name": file,
+                    "params": { "filename": file },
+                    "type": "deletefromcode"
                 }))
-            }
+            },
+            "type": "parallel"
         }, processor.done.bind(processor));
     })
 });

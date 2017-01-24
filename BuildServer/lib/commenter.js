@@ -1,5 +1,6 @@
 "use strict";
 
+const path = require("path");
 const fs = require("fs");
 const _ = require("underscore");
 const settings = require("../settings");
@@ -9,10 +10,10 @@ const versionNamePattern = /^v\d+(\.\d+)*$/;
 const masterNamePattern = /^master$/;
 
 const writeComment = (options, message, callback) => options.github.issues.createComment({
-    owner: options.baseRepoOptions.owner,
-    repo: options.baseRepoOptions.reponame,
-    number: options.number,
-    body: message
+    "body": message,
+    "number": options.number,
+    "owner": options.baseRepoOptions.owner,
+    "repo": options.baseRepoOptions.reponame
 }, callback);
 
 const closePullRequest = (options, message, callback) => writeComment(options, message, (err) => {
@@ -21,43 +22,43 @@ const closePullRequest = (options, message, callback) => writeComment(options, m
     }
 
     return options.github.issues.edit({
-        owner: options.baseRepoOptions.owner,
-        repo: options.baseRepoOptions.reponame,
-        number: options.number,
-        state: "closed"
+        "number": options.number,
+        "owner": options.baseRepoOptions.owner,
+        "repo": options.baseRepoOptions.reponame,
+        "state": "closed"
     }, callback);
 });
 
 const checkHasIssue = (options, issueNumber, callback) => options.github.issues.get({
-    owner: options.baseRepoOptions.owner,
-    repo: options.baseRepoOptions.reponame,
-    number: issueNumber
+    "number": issueNumber,
+    "owner": options.baseRepoOptions.owner,
+    "repo": options.baseRepoOptions.reponame
 }, (err, result) => {
     if (err && err.code !== 404) {
         return callback(err);
     }
 
     if (err || result.number.toString() !== issueNumber) {
-        return callback(undefined, false);
+        return callback(null, false);
     }
 
     if (result.pull_request && result.pull_request.url) {
-        return callback(undefined, false);
+        return callback(null, false);
     }
 
-    return callback(undefined, true, result.title);
+    return callback(null, true, result.title);
 });
 
 const checkHasReleases = (options, callback) => options.github.repos.getReleases({
-    owner: options.baseRepoOptions.owner,
-    repo: options.baseRepoOptions.reponame,
-    per_page: 1
+    "owner": options.baseRepoOptions.owner,
+    "per_page": 1,
+    "repo": options.baseRepoOptions.reponame
 }, (err, result) => {
     if (err) {
         return callback(err);
     }
 
-    return callback(undefined, result && result.length);
+    return callback(null, result && result.length);
 });
 
 const checkPullRequest = (options, callback) => {
@@ -83,7 +84,7 @@ const checkPullRequest = (options, callback) => {
             }
 
             if (options.action === "opened") {
-                return writeComment(options, "Switching master branch to " + head.branchname + " release", callback);
+                return writeComment(options, `Switching master branch to ${head.branchname} release`, callback);
             }
 
             return process.nextTick(callback);
@@ -91,24 +92,26 @@ const checkPullRequest = (options, callback) => {
     }
 
     if (!featureNamePattern.test(head.branchname)) {
-        return closePullRequest(options, "Only merging from feature branch is allowed (pattern: `" + featureNamePattern.toString() + "`)", callback);
+        return closePullRequest(options, `Only merging from feature branch is allowed (pattern: \`${featureNamePattern}\`)`, callback);
     }
 
     if (!versionNamePattern.test(base.branchname) && !masterNamePattern.test(base.branchname)) {
-        return closePullRequest(options, "Only merging to master or version branch is allowed; merging to '" + base.branchname + "'  is not supported", callback);
+        return closePullRequest(options, `Only merging to master or version branch is allowed; merging to '${base.branchname}'  is not supported`, callback);
     }
 
     const issueNumber = featureNamePattern.exec(head.branchname)[1];
+
     return checkHasIssue(options, issueNumber, (err, hasIssue, issueTitle) => {
         if (err) {
-            return writeComment(options, "Unable to check for issue:\r\n\r\n" + err.message, callback);
+            return writeComment(options, `Unable to check for issue:\r\n\r\n${err.message}`, callback);
         }
 
         if (!hasIssue) {
-            return closePullRequest(options, "Unable to find issue #" + issueNumber, callback);
+            return closePullRequest(options, `Unable to find issue #${issueNumber}`, callback);
         }
 
         const shouldHaveReleases = versionNamePattern.test(base.branchname);
+
         return checkHasReleases(options, (err, hasReleases) => {
             if (err) {
                 return writeComment(options, "Unable to check for releases", callback);
@@ -123,7 +126,7 @@ const checkPullRequest = (options, callback) => {
             }
 
             if (options.action === "opened") {
-                return writeComment(options, "Merging feature #" + issueNumber + " (" + issueTitle + ") to " + base.branchname + (shouldHaveReleases ? " release" : ""), callback);
+                return writeComment(options, `Merging feature #${issueNumber} (${issueTitle}) to ${base.branchname}${shouldHaveReleases ? " release" : ""}`, callback);
             }
 
             return process.nextTick(callback);
@@ -132,8 +135,8 @@ const checkPullRequest = (options, callback) => {
 };
 
 const getStatusMessageFromRelease = (app, options, callback) => {
-    const releaseDir = app.get("releasepath") + "/" + options.owner + "/" + options.reponame + "/" + options.branch + "/" + options.rev;
-    const reportFile = releaseDir + "/report.json";
+    const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const reportFile = path.join(releaseDir, "/report.json");
 
     options.attemptsGetReport = (options.attemptsGetReport || 0) + 1;
 
@@ -147,7 +150,7 @@ const getStatusMessageFromRelease = (app, options, callback) => {
                     return callback("Report file not found");
                 }
 
-                //maybe it is building right now
+                // Maybe it is building right now
                 return setTimeout(() => getStatusMessageFromRelease(app, options, callback), 10000);
             }), 2000);
         }
@@ -156,10 +159,13 @@ const getStatusMessageFromRelease = (app, options, callback) => {
             if (err) {
                 return callback(err);
             }
+
             const data = dataBuffer.toString();
+
             if (!data) {
                 return callback("Report file not found");
             }
+
             const report = JSON.parse(data);
 
             if (report.result === "MBSNotFound") {
@@ -167,27 +173,34 @@ const getStatusMessageFromRelease = (app, options, callback) => {
             }
             if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
                 return callback(_.map(
-                    (report.result.errors || {}).$allMessages || [], (message) => "ERR: " + message.message
+                    (report.result.errors || {}).$allMessages || [], (message) => `ERR: ${message.message}`
                 ).concat(_.map(
-                    (report.result.warns || {}).$allMessages || [], (message) => "WARN: " + message.message
-                )).join("\r\n"));
+                    (report.result.warns || {}).$allMessages || [], (message) => `WARN: ${message.message}`
+                ))
+               .join("\r\n"));
             }
             if (!report.result || report.err) {
-                return callback("CRITICAL ERROR: " + report.err);
+                return callback(`CRITICAL ERROR: ${report.err}`);
             }
             if ((report.result.infos.$allMessages || []).length > 0) {
-                return callback(undefined, report.result.infos.$allMessages[report.result.infos.$allMessages.length-1].message);
+                return callback(null, report.result.infos.$allMessages[report.result.infos.$allMessages.length - 1].message);
             }
-            return callback(undefined, "OK");
+
+            return callback(null, "OK");
         }), 1000);
     });
 };
 
 exports.commentOnPullRequest = (options, callback) => {
     options.github = settings.createGithub(options.baseRepoOptions.owner);
+
     return checkPullRequest(options, (err, successMessage) => getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
-        const message = err ? ("Was not built:\r\n\r\n```\r\n" + err.substring(0, 64000).replace(/```/g, "` ` `") + "\r\n```\r\n\r\nDO NOT MERGE!") : ("Build OK\r\n\r\n" + successMessage);
-        const statusUrlMessage = "Build status URL: " + settings.siteRoot + "status/" + options.headRepoOptions.owner + "/" + options.headRepoOptions.reponame + "/" + options.headRepoOptions.rev + "\r\n\r\n";
-        return writeComment(options, message + "\r\n\r\n" + statusUrlMessage, callback);
+        const escapedErr = err.substring(0, 64000).replace(/`/g, "` ");
+        const message = err
+            ? `Was not built:\r\n\r\n\`\`\`\r\n${escapedErr}\r\n\`\`\`\r\n\r\nDO NOT MERGE!`
+            : `Build OK\r\n\r\n${successMessage}`;
+        const statusUrlMessage = `Build status URL: ${settings.siteRoot}status/${options.headRepoOptions.owner}/${options.headRepoOptions.reponame}/${options.headRepoOptions.rev}\r\n\r\n`;
+
+        return writeComment(options, `${message}\r\n\r\n${statusUrlMessage}`, callback);
     }));
 };

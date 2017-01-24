@@ -1,16 +1,17 @@
 "use strict";
 
-const sequential = require('./sequential');
+const path = require("path");
+const sequential = require("./sequential");
 
 module.exports = (params, processor) => sequential({
-    tasks: [
+    "tasks": [
         {
-            type: "dotnetbuilderwrapper",
-            params: {
-                command: "nugetrestore",
-                BaseDirectory: processor.context.exported,
-                SolutionPath: processor.context.exported + "/" + params.solution
-            }
+            "params": {
+                "BaseDirectory": processor.context.exported,
+                "SolutionPath": path.join(processor.context.exported, params.solution),
+                "command": "nugetrestore"
+            },
+            "type": "dotnetbuilderwrapper"
         }
     ]
 }, processor);

@@ -1,42 +1,40 @@
 "use strict";
 
-const sequential = require('./sequential');
+const sequential = require("./sequential");
 
 module.exports = (params, processor) => {
     const tasks = [];
 
     if (!params.skipMbsCheckStyle) {
         tasks.push({
-            type: "dotnetcheckstyle",
-            params: params
+            params,
+            "type": "dotnetcheckstyle"
         });
     }
 
     tasks.push({
-        type: "dotnetrewrite",
-        params: params
+        params,
+        "type": "dotnetrewrite"
     });
 
     if (!params.skipNugetRestore) {
         tasks.push({
-            type: "dotnetnugetrestore",
-            params: params
+            params,
+            "type": "dotnetnugetrestore"
         });
     }
 
     tasks.push({
-        type: "dotnetcompile",
-        params: {
-            solution: params.solution,
-            skipCodeSigning: params.skipCodeSigning,
-            forceCodeAnalysis: params.forceCodeAnalysis,
-            ignoreCodeAnalysis: params.ignoreCodeAnalysis,
-            configuration: params.configuration,
-            target: "Rebuild"
-        }
+        "params": {
+            "configuration": params.configuration,
+            "forceCodeAnalysis": params.forceCodeAnalysis,
+            "ignoreCodeAnalysis": params.ignoreCodeAnalysis,
+            "skipCodeSigning": params.skipCodeSigning,
+            "solution": params.solution,
+            "target": "Rebuild"
+        },
+        "type": "dotnetcompile"
     });
 
-    return sequential({
-        tasks: tasks
-    }, processor);
+    return sequential({ tasks }, processor);
 };

@@ -1,47 +1,48 @@
 "use strict";
 
-const fs = require('fs');
-const Mustache = require('mustache');
+const path = require("path");
+const fs = require("fs");
+const Mustache = require("mustache");
 
-const sequential = require('./sequential');
+const sequential = require("./sequential");
 
-const msbuildTemplate = fs.readFileSync(__dirname + "/dotnetpackwebapp.template.msbuild", {encoding: "utf8"});
-const deployTemplate = fs.readFileSync(__dirname + "/dotnetpackwebapp.template.bat", {encoding: "utf8"});
-const versionTemplate = fs.readFileSync(__dirname + "/dotnetpackwebapp.template.version.aspx", {encoding: "utf8"});
+const msbuildTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.msbuild"), { "encoding": "utf8" });
+const deployTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.bat"), { "encoding": "utf8" });
+const versionTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.version.aspx"), { "encoding": "utf8" });
 
 module.exports = (params, processor) => sequential({
-    tasks: [
+    "tasks": [
         {
-            type: "writefile",
-            params: {
-                filename: "MakePackage.msbuild",
-                data: Mustache.render(msbuildTemplate, params)
-            }
+            "params": {
+                "data": Mustache.render(msbuildTemplate, params),
+                "filename": "MakePackage.msbuild"
+            },
+            "type": "writefile"
         },
         {
-            type: "writefile",
-            params: {
-                filename: "Deploy.bat",
-                data: Mustache.render(deployTemplate, params)
-            }
+            "params": {
+                "data": Mustache.render(deployTemplate, params),
+                "filename": "Deploy.bat"
+            },
+            "type": "writefile"
         },
         {
-            type: "writefile",
-            params: {
-                filename: "version.aspx",
-                data: Mustache.render(versionTemplate, params)
-            }
+            "params": {
+                "data": Mustache.render(versionTemplate, params),
+                "filename": "version.aspx"
+            },
+            "type": "writefile"
         },
         {
-            type: "dotnetcompile",
-            params: {
-                solution: "MakePackage.msbuild",
-                skipCodeSigning: params.skipCodeSigning,
-                isCodeAnalysisUnsupported: params.isCodeAnalysisUnsupported,
-                configuration: params.configuration,
-                target: "Package",
-                overrideOutputDirectory: processor.context.release
-            }
+            "params": {
+                "configuration": params.configuration,
+                "isCodeAnalysisUnsupported": params.isCodeAnalysisUnsupported,
+                "overrideOutputDirectory": processor.context.release,
+                "skipCodeSigning": params.skipCodeSigning,
+                "solution": "MakePackage.msbuild",
+                "target": "Package"
+            },
+            "type": "dotnetcompile"
         }
     ]
 }, processor);

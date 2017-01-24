@@ -1,34 +1,28 @@
 "use strict";
 
-const sequential = require('./sequential');
+const sequential = require("./sequential");
 
 module.exports = (params, processor) => sequential({
-    tasks: [
+    "tasks": [
         {
-            type: "eslintbrowserall",
-            params: {
-                excludeFiles: params.eslintExcludeFiles
-            }
+            "params": { "excludeFiles": params.eslintExcludeFiles },
+            "type": "eslintbrowserall"
+        },
+        { "type": "uglifyjsall" },
+        { "type": "cssnanoall" },
+        {
+            "params": {
+                "data": processor.context.versionInfo,
+                "filename": "version.txt"
+            },
+            "type": "writefile"
         },
         {
-            type: "uglifyjsall"
-        },
-        {
-            type: "cssnanoall"
-        },
-        {
-            type: "writefile",
-            params: {
-                filename: "version.txt",
-                data: processor.context.versionInfo
-            }
-        },
-        {
-            type: "zip",
-            params: {
-                directory: "",
-                archive: processor.context.reponame + ".zip"
-            }
+            "params": {
+                "archive": `${processor.context.reponame}.zip`,
+                "directory": ""
+            },
+            "type": "zip"
         }
     ]
 }, processor);

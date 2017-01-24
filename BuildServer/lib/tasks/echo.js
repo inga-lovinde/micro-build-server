@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = (params, processor) => ({
-    process: () => {
+    "process": () => {
         if (params.error) {
             processor.onError(params.error);
         }

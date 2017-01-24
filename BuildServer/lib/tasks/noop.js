@@ -1,5 +1,3 @@
 "use strict";
 
-module.exports = (params, processor) => ({
-    process: () => processor.done()
-});
+module.exports = (params, processor) => ({ "process": () => processor.done() });

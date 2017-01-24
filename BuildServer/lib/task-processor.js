@@ -1,16 +1,22 @@
 "use strict";
 
-//TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
+// TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const TaskProcessor = function (task, outerProcessor, callback) {
-     if (!this) {
+    if (!this) {
         return new TaskProcessor(task);
     }
 
-    const self = this;
-    let taskWorker = undefined;
+    const that = this;
+    let taskWorker = null;
     const errors = [];
     const process = () => taskWorker.process();
-    const getOuterPrefix = (prefix) => (task.name && prefix) ? (task.name + "/" + prefix) : (task.name || "") + (prefix || "");
+    const getOuterPrefix = (prefix) => {
+        if (task.name && prefix) {
+            return `${task.name}/${prefix}`;
+        }
+
+        return (task.name || "") + (prefix || "");
+    };
     const onError = (message, prefix) => {
         errors.push(message);
         outerProcessor.onError(message, getOuterPrefix(prefix));
@@ -18,21 +24,25 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     const onWarn = (message, prefix) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
     const onInfo = (message, prefix) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
     const processTask = (innerTask, innerCallback) => {
-        const innerProcessor = new TaskProcessor(innerTask, self, innerCallback);
+        const innerProcessor = new TaskProcessor(innerTask, that, innerCallback);
+
         innerProcessor.process();
     };
     const done = () => callback(errors.join("\r\n"));
 
-    self.process = process;
-    self.onError = onError;
-    self.onWarn = onWarn;
-    self.onInfo = onInfo;
-    self.processTask = processTask;
-    self.done = done;
-    self.context = outerProcessor.context;
+    that.process = process;
+    that.onError = onError;
+    that.onWarn = onWarn;
+    that.onInfo = onInfo;
+    that.processTask = processTask;
+    that.done = done;
+    that.context = outerProcessor.context;
 
-    const taskImpl = require('./tasks/' + task.type.match(/[\w\-]/g).join(""));
-    taskWorker = taskImpl(task.params || {}, self);
+    const taskImpl = require(`./tasks/${task.type.match(/[\w\-]/g).join("")}`);
+
+    taskWorker = taskImpl(task.params || {}, that);
+
+    return this;
 };
 
 exports.processTask = (task, context, callback) => {
@@ -46,14 +56,17 @@ exports.processTask = (task, context, callback) => {
             let innerList = list;
 
             parts.forEach((part) => {
-                innerList = (innerList[part] = innerList[part] || {});
+                innerList = innerList[part] = innerList[part] || {};
             });
 
             innerList.$messages = innerList.$messages || [];
             innerList.$messages.push(message);
 
             list.$allMessages = list.$allMessages || [];
-            list.$allMessages.push({ prefix: prefix, message: message });
+            list.$allMessages.push({
+                message,
+                prefix
+            });
         };
 
         return (message, prefix) => {
@@ -62,15 +75,15 @@ exports.processTask = (task, context, callback) => {
         };
     };
     const processor = new TaskProcessor(task, {
-        onError: messageProcessor(errors),
-        onWarn: messageProcessor(warns),
-        onInfo: messageProcessor(infos),
-        context: context
+        context,
+        "onError": messageProcessor(errors),
+        "onInfo": messageProcessor(infos),
+        "onWarn": messageProcessor(warns)
     }, (err) => callback(err, {
-        errors: errors,
-        warns: warns,
-        infos: infos,
-        messages: messages
+        errors,
+        infos,
+        messages,
+        warns
     }));
 
     processor.process();

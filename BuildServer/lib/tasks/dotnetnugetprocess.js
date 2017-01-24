@@ -1,30 +1,30 @@
 "use strict";
 
-const conditional = require('./conditional');
+const conditional = require("./conditional");
 
 module.exports = (params, processor) => conditional({
-    owner: params.masterRepoOwner,
-    branch: "master",
-    task: {
-        name: "nuget-push",
-        type: "dotnetnugetpush",
-        params: {
-            nuspec: params.nuspecName + ".nuspec",
-            name: params.nuspecName,
-            withoutCommitSha: params.withoutCommitSha,
-            version: params.version,
-            major: params.major
-        }
+    "branch": "master",
+    "otherwise": {
+        "name": "nuget-pack",
+        "params": {
+            "major": params.major,
+            "name": params.nuspecName,
+            "nuspec": `${params.nuspecName}.nuspec`,
+            "version": params.version,
+            "withoutCommitSha": params.withoutCommitSha
+        },
+        "type": "dotnetnugetpack"
     },
-    otherwise: {
-        name: "nuget-pack",
-        type: "dotnetnugetpack",
-        params: {
-            nuspec: params.nuspecName + ".nuspec",
-            name: params.nuspecName,
-            withoutCommitSha: params.withoutCommitSha,
-            version: params.version,
-            major: params.major
-        }
+    "owner": params.masterRepoOwner,
+    "task": {
+        "name": "nuget-push",
+        "params": {
+            "major": params.major,
+            "name": params.nuspecName,
+            "nuspec": `${params.nuspecName}.nuspec`,
+            "version": params.version,
+            "withoutCommitSha": params.withoutCommitSha
+        },
+        "type": "dotnetnugetpush"
     }
 }, processor);

@@ -1,22 +1,22 @@
 "use strict";
 
-const fse = require('fs-extra');
+const path = require("path");
+const fse = require("fs-extra");
 
-module.exports = (params, processor) => {
-    return {
-        process: () => {
-            var sourceFilePath = processor.context.exported + "/" + params.filename;
+module.exports = (params, processor) => ({
+    "process": () => {
+        const sourceFilePath = path.join(processor.context.exported, params.filename);
 
-            processor.onInfo("Deleting " + sourceFilePath);
+        processor.onInfo(`Deleting ${sourceFilePath}`);
 
-            fse.remove(sourceFilePath, function(err) {
-                if (err) {
-                    processor.onError("Unable to delete file: " + err);
-                } else {
-                    processor.onInfo("Deleted file");
-                }
-                return processor.done();
-            });
-        }
-    };
-};
+        fse.remove(sourceFilePath, (err) => {
+            if (err) {
+                processor.onError(`Unable to delete file: ${err}`);
+            } else {
+                processor.onInfo("Deleted file");
+            }
+
+            return processor.done();
+        });
+    }
+});

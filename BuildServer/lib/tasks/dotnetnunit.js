@@ -1,9 +1,9 @@
 "use strict";
 
-const dotNetBuilderWrapper = require('./dotnetbuilderwrapper');
+const path = require("path");
+const dotNetBuilderWrapper = require("./dotnetbuilderwrapper");
 
 module.exports = (params, processor) => dotNetBuilderWrapper({
-    command: "nunit",
-    TestLibraryPath: processor.context.exported + "/" + params.assembly//,
-//    OutputPath: processor.context.release + "/" + params.solution + "/"
+    "TestLibraryPath": path.join(processor.context.exported, params.assembly),
+    "command": "nunit"
 }, processor);

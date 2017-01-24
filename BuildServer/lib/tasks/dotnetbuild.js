@@ -1,17 +1,17 @@
 "use strict";
 
-const sequential = require('./sequential');
+const sequential = require("./sequential");
 
 module.exports = (params, processor) => sequential({
-    tasks: [
+    "tasks": [
         {
-            type: "dotnetbuildwithoutcleanup",
-            name: "build",
-            params: params
+            "name": "build",
+            params,
+            "type": "dotnetbuildwithoutcleanup"
         },
         {
-            type: "cleanupafterdotnetbuild",
-            name: "cleanup"
+            "name": "cleanup",
+            "type": "cleanupafterdotnetbuild"
         }
     ]
 }, processor);

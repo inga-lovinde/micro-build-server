@@ -3,20 +3,20 @@
 const sequential = require("./sequential");
 
 module.exports = (params, processor) => sequential({
-    tasks: [
+    "tasks": [
         {
-            type: "dotnetbuildwithoutcleanup",
-            name: "build",
-            params: params
+            "name": "build",
+            params,
+            "type": "dotnetbuildwithoutcleanup"
         },
         {
-            type: "dotnetnunitall",
-            name: "test",
-            params: params
+            "name": "test",
+            params,
+            "type": "dotnetnunitall"
         },
         {
-            type: "cleanupafterdotnetbuild",
-            name: "cleanup"
+            "name": "cleanup",
+            "type": "cleanupafterdotnetbuild"
         }
     ]
 }, processor);

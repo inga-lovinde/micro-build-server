@@ -1,7 +1,7 @@
 "use strict";
 
-const nodemailer = require('nodemailer');
-const settings = require('../settings');
+const nodemailer = require("nodemailer");
+const settings = require("../settings");
 
 exports.send = (message, callback) => {
     return process.nextTick(callback);
