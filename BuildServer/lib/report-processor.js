@@ -2,15 +2,19 @@
 
 const path = require("path");
 const fs = require("fs");
+const zlib = require("zlib");
 const glob = require("glob");
 const streamBuffers = require("stream-buffers");
 const _ = require("underscore");
+
+const reportFilename = "report.json.gz";
 
 const writeReport = (releaseDir, err, result, callback) => {
     const readable = new streamBuffers.ReadableStreamBuffer();
 
     readable
-        .pipe(fs.createWriteStream(path.join(releaseDir, "report.json")))
+        .pipe(zlib.createGzip())
+        .pipe(fs.createWriteStream(path.join(releaseDir, reportFilename)))
         .on("error", callback)
         .on("finish", callback);
 
@@ -24,9 +28,10 @@ const writeReport = (releaseDir, err, result, callback) => {
 
 const readReport = (releaseDir, callback) => {
     const writable = new streamBuffers.WritableStreamBuffer();
-    const readStream = fs.createReadStream(path.join(releaseDir, "report.json"));
+    const readStream = fs.createReadStream(path.join(releaseDir, reportFilename));
 
     readStream
+        .pipe(zlib.createGunzip())
         .pipe(writable)
         .on("error", callback)
         .on("finish", () => {
@@ -53,7 +58,7 @@ exports.loadReport = (app, options, callback) => {
             return callback(err, options);
         }
 
-        const reportFile = path.join(releaseDir, "report.json");
+        const reportFile = path.join(releaseDir, reportFilename);
 
         options.files = files;
 
