@@ -1,5 +1,7 @@
 "use strict";
 
+const tasks = require("./tasks");
+
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const TaskProcessor = function (task, outerProcessor, callback) {
     if (!this) {
@@ -38,7 +40,7 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     that.done = done;
     that.context = outerProcessor.context;
 
-    const taskImpl = require(`./tasks/${task.type.match(/[\w\-]/g).join("")}`);
+    const taskImpl = tasks[task.type];
 
     taskWorker = taskImpl(task.params || {}, that);
 

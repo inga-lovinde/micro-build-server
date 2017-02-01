@@ -11,12 +11,16 @@ const reportFilename = "report.json.gz";
 
 const writeReport = (releaseDir, err, result, callback) => {
     const readable = new streamBuffers.ReadableStreamBuffer();
+    const writeStream = fs.createWriteStream(path.join(releaseDir, reportFilename));
 
     readable
         .pipe(zlib.createGzip())
-        .pipe(fs.createWriteStream(path.join(releaseDir, reportFilename)))
+        .pipe(writeStream)
         .on("error", callback)
-        .on("finish", callback);
+        .on("finish", () => {
+            writeStream.close();
+            callback();
+        });
 
     readable.put(JSON.stringify({
         "date": Date.now(),
@@ -35,6 +39,8 @@ const readReport = (releaseDir, callback) => {
         .pipe(writable)
         .on("error", callback)
         .on("finish", () => {
+            readStream.destroy();
+
             const data = writable.getContentsAsString();
 
             if (!data) {
@@ -44,6 +50,8 @@ const readReport = (releaseDir, callback) => {
             return callback(null, JSON.parse(data));
         });
 };
+
+exports.readReport = readReport;
 
 exports.writeReport = writeReport;
 
