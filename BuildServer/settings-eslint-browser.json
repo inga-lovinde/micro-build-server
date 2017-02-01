@@ -12,6 +12,9 @@
 		"max-len": ["warn", { "code": 140 }],
 		"operator-linebreak": ["warn", "before"],
 		"padded-blocks": ["warn", "never"],
-		"dot-notation": ["warn", { "allowPattern": "^[a-z]+(_[a-z]+)+$" }]
+		"dot-notation": ["warn", { "allowPattern": "^[a-z]+(_[a-z]+)+$" }],
+		"dot-location": ["warn", "property"],
+		"object-curly-spacing": ["warn", "always"],
+		"no-extra-parens": ["warn", "all", { "nestedBinaryExpressions": false }]
 	}
 }
