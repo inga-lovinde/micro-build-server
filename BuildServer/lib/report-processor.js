@@ -3,27 +3,42 @@
 const path = require("path");
 const fs = require("fs");
 const glob = require("glob");
+const streamBuffers = require("stream-buffers");
 const _ = require("underscore");
 
-const writeReport = (releaseDir, err, result, callback) => fs.writeFile(path.join(releaseDir, "report.json"), JSON.stringify({
-    "date": Date.now(),
-    err,
-    result
-}), callback);
+const writeReport = (releaseDir, err, result, callback) => {
+    const readable = new streamBuffers.ReadableStreamBuffer();
 
-const readReport = (releaseDir, callback) => fs.readFile(path.join(releaseDir, "report.json"), (err, dataBuffer) => {
-    if (err) {
-        return callback(err);
-    }
+    readable
+        .pipe(fs.createWriteStream(path.join(releaseDir, "report.json")))
+        .on("error", callback)
+        .on("finish", callback);
 
-    const data = dataBuffer.toString();
+    readable.put(JSON.stringify({
+        "date": Date.now(),
+        err,
+        result
+    }));
+    readable.stop();
+};
 
-    if (!data) {
-        return callback("ReportFileNotFound");
-    }
+const readReport = (releaseDir, callback) => {
+    const writable = new streamBuffers.WritableStreamBuffer();
+    const readStream = fs.createReadStream(path.join(releaseDir, "report.json"));
 
-    return callback(null, JSON.parse(data));
-});
+    readStream
+        .pipe(writable)
+        .on("error", callback)
+        .on("finish", () => {
+            const data = writable.getContentsAsString();
+
+            if (!data) {
+                return callback("ReportFileNotFound");
+            }
+
+            return callback(null, JSON.parse(data));
+        });
+};
 
 exports.writeReport = writeReport;
 
