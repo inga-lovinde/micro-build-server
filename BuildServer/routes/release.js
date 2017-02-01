@@ -4,31 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const Archiver = require("archiver");
 
-const getReport = (releasePath, callback) => {
-    const reportFile = `${releasePath}report.json`;
-
-    fs.exists(reportFile, (exists) => {
-        if (!exists) {
-            return callback(`ReportFileNotFound: ${reportFile}`);
-        }
-
-        return fs.readFile(reportFile, (err, dataBuffer) => {
-            if (err) {
-                return callback(err, reportFile);
-            }
-
-            const data = dataBuffer.toString();
-
-            if (!data) {
-                return callback("ReportFileNotFound", reportFile);
-            }
-
-            const report = JSON.parse(data);
-
-            return callback(null, report);
-        });
-    });
-};
+const reportProcessor = require("../lib/report-processor");
 
 const getDatePart = (report) => {
     if (!report.date) {
@@ -57,11 +33,9 @@ module.exports = (req, res, next) => {
         "rev": req.params.rev
     };
 
-    const releasePathParts = [req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev, ""];
+    const releasePath = path.join(req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
 
-    const releasePath = path.normalize(releasePathParts.join("/"));
-
-    getReport(releasePath, (err, report) => {
+    reportProcessor.readReport(releasePath, (err, report) => {
         if (err) {
             return next(err);
         }
