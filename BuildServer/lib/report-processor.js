@@ -5,11 +5,27 @@ const fs = require("fs");
 const glob = require("glob");
 const _ = require("underscore");
 
-exports.writeReport = (releasePath, err, result, callback) => fs.writeFile(path.join(releasePath, "report.json"), JSON.stringify({
+const writeReport = (releaseDir, err, result, callback) => fs.writeFile(path.join(releaseDir, "report.json"), JSON.stringify({
     "date": Date.now(),
     err,
     result
 }), callback);
+
+const readReport = (releaseDir, callback) => fs.readFile(path.join(releaseDir, "report.json"), (err, dataBuffer) => {
+    if (err) {
+        return callback(err);
+    }
+
+    const data = dataBuffer.toString();
+
+    if (!data) {
+        return callback("ReportFileNotFound");
+    }
+
+    return callback(null, JSON.parse(data));
+});
+
+exports.writeReport = writeReport;
 
 exports.loadReport = (app, options, callback) => {
     const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
@@ -31,17 +47,12 @@ exports.loadReport = (app, options, callback) => {
                 return callback("ReportFileNotFound", options);
             }
 
-            return fs.readFile(reportFile, (readErr, dataBuffer) => {
+            return readReport(releaseDir, (readErr, report) => {
                 if (readErr) {
                     return callback(readErr, options);
                 }
 
-                const data = dataBuffer.toString();
-
-                if (!data) {
-                    return callback("ReportFileNotFound", options);
-                }
-                options.report = JSON.parse(data);
+                options.report = report;
 
                 return callback(null, options);
             });
@@ -70,22 +81,15 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
             }), 2000);
         }
 
-        return setTimeout(() => fs.readFile(reportFile, (err, dataBuffer) => {
-            if (err) {
-                return callback(err);
+        return setTimeout(() => readReport(releaseDir, (readErr, report) => {
+            if (readErr) {
+                return callback(readErr);
             }
-
-            const data = dataBuffer.toString();
-
-            if (!data) {
-                return callback("Report file not found");
-            }
-
-            const report = JSON.parse(data);
 
             if (report.result === "MBSNotFound") {
                 return callback("mbs.json is not found");
             }
+
             if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
                 return callback(_.map(
                     (report.result.errors || {}).$allMessages || [], (message) => `ERR: ${message.message}`
@@ -94,9 +98,11 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
                 ))
                .join("\r\n"));
             }
+
             if (!report.result || report.err) {
                 return callback(`CRITICAL ERROR: ${report.err}`);
             }
+
             if ((report.result.infos.$allMessages || []).length > 0) {
                 return callback(null, report.result.infos.$allMessages[report.result.infos.$allMessages.length - 1].message);
             }
