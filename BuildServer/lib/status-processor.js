@@ -4,6 +4,8 @@ const path = require("path");
 const fs = require("fs");
 const glob = require("glob");
 
+const reportProcessor = require("./report-processor");
+
 const addBranchInfo = (app, options, callback) => {
     const branchFile = path.join(app.get("releasepath"), options.owner, options.reponame, "$revs", `${options.rev}.branch`);
 
@@ -71,48 +73,10 @@ const parseOptions = (app, options, callback) => {
     return addRevInfo(app, result, callback);
 };
 
-const loadReport = (app, options, callback) => {
-    const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
-
-    glob("**", {
-        "cwd": releaseDir,
-        "mark": true
-    }, (err, files) => {
-        if (err) {
-            return callback(err, options);
-        }
-
-        const reportFile = path.join(releaseDir, "report.json");
-
-        options.files = files;
-
-        return fs.exists(reportFile, (exists) => {
-            if (!exists) {
-                return callback("ReportFileNotFound", options);
-            }
-
-            return fs.readFile(reportFile, (err, dataBuffer) => {
-                if (err) {
-                    return callback(err, options);
-                }
-
-                const data = dataBuffer.toString();
-
-                if (!data) {
-                    return callback("ReportFileNotFound", options);
-                }
-                options.report = JSON.parse(data);
-
-                return callback(null, options);
-            });
-        });
-    });
-};
-
 exports.getReport = (app, options, callback) => parseOptions(app, options, (err, result) => {
     if (err) {
         return callback(err, {});
     }
 
-    return loadReport(app, result, callback);
+    return reportProcessor.loadReport(app, result, callback);
 });

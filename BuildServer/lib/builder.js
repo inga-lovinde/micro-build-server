@@ -6,6 +6,7 @@ const fse = require("fs-extra");
 const async = require("async");
 const gitLoader = require("./git/loader");
 const processor = require("./task-processor");
+const reportProcessor = require("./report-processor");
 const mailSender = require("./mail-sender");
 const settings = require("../settings");
 
@@ -81,11 +82,7 @@ const build = (options, callback) => {
             ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message
             : err;
 
-        fs.writeFile(path.join(release, "report.json"), JSON.stringify({
-            "date": Date.now(),
-            err,
-            result
-        }), (writeErr) => {
+        reportProcessor.writeReport(release, err, result, (writeErr) => {
             statusQueue.push((callback) => async.parallel([
                 (callback) => notifyStatus({
                     "description": errorMessage || warnMessage || infoMessage || "Success",
