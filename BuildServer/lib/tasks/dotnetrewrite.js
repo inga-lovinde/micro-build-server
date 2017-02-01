@@ -25,7 +25,7 @@ module.exports = (params, processor) => ({
             }
 
             if (appendInformationalVersion) {
-                content = `${content}\n[assembly: System.Reflection.AssemblyInformationalVersion("${processor.context.versionInfo}")]`;
+                content = `${content}\n[assembly: System.Reflection.AssemblyInformationalVersion("${processor.context.versionInfo}")]\n`;
             }
 
             return cb(null, content);

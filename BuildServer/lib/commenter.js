@@ -195,7 +195,7 @@ exports.commentOnPullRequest = (options, callback) => {
     options.github = settings.createGithub(options.baseRepoOptions.owner);
 
     return checkPullRequest(options, (err, successMessage) => getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
-        const escapedErr = err.substring(0, 64000).replace(/`/g, "` ");
+        const escapedErr = (err || "").substring(0, 64000).replace(/`/g, "` ");
         const message = err
             ? `Was not built:\r\n\r\n\`\`\`\r\n${escapedErr}\r\n\`\`\`\r\n\r\nDO NOT MERGE!`
             : `Build OK\r\n\r\n${successMessage}`;
