@@ -82,7 +82,7 @@ exports.loadReport = (app, options, callback) => {
 
 exports.getStatusMessageFromRelease = (app, options, callback) => {
     const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
-    const reportFile = path.join(releaseDir, "/report.json");
+    const reportFile = path.join(releaseDir, reportFilename);
 
     options.attemptsGetReport = (options.attemptsGetReport || 0) + 1;
 
