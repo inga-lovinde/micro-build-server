@@ -10,32 +10,41 @@ const _ = require("underscore");
 const reportFilename = "report.json.gz";
 
 const writeReport = (releaseDir, err, result, callback) => {
-    const readable = new streamBuffers.ReadableStreamBuffer();
-    const writeStream = fs.createWriteStream(path.join(releaseDir, reportFilename));
-
-    readable
-        .pipe(zlib.createGzip())
-        .pipe(writeStream)
-        .on("error", callback)
-        .on("finish", () => {
-            writeStream.close();
-            callback();
-        });
-
-    readable.put(JSON.stringify({
+    const data = JSON.stringify({
         "date": Date.now(),
         err,
         result
-    }));
+    });
+
+    const readable = new streamBuffers.ReadableStreamBuffer({
+        chunkSize: 1024 * 256,
+        frequency: 1
+    });
+    const writeStream = fs.createWriteStream(path.join(releaseDir, reportFilename));
+
+    readable
+        .on("error", callback)
+        .pipe(zlib.createGzip())
+        .on("error", callback)
+        .pipe(writeStream)
+        .on("error", callback)
+        .on("finish", () => {
+            writeStream.end();
+            callback();
+        });
+
+    readable.put(data);
     readable.stop();
 };
 
 const readReport = (releaseDir, callback) => {
-    const writable = new streamBuffers.WritableStreamBuffer();
     const readStream = fs.createReadStream(path.join(releaseDir, reportFilename));
+    const writable = new streamBuffers.WritableStreamBuffer();
 
     readStream
+        .on("error", callback)
         .pipe(zlib.createGunzip())
+        .on("error", callback)
         .pipe(writable)
         .on("error", callback)
         .on("finish", () => {
@@ -100,12 +109,17 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
                 if (!dirExists) {
                     return callback("Release directory not found. Probably repository hooks are not configured");
                 }
+
                 if (options.attemptsGetReport > 100) {
                     return callback("Report file not found");
                 }
 
                 // Maybe it is building right now
-                return setTimeout(() => exports.getStatusMessageFromRelease(app, options, callback), 10000);
+                if ((options.attemptsGetReport % 10 === 0) && options.onTenthAttempt) {
+                    options.onTenthAttempt();
+                }
+
+                return setTimeout(() => exports.getStatusMessageFromRelease(app, options, callback), 30000);
             }), 2000);
         }
 
@@ -136,6 +150,6 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
             }
 
             return callback(null, "OK");
-        }), 1000);
+        }), 5000);
     });
 };

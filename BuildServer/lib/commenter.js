@@ -134,9 +134,10 @@ const checkPullRequest = (options, callback) => {
 
 exports.commentOnPullRequest = (options, callback) => {
     options.github = settings.createGithub(options.baseRepoOptions.owner);
+    options.headRepoOptions.onTenthAttempt = () => writeComment(options, "Waiting for build to finish...");
 
     return checkPullRequest(options, (err, successMessage) => reportProcessor.getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
-        const escapedErr = (err || "").substring(0, 64000).replace(/`/g, "` ");
+        const escapedErr = String(err || "").substring(0, 64000).replace(/`/g, "` ");
         const message = err
             ? `Was not built:\r\n\r\n\`\`\`\r\n${escapedErr}\r\n\`\`\`\r\n\r\nDO NOT MERGE!`
             : `Build OK\r\n\r\n${successMessage}`;

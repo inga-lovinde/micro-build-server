@@ -17,7 +17,7 @@ const TaskProcessor = function (task, outerProcessor, callback) {
             return `${task.name}/${prefix}`;
         }
 
-        return (task.name || "") + (prefix || "");
+        return String(task.name || "") + String(prefix || "");
     };
     const onError = (message, prefix) => {
         errors.push(message);

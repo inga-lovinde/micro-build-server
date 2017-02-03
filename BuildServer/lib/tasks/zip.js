@@ -6,7 +6,7 @@ const Archiver = require("archiver");
 
 module.exports = (params, processor) => ({
     "process": () => {
-        const sourceDirectoryPath = path.normalize(path.join(processor.context.exported, params.directory || ""));
+        const sourceDirectoryPath = path.normalize(path.join(processor.context.exported, String(params.directory || "")));
         const targetArchivePath = path.normalize(path.join(processor.context.release, params.archive));
 
         processor.onInfo(`Compressing "${params.directory}" to "${params.archive}"`);
