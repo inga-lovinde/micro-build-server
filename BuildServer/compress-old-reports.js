@@ -7,6 +7,8 @@ const glob = require("glob");
 const async = require("async");
 const settings = require("./settings");
 
+const streamsNumber = 100;
+
 glob("**\\report.json", { "cwd": settings.releasepath }, (globErr, files) => {
     if (globErr) {
         return console.log(globErr);
@@ -24,7 +26,7 @@ glob("**\\report.json", { "cwd": settings.releasepath }, (globErr, files) => {
             .on("finish", () => {
                 fs.unlink(originalPath, callback);
             });
-    }), 100, (err) => {
+    }), streamsNumber, (err) => {
         if (err) {
             console.log(err);
         }

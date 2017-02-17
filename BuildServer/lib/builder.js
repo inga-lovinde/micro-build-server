@@ -11,10 +11,30 @@ const mailSender = require("./mail-sender");
 const settings = require("../settings");
 
 const codePostfix = "";
+const mailLazinessLevel = 1000;
+const maxDescriptionLength = 140;
+const maxTmpcodepathLength = 15;
+const twoDigits = 100;
 
-const notifyStatus = (options, callback) => {
+const createFinalState = (isSuccess) => {
+    if (isSuccess) {
+        return "success";
+    }
+
+    return "error";
+};
+
+const createBuildDoneMessage = (isSuccess, name) => {
+    if (isSuccess) {
+        return `Successfully built ${name}`;
+    }
+
+    return `Build failed for ${name}`;
+};
+
+const notifyStatus = (options, notifyStatusCallback) => {
     const status = {
-        "description": String(options.description || "").substr(0, 140),
+        "description": String(options.description || "").substr(0, maxDescriptionLength),
         "owner": options.owner,
         "repo": options.reponame,
         "sha": options.hash,
@@ -22,19 +42,27 @@ const notifyStatus = (options, callback) => {
         "target_url": `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`
     };
 
-    settings.createGithub(options.owner).repos.createStatus(status, (err) => {
-        if (err) {
-            console.log(`Error while creating status: ${err}`);
+    settings.createGithub(options.owner).repos.createStatus(status, (createStatusErr) => {
+        if (createStatusErr) {
+            console.log(`Error while creating status: ${createStatusErr}`);
             console.log(status);
 
-            return callback(err);
+            return notifyStatusCallback(createStatusErr);
         }
 
-        return callback();
+        return notifyStatusCallback();
     });
 };
 
-const build = (options, callback) => {
+const wrapGitLoader = (skipGitLoader) => {
+    if (!skipGitLoader) {
+        return gitLoader;
+    }
+
+    return (gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
+};
+
+const build = (options, buildCallback) => {
     const url = options.url;
     const owner = options.owner;
     const reponame = options.reponame;
@@ -42,28 +70,26 @@ const build = (options, callback) => {
     const branch = options.branch;
     const skipGitLoader = options.skipGitLoader;
     const local = path.join(options.app.get("gitpath"), "r");
-    const tmp = path.join(options.app.get("tmpcodepath"), rev.substr(0, 15));
+    const tmp = path.join(options.app.get("tmpcodepath"), rev.substr(0, maxTmpcodepathLength));
     const exported = tmp + codePostfix;
     const release = path.join(options.app.get("releasepath"), owner, reponame, branch, rev);
-    const statusQueue = async.queue((task, callback) => task(callback), 1);
-    const actualGitLoader = skipGitLoader
-        ? (options, callback) => process.nextTick(callback)
-        : gitLoader;
+    const statusQueue = async.queue((task, queueCallback) => task(queueCallback), 1);
+    const actualGitLoader = wrapGitLoader(skipGitLoader);
     const date = new Date();
     const versionMajor = date.getFullYear();
     const versionMinor = date.getMonth() + 1;
     const versionBuild = date.getDate();
-    const versionRev = (date.getHours() * 100) + date.getMinutes();
+    const versionRev = (date.getHours() * twoDigits) + date.getMinutes();
     const version = `${versionMajor}.${versionMinor}.${versionBuild}.${versionRev}`;
     const versionInfo = `${version}; built from ${rev}; repository: ${owner}/${reponame}; branch: ${branch}`;
 
-    statusQueue.push((callback) => notifyStatus({
+    statusQueue.push((queueCallback) => notifyStatus({
         "description": "Preparing to build...",
         "hash": rev,
         owner,
         reponame,
         "state": "pending"
-    }, callback));
+    }, queueCallback));
 
     fse.mkdirsSync(release);
 
@@ -71,57 +97,60 @@ const build = (options, callback) => {
     fse.mkdirsSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs"));
     fs.writeFileSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs", `${rev}.branch`), branch);
 
-    const done = (err, result) => {
-        const errorMessage = result && result.errors
-            ? ((result.errors.$allMessages || [])[0] || {}).message
-            : err;
-        const warnMessage = result && result.warns
-            ? ((result.warns.$allMessages || [])[0] || {}).message
-            : err;
-        const infoMessage = result && result.infos
-            ? ((result.infos.$allMessages || []).slice(-1)[0] || {}).message
-            : err;
+    const createErrorMessageForMail = (doneErr) => {
+        if (!doneErr) {
+            return "";
+        }
 
-        reportProcessor.writeReport(release, err, result, (writeErr) => {
-            statusQueue.push((callback) => async.parallel([
-                (callback) => notifyStatus({
+        return `Error message: ${doneErr}\r\n\r\n`;
+    };
+
+    const createResultMessageForMail = (result) => {
+        if (!result || !result.messages || !result.messages.$allMessages) {
+            return JSON.stringify(result, null, "    ");
+        }
+
+        return result.messages.$allMessages.map((msg) => `${msg.prefix}\t${msg.message}`).join("\r\n");
+    };
+
+    const done = (doneErr, result) => {
+        const allErrors = ((result || {}).errors || {}).$allMessages || [];
+        const allWarns = ((result || {}).warns || {}).$allMessages || [];
+        const allInfos = ((result || {}).infos || {}).$allMessages || [];
+        const errorMessage = (allErrors[0] || {}).message || doneErr;
+        const warnMessage = (allWarns[0] || {}).message;
+        const infoMessage = (allInfos[allInfos.length - 1] || {}).message;
+
+        reportProcessor.writeReport(release, doneErr, result, (writeErr) => {
+            statusQueue.push((queueCallback) => async.parallel([
+                (parallelCallback) => notifyStatus({
                     "description": errorMessage || warnMessage || infoMessage || "Success",
                     "hash": rev,
                     owner,
                     reponame,
-                    "state": err
-                        ? "error"
-                        : "success"
-                }, callback),
-                (callback) => mailSender.send({
+                    "state": createFinalState(!doneErr)
+                }, parallelCallback),
+                (parallelCallback) => mailSender.send({
                     "from": settings.smtp.sender,
-                    "headers": { "X-Laziness-level": 1000 },
-                    "subject": `${err ? "Build failed for" : "Successfully built"} ${owner}/${reponame}/${branch}`,
-                    "text": `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n`
-                        + (
-                            err
-                                ? `Error message: ${err}\r\n\r\n`
-                                : "")
-                        + (
-                            (!result || !result.messages || !result.messages.$allMessages)
-                                ? JSON.stringify(result, null, 4)
-                                : result.messages.$allMessages.map((msg) => `${msg.prefix}\t${msg.message}`).join("\r\n")),
+                    "headers": { "X-Laziness-level": mailLazinessLevel },
+                    "subject": createBuildDoneMessage(doneErr, `${owner}/${reponame}/${branch}`),
+                    "text": `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n${createErrorMessageForMail(doneErr)}${createResultMessageForMail(result)}`,
                     "to": settings.smtp.receiver
-                }, callback),
-                (callback) => {
-                    if (err) {
-                        return process.nextTick(callback);
+                }, parallelCallback),
+                (parallelCallback) => {
+                    if (doneErr) {
+                        return process.nextTick(parallelCallback);
                     }
 
-                    return fse.remove(tmp, callback);
+                    return fse.remove(tmp, parallelCallback);
                 }
-            ], callback));
+            ], queueCallback));
 
             if (writeErr) {
-                return callback(writeErr);
+                return buildCallback(writeErr);
             }
 
-            return callback(err, result);
+            return buildCallback(doneErr, result);
         });
     };
 
@@ -131,11 +160,11 @@ const build = (options, callback) => {
         "hash": rev,
         local,
         "remote": `${url}.git`
-    }, (err) => {
-        if (err) {
-            console.log(err);
+    }, (gitLoaderErr) => {
+        if (gitLoaderErr) {
+            console.log(gitLoaderErr);
 
-            return done(`Git fetch error: ${err}`);
+            return done(`Git fetch error: ${gitLoaderErr}`);
         }
 
         console.log("Done loading from git");
@@ -145,9 +174,9 @@ const build = (options, callback) => {
                 return done(null, "MBSNotFound");
             }
 
-            return fs.readFile(path.join(exported, "mbs.json"), (err, data) => {
-                if (err) {
-                    return done(err, "MBSUnableToRead");
+            return fs.readFile(path.join(exported, "mbs.json"), (readErr, data) => {
+                if (readErr) {
+                    return done(readErr, "MBSUnableToRead");
                 }
 
                 let task = null;
@@ -169,12 +198,12 @@ const build = (options, callback) => {
                     rev,
                     tmp,
                     versionInfo
-                }, (err, result) => {
-                    if (err) {
-                        return done(err, result);
+                }, (processErr, result) => {
+                    if (processErr) {
+                        return done(processErr, result);
                     }
 
-                    return done(err, result);
+                    return done(processErr, result);
                 });
             });
         });

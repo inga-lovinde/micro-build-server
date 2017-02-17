@@ -2,7 +2,6 @@
 
 const path = require("path");
 const fs = require("fs");
-const glob = require("glob");
 
 const reportProcessor = require("./report-processor");
 

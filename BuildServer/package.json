@@ -87,6 +87,23 @@
           "initialized": "never"
         }
       ],
+      "no-magic-numbers": [
+        "warn",
+        {
+          "ignore": [
+            0,
+            1
+          ]
+        }
+      ],
+      "id-length": [
+        "warn",
+        {
+          "exceptions": [
+            "_"
+          ]
+        }
+      ],
       "no-extra-parens": [
         "warn",
         "all",

@@ -9,7 +9,7 @@ module.exports = (params, processor) => ({
         let error = "";
         const builder = spawn(settings.builderExecutable, [params.command]);
 
-        processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${JSON.stringify(params, null, 4)}`);
+        processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${JSON.stringify(params, null, "    ")}`);
 
         builder.stdout.on("data", (data) => {
             result += data;
@@ -20,7 +20,7 @@ module.exports = (params, processor) => ({
         });
 
         builder.on("exit", (code) => {
-            if (code !== 0) {
+            if (code) {
                 error = `Return code is ${code}\r\n${error}`;
                 processor.onError(error);
 

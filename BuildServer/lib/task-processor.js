@@ -47,34 +47,32 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     return this;
 };
 
+const pushMessage = (list, message, prefix) => {
+    const parts = prefix.split("/");
+    let innerList = list;
+
+    parts.forEach((part) => {
+        innerList = innerList[part] = innerList[part] || {};
+    });
+
+    innerList.$messages = innerList.$messages || [];
+    innerList.$messages.push(message);
+
+    list.$allMessages = list.$allMessages || [];
+    list.$allMessages.push({
+        message,
+        prefix
+    });
+};
+
 exports.processTask = (task, context, callback) => {
     const errors = {};
     const warns = {};
     const infos = {};
     const messages = {};
-    const messageProcessor = (list) => {
-        const f = (list, message, prefix) => {
-            const parts = prefix.split("/");
-            let innerList = list;
-
-            parts.forEach((part) => {
-                innerList = innerList[part] = innerList[part] || {};
-            });
-
-            innerList.$messages = innerList.$messages || [];
-            innerList.$messages.push(message);
-
-            list.$allMessages = list.$allMessages || [];
-            list.$allMessages.push({
-                message,
-                prefix
-            });
-        };
-
-        return (message, prefix) => {
-            f(list, message, prefix);
-            f(messages, message, prefix);
-        };
+    const messageProcessor = (list) => (message, prefix) => {
+        pushMessage(list, message, prefix);
+        pushMessage(messages, message, prefix);
     };
     const processor = new TaskProcessor(task, {
         context,

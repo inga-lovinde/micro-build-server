@@ -1,7 +1,6 @@
 "use strict";
 
 const path = require("path");
-const fs = require("fs");
 const Archiver = require("archiver");
 
 const reportProcessor = require("../lib/report-processor");

@@ -8,6 +8,20 @@ const streamBuffers = require("stream-buffers");
 const _ = require("underscore");
 
 const reportFilename = "report.json.gz";
+const maxAttemptsNumber = 100;
+const attemptsTimeout = 30000;
+const reportReadTimeout = 5000;
+const directoryCheckTimeout = 2000;
+const attemptsDebugFrequency = 10;
+
+const readableStreamBufferOptions = {
+    "chunkSize": 262144,
+    "frequency": 1
+};
+
+const getAllErrors = (report) => ((report.result || {}).errors || {}).$allMessages || [];
+const getAllWarns = (report) => ((report.result || {}).warns || {}).$allMessages || [];
+const getAllInfos = (report) => ((report.result || {}).infos || {}).$allMessages || [];
 
 const writeReport = (releaseDir, err, result, callback) => {
     const data = JSON.stringify({
@@ -16,10 +30,7 @@ const writeReport = (releaseDir, err, result, callback) => {
         result
     });
 
-    const readable = new streamBuffers.ReadableStreamBuffer({
-        chunkSize: 1024 * 256,
-        frequency: 1
-    });
+    const readable = new streamBuffers.ReadableStreamBuffer(readableStreamBufferOptions);
     const writeStream = fs.createWriteStream(path.join(releaseDir, reportFilename));
 
     readable
@@ -101,7 +112,7 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
     const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
     const reportFile = path.join(releaseDir, reportFilename);
 
-    options.attemptsGetReport = (options.attemptsGetReport || 0) + 1;
+    options.attemptsGetReport = (Number(options.attemptsGetReport) || Number()) + 1;
 
     fs.exists(reportFile, (exists) => {
         if (!exists) {
@@ -110,17 +121,17 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
                     return callback("Release directory not found. Probably repository hooks are not configured");
                 }
 
-                if (options.attemptsGetReport > 100) {
+                if (options.attemptsGetReport > maxAttemptsNumber) {
                     return callback("Report file not found");
                 }
 
                 // Maybe it is building right now
-                if ((options.attemptsGetReport % 10 === 0) && options.onTenthAttempt) {
+                if (!(options.attemptsGetReport % attemptsDebugFrequency) && options.onTenthAttempt) {
                     options.onTenthAttempt();
                 }
 
-                return setTimeout(() => exports.getStatusMessageFromRelease(app, options, callback), 30000);
-            }), 2000);
+                return setTimeout(() => exports.getStatusMessageFromRelease(app, options, callback), attemptsTimeout);
+            }), directoryCheckTimeout);
         }
 
         return setTimeout(() => readReport(releaseDir, (readErr, report) => {
@@ -132,11 +143,15 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
                 return callback("mbs.json is not found");
             }
 
-            if (report.result && ((report.result.errors || {}).$allMessages || []).length + ((report.result.warns || {}).$allMessages || []).length > 0) {
+            const errors = getAllErrors(report);
+            const warns = getAllWarns(report);
+            const infos = getAllInfos(report);
+
+            if (errors.length + warns.length) {
                 return callback(_.map(
-                    (report.result.errors || {}).$allMessages || [], (message) => `ERR: ${message.message}`
+                    errors, (message) => `ERR: ${message.message}`
                 ).concat(_.map(
-                    (report.result.warns || {}).$allMessages || [], (message) => `WARN: ${message.message}`
+                    warns, (message) => `WARN: ${message.message}`
                 ))
                .join("\r\n"));
             }
@@ -145,11 +160,7 @@ exports.getStatusMessageFromRelease = (app, options, callback) => {
                 return callback(`CRITICAL ERROR: ${report.err}`);
             }
 
-            if ((report.result.infos.$allMessages || []).length > 0) {
-                return callback(null, report.result.infos.$allMessages[report.result.infos.$allMessages.length - 1].message);
-            }
-
-            return callback(null, "OK");
-        }), 5000);
+            return callback(null, (infos[infos.length - 1] || { "message": "OK" }).message);
+        }), reportReadTimeout);
     });
 };

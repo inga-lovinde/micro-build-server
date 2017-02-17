@@ -28,8 +28,8 @@ module.exports = (options, globalCallback) => {
     removedirs(path);
     mkdirs(path);
 
-    if (url.substr(0, 8) === "https://") {
-        url = `git://${url.substr(8)}`;
+    if (url.startsWith("https://")) {
+        url = `git://${url.substr("https://".length)}`;
     }
 
     console.log(`Cloning ${url} to ${path}`);

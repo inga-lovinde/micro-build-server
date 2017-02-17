@@ -8,22 +8,22 @@ module.exports = (params, processor) => ({
     "process": () => {
         const filePath = path.join(processor.context.exported, params.filename);
 
-        fs.readFile(filePath, (err, css) => {
-            if (err) {
-                processor.onError(`Unable to read stylesheet ${params.filename}: ${err}`);
+        fs.readFile(filePath, (readErr, css) => {
+            if (readErr) {
+                processor.onError(`Unable to read stylesheet ${params.filename}: ${readErr}`);
 
                 return processor.done();
             }
 
             return cssnano.process(css)
-                .catch((err) => {
-                    processor.onError(`Unable to uglify stylesheet: ${err}`);
+                .catch((cssErr) => {
+                    processor.onError(`Unable to uglify stylesheet: ${cssErr}`);
                     processor.done();
                 })
                 .then((result) => {
-                    fs.writeFile(filePath, result.css, (err) => {
-                        if (err) {
-                            processor.onError(`Unable to write uglified stylesheet for ${params.filename}: ${err}`);
+                    fs.writeFile(filePath, result.css, (writeErr) => {
+                        if (writeErr) {
+                            processor.onError(`Unable to write uglified stylesheet for ${params.filename}: ${writeErr}`);
                         } else {
                             processor.onInfo(`Saved uglified stylesheet for ${params.filename}; uglified length: ${result.css.length}`);
                         }

@@ -7,6 +7,9 @@ const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 const versionNamePattern = /^v\d+(\.\d+)*$/;
 const masterNamePattern = /^master$/;
 
+const httpNotFound = 404;
+const maxCommentLength = 64000;
+
 const writeComment = (options, message, callback) => options.github.issues.createComment({
     "body": message,
     "number": options.number,
@@ -31,12 +34,12 @@ const checkHasIssue = (options, issueNumber, callback) => options.github.issues.
     "number": issueNumber,
     "owner": options.baseRepoOptions.owner,
     "repo": options.baseRepoOptions.reponame
-}, (err, result) => {
-    if (err && err.code !== 404) {
-        return callback(err);
+}, (getIssueErr, result) => {
+    if (getIssueErr && getIssueErr.code !== httpNotFound) {
+        return callback(getIssueErr);
     }
 
-    if (err || result.number.toString() !== issueNumber) {
+    if (getIssueErr || result.number.toString() !== issueNumber) {
         return callback(null, false);
     }
 
@@ -51,9 +54,9 @@ const checkHasReleases = (options, callback) => options.github.repos.getReleases
     "owner": options.baseRepoOptions.owner,
     "per_page": 1,
     "repo": options.baseRepoOptions.reponame
-}, (err, result) => {
-    if (err) {
-        return callback(err);
+}, (getReleasesErr, result) => {
+    if (getReleasesErr) {
+        return callback(getReleasesErr);
     }
 
     return callback(null, result && result.length);
@@ -72,8 +75,8 @@ const checkPullRequest = (options, callback) => {
             return closePullRequest(options, "Only merging from version to master is allowed", callback);
         }
 
-        return checkHasReleases(options, (err, hasReleases) => {
-            if (err) {
+        return checkHasReleases(options, (hasReleasesErr, hasReleases) => {
+            if (hasReleasesErr) {
                 return writeComment(options, "Unable to check for releases", callback);
             }
 
@@ -99,9 +102,9 @@ const checkPullRequest = (options, callback) => {
 
     const issueNumber = featureNamePattern.exec(head.branchname)[1];
 
-    return checkHasIssue(options, issueNumber, (err, hasIssue, issueTitle) => {
-        if (err) {
-            return writeComment(options, `Unable to check for issue:\r\n\r\n${err.message}`, callback);
+    return checkHasIssue(options, issueNumber, (hasIssueErr, hasIssue, issueTitle) => {
+        if (hasIssueErr) {
+            return writeComment(options, `Unable to check for issue:\r\n\r\n${hasIssueErr.message}`, callback);
         }
 
         if (!hasIssue) {
@@ -110,8 +113,8 @@ const checkPullRequest = (options, callback) => {
 
         const shouldHaveReleases = versionNamePattern.test(base.branchname);
 
-        return checkHasReleases(options, (err, hasReleases) => {
-            if (err) {
+        return checkHasReleases(options, (hasReleasesErr, hasReleases) => {
+            if (hasReleasesErr) {
                 return writeComment(options, "Unable to check for releases", callback);
             }
 
@@ -124,7 +127,7 @@ const checkPullRequest = (options, callback) => {
             }
 
             if (options.action === "opened") {
-                return writeComment(options, `Merging feature #${issueNumber} (${issueTitle}) to ${base.branchname}${shouldHaveReleases ? " release" : ""}`, callback);
+                return writeComment(options, `Merging feature #${issueNumber} (${issueTitle}) to ${base.branchname}`, callback);
             }
 
             return process.nextTick(callback);
@@ -136,11 +139,12 @@ exports.commentOnPullRequest = (options, callback) => {
     options.github = settings.createGithub(options.baseRepoOptions.owner);
     options.headRepoOptions.onTenthAttempt = () => writeComment(options, "Waiting for build to finish...");
 
-    return checkPullRequest(options, (err, successMessage) => reportProcessor.getStatusMessageFromRelease(options.app, options.headRepoOptions, (err, successMessage) => {
-        const escapedErr = String(err || "").substring(0, 64000).replace(/`/g, "` ");
-        const message = err
+    return checkPullRequest(options, () => reportProcessor.getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
+        const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)
+            .replace(/`/g, "` ");
+        const message = statusMessageErr
             ? `Was not built:\r\n\r\n\`\`\`\r\n${escapedErr}\r\n\`\`\`\r\n\r\nDO NOT MERGE!`
-            : `Build OK\r\n\r\n${successMessage}`;
+            : `Build OK\r\n\r\n${statusSuccessMessage}`;
         const statusUrlMessage = `Build status URL: ${settings.siteRoot}status/${options.headRepoOptions.owner}/${options.headRepoOptions.reponame}/${options.headRepoOptions.rev}\r\n\r\n`;
 
         return writeComment(options, `${message}\r\n\r\n${statusUrlMessage}`, callback);
