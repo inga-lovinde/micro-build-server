@@ -16,10 +16,22 @@ const wrapBuilder = (builder, input, onExit) => {
         errorBuffer.write(data);
     });
 
-    builder.on("exit", (code) => onExit(code, resultBuffer.getContentsAsString(), errorBuffer.getContentsAsString()));
+    builder.on("exit", (code) => {
+        resultBuffer.end();
+        errorBuffer.end();
+        onExit(code, resultBuffer.getContentsAsString(), errorBuffer.getContentsAsString());
+    });
 
     builder.stdin.write(input);
     builder.stdin.end();
+};
+
+const safeParseJson = (data) => {
+    try {
+        return { "parsed": JSON.parse(data) };
+    } catch (err) {
+        return { err };
+    }
 };
 
 module.exports = (params, processor) => ({
@@ -29,15 +41,23 @@ module.exports = (params, processor) => ({
 
         processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${input}`);
 
-        wrapBuilder(builder, input, (code, result, error) => {
-            if (code) {
-                processor.onError(`Return code is ${code}\r\n${error}`);
+        wrapBuilder(builder, input, (code, result, builderError) => {
+            if (code || builderError) {
+                processor.onError(`Return code is ${code}\r\n${builderError}`);
 
                 return processor.done();
             }
 
-            const report = JSON.parse(result);
-            const messages = report.Messages;
+            const { parsed, err } = safeParseJson(result);
+
+            if (err || !parsed || !parsed.Messages) {
+                processor.onError(`Malformed JSON: ${err}`);
+                processor.onInfo(result);
+
+                return processor.done();
+            }
+
+            const messages = parsed.Messages;
 
             messages.forEach((message) => {
                 if (!message) {
