@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require("underscore");
 const tasks = require("./tasks");
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
@@ -9,9 +10,9 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     }
 
     const that = this;
-    let taskWorker = null;
+    const createTaskWorker = () => tasks[task.type](task.params || {}, that);
     const errors = [];
-    const process = () => taskWorker.process();
+    const process = () => createTaskWorker().process();
     const getOuterPrefix = (prefix) => {
         if (task.name && prefix) {
             return `${task.name}/${prefix}`;
@@ -39,31 +40,30 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     that.processTask = processTask;
     that.done = done;
     that.context = outerProcessor.context;
-
-    const taskImpl = tasks[task.type];
-
-    taskWorker = taskImpl(task.params || {}, that);
-
-    return this;
 };
 
-const pushMessage = (list, message, prefix) => {
-    const parts = prefix.split("/");
-    let innerList = list;
+const pushMessage = (list, message, parts, index) => {
+    if (!index) {
+        list.$allMessages = list.$allMessages || []; // eslint-disable-line fp/no-mutation
+        list.$allMessages.push({ // eslint-disable-line fp/no-mutating-methods
+            message,
+            "prefix": parts.join("/")
+        });
+    }
 
-    parts.forEach((part) => {
-        innerList = innerList[part] = innerList[part] || {};
-    });
+    list.$messages = list.$messages || []; // eslint-disable-line fp/no-mutation
+    if (index === parts.length) {
+        return list.$messages.push(message); // eslint-disable-line fp/no-mutating-methods
+    }
 
-    innerList.$messages = innerList.$messages || [];
-    innerList.$messages.push(message);
-
-    list.$allMessages = list.$allMessages || [];
-    list.$allMessages.push({
-        message,
-        prefix
-    });
+    return pushMessage(list, message, parts, index + 1);
 };
+
+const addFlag = (flags) => (flagName) => {
+    flags[flagName] = true; // eslint-disable-line fp/no-mutation
+};
+
+const containsFlag = (flags) => (flagName) => flags[flagName];
 
 exports.processTask = (task, context, callback) => {
     const errors = {};
@@ -71,11 +71,17 @@ exports.processTask = (task, context, callback) => {
     const infos = {};
     const messages = {};
     const messageProcessor = (list) => (message, prefix) => {
-        pushMessage(list, message, prefix);
-        pushMessage(messages, message, prefix);
+        const parts = prefix.split("/");
+
+        pushMessage(list, message, parts, 0);
+        pushMessage(messages, message, parts, 0);
     };
+    const flags = {};
     const processor = new TaskProcessor(task, {
-        context,
+        "context": _.extend(context, {
+            "addFlag": addFlag(flags),
+            "containsFlag": containsFlag(flags)
+        }),
         "onError": messageProcessor(errors),
         "onInfo": messageProcessor(infos),
         "onWarn": messageProcessor(warns)

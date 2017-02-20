@@ -1,35 +1,37 @@
 "use strict";
 
 const path = require("path");
+const _ = require("underscore");
 const settings = require("../../settings");
 const dotnetbuilderwrapper = require("./dotnetbuilderwrapper");
 
 module.exports = (params, processor) => {
-    const compileParams = {
-        "Configuration": params.configuration,
-        "OutputDirectory": params.overrideOutputDirectory,
-        "SolutionPath": path.join(processor.context.exported, params.solution),
-        "Target": params.target,
-        "command": "compile"
-    };
-
-    if (!settings.skipCodeSigning && !params.skipCodeSigning) {
-        compileParams.SigningKey = settings.codeSigningKeyFile;
-    }
-
     if (settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
         processor.onError("Code analysis is not supported");
 
         return processor.done();
     }
 
-    if (
-        settings.isCodeAnalysisUnsupported
-        || params.ignoreCodeAnalysis
-        || (settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis)
-    ) {
-        compileParams.SkipCodeAnalysis = true;
-    }
+    const getAdditionalSigningParameters = () => {
+        if (settings.skipCodeSigning || params.skipCodeSigning) {
+            return {};
+        }
 
-    return dotnetbuilderwrapper(compileParams, processor);
+        return { "SigningKey": settings.codeSigningKeyFile };
+    };
+
+    const skipCodeAnalysis = settings.isCodeAnalysisUnsupported
+        || params.ignoreCodeAnalysis
+        || (settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis);
+
+    const compileParams = {
+        "Configuration": params.configuration,
+        "OutputDirectory": params.overrideOutputDirectory,
+        "SkipCodeAnalysis": skipCodeAnalysis,
+        "SolutionPath": path.join(processor.context.exported, params.solution),
+        "Target": params.target,
+        "command": "compile"
+    };
+
+    return dotnetbuilderwrapper(_.extend(compileParams, getAdditionalSigningParameters()), processor);
 };

@@ -1,28 +1,37 @@
 "use strict";
 
 const spawn = require("child_process").spawn;
+const streamBuffers = require("stream-buffers");
 const settings = require("../../settings");
+
+const wrapBuilder = (builder, input, onExit) => {
+    const resultBuffer = new streamBuffers.WritableStreamBuffer();
+    const errorBuffer = new streamBuffers.WritableStreamBuffer();
+
+    builder.stdout.on("data", (data) => {
+        resultBuffer.write(data);
+    });
+
+    builder.stderr.on("data", (data) => {
+        errorBuffer.write(data);
+    });
+
+    builder.on("exit", (code) => onExit(code, resultBuffer.getContentsAsString(), errorBuffer.getContentsAsString()));
+
+    builder.stdin.write(input);
+    builder.stdin.end();
+};
 
 module.exports = (params, processor) => ({
     "process": () => {
-        let result = "";
-        let error = "";
+        const input = JSON.stringify(params);
         const builder = spawn(settings.builderExecutable, [params.command]);
 
-        processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${JSON.stringify(params, null, "    ")}`);
+        processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${input}`);
 
-        builder.stdout.on("data", (data) => {
-            result += data;
-        });
-
-        builder.stderr.on("data", (data) => {
-            error += data;
-        });
-
-        builder.on("exit", (code) => {
+        wrapBuilder(builder, input, (code, result, error) => {
             if (code) {
-                error = `Return code is ${code}\r\n${error}`;
-                processor.onError(error);
+                processor.onError(`Return code is ${code}\r\n${error}`);
 
                 return processor.done();
             }
@@ -49,8 +58,5 @@ module.exports = (params, processor) => ({
 
             return processor.done();
         });
-
-        builder.stdin.write(JSON.stringify(params));
-        builder.stdin.end();
     }
 });

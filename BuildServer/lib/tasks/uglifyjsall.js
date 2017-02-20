@@ -2,13 +2,15 @@
 
 const glob = require("glob");
 
+const doneFlagName = "uglifyjsallDone";
+
 module.exports = (params, processor) => ({
     "process": () => {
-        if (processor.context.uglifyjsallDone) {
+        if (processor.context.containsFlag(doneFlagName)) {
             processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
         }
 
-        processor.context.uglifyjsallDone = true;
+        processor.context.addFlag(doneFlagName);
 
         glob("**/*.js", {
             "cwd": processor.context.exported,

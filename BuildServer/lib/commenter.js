@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require("underscore");
 const reportProcessor = require("./report-processor");
 const settings = require("../settings");
 
@@ -135,9 +136,9 @@ const checkPullRequest = (options, callback) => {
     });
 };
 
-exports.commentOnPullRequest = (options, callback) => {
-    options.github = settings.createGithub(options.baseRepoOptions.owner);
-    options.headRepoOptions.onTenthAttempt = () => writeComment(options, "Waiting for build to finish...");
+exports.commentOnPullRequest = (originalOptions, callback) => {
+    const optionsGithub = _.extend(originalOptions, { "github": settings.createGithub(originalOptions.baseRepoOptions.owner) });
+    const options = _.extend(optionsGithub, { "onTenthAttempt": () => writeComment(optionsGithub, "Waiting for build to finish...") });
 
     return checkPullRequest(options, () => reportProcessor.getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
         const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)

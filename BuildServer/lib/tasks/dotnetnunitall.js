@@ -1,14 +1,15 @@
 "use strict";
 
 const glob = require("glob");
+const flagDoneName = "dotnetnunitallDone";
 
 module.exports = (params, processor) => ({
     "process": () => {
-        if (processor.context.dotnetnunitallDone) {
+        if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
         }
 
-        processor.context.dotnetnunitallDone = true;
+        processor.context.addFlag(flagDoneName);
 
         glob("**/{bin,build}/**/*.{Tests,Test,UnitTests}.dll", {
             "cwd": processor.context.exported,

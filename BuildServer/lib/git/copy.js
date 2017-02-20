@@ -1,10 +1,18 @@
 "use strict";
 
-const EventEmitter = require("events").EventEmitter;
+const EventEmitter = require("events").EventEmitter; // eslint-disable-line fp/no-events
 const path = require("path");
 const fs = require("fs");
 const async = require("async");
 const Copier = require("recursive-tree-copy").Copier;
+
+const safeGetEntries = (tree) => {
+    try {
+        return { "entries": tree.gitTree.entries() };
+    } catch (err) {
+        return { err };
+    }
+};
 
 const gitToFsCopier = new Copier({
     "concurrency": 4,
@@ -36,19 +44,17 @@ const gitToFsCopier = new Copier({
         const emitter = new EventEmitter();
 
         process.nextTick(() => {
-            let entries = null;
+            const { entries, err } = safeGetEntries(tree);
 
-            try {
-                entries = tree.gitTree.entries();
-            } catch (err) {
+            if (err) {
                 return emitter.emit("error", err);
             }
 
             return async.parallel(entries.map((entry) => (callback) => {
                 if (entry.isTree()) {
-                    return entry.getTree((err, subTree) => {
-                        if (err) {
-                            return callback(err);
+                    return entry.getTree((getTreeErr, subTree) => {
+                        if (getTreeErr) {
+                            return callback(getTreeErr);
                         }
 
                         emitter.emit("tree", {
@@ -67,9 +73,9 @@ const gitToFsCopier = new Copier({
                 }
 
                 return callback();
-            }), (err) => {
-                if (err) {
-                    return emitter.emit("error", err);
+            }), (parallelErr) => {
+                if (parallelErr) {
+                    return emitter.emit("error", parallelErr);
                 }
 
                 return emitter.emit("done");

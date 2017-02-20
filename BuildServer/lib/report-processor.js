@@ -88,8 +88,6 @@ exports.loadReport = (app, options, callback) => {
 
         const reportFile = path.join(releaseDir, reportFilename);
 
-        options.files = files;
-
         return fs.exists(reportFile, (exists) => {
             if (!exists) {
                 return callback("ReportFileNotFound", options);
@@ -97,22 +95,22 @@ exports.loadReport = (app, options, callback) => {
 
             return readReport(releaseDir, (readErr, report) => {
                 if (readErr) {
-                    return callback(readErr, options);
+                    return callback(readErr, _.extend(options, { files }));
                 }
 
-                options.report = report;
-
-                return callback(null, options);
+                return callback(null, _.extend(options, {
+                    files,
+                    report
+                }));
             });
         });
     });
 };
 
-exports.getStatusMessageFromRelease = (app, options, callback) => {
+exports.getStatusMessageFromRelease = (app, originalOptions, callback) => {
+    const options = _.extend(originalOptions, { "attemptsGetReport": (Number(originalOptions.attemptsGetReport) || Number()) + 1 });
     const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
     const reportFile = path.join(releaseDir, reportFilename);
-
-    options.attemptsGetReport = (Number(options.attemptsGetReport) || Number()) + 1;
 
     fs.exists(reportFile, (exists) => {
         if (!exists) {

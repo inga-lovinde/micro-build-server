@@ -3,11 +3,21 @@
 const nodegit = require("nodegit");
 const fse = require("fs-extra");
 const gitToFs = require("./copy").gitToFs;
+
 const mkdirs = (path) => {
     fse.mkdirsSync(path); // eslint-disable-line no-sync
 };
+
 const removedirs = (path) => {
     fse.removeSync(path); // eslint-disable-line no-sync
+};
+
+const fixUrl = (url) => {
+    if (!url.startsWith("https://")) {
+        return url;
+    }
+
+    return `git://${url.substr("https://".length)}`;
 };
 
 /* Example:
@@ -21,16 +31,12 @@ options = {
  */
 
 module.exports = (options, globalCallback) => {
-    let url = options.remote;
+    const url = fixUrl(options.remote);
     const path = `${options.local}/${options.hash}`;
     const exported = options.exported;
 
     removedirs(path);
     mkdirs(path);
-
-    if (url.startsWith("https://")) {
-        url = `git://${url.substr("https://".length)}`;
-    }
 
     console.log(`Cloning ${url} to ${path}`);
 

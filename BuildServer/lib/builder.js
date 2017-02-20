@@ -62,6 +62,14 @@ const wrapGitLoader = (skipGitLoader) => {
     return (gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
 };
 
+const safeParseJson = (data) => {
+    try {
+        return { "parsed": JSON.parse(data) };
+    } catch (err) {
+        return { err };
+    }
+};
+
 const build = (options, buildCallback) => {
     const url = options.url;
     const owner = options.owner;
@@ -179,17 +187,15 @@ const build = (options, buildCallback) => {
                     return done(readErr, "MBSUnableToRead");
                 }
 
-                let task = null;
+                const { parsed, err } = safeParseJson(data);
 
-                try {
-                    task = JSON.parse(data);
-                } catch (ex) {
+                if (err) {
                     console.log(`Malformed data: ${data}`);
 
-                    return done(ex, "MBSMalformed");
+                    return done(err, "MBSMalformed");
                 }
 
-                return processor.processTask(task, {
+                return processor.processTask(parsed, {
                     branch,
                     exported,
                     owner,

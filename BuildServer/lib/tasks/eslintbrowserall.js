@@ -1,14 +1,15 @@
 "use strict";
 
 const glob = require("glob");
+const flagDoneName = "eslintbrowserallDone";
 
 module.exports = (params, processor) => ({
     "process": () => {
-        if (processor.context.eslintbrowserallDone) {
+        if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("eslintbrowserall task is executed more than once; this is probably a bug in your mbs.json");
         }
 
-        processor.context.eslintbrowserallDone = true;
+        processor.context.addFlag(flagDoneName);
 
         const excludeFiles = params.excludeFiles || [];
 

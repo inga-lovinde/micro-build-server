@@ -1,14 +1,15 @@
 "use strict";
 
 const glob = require("glob");
+const flagDoneName = "cssnanoallDone";
 
 module.exports = (params, processor) => ({
     "process": () => {
-        if (processor.context.cssnanoallDone) {
+        if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("cssnanoall task is executed more than once; this is probably a bug in your mbs.json");
         }
 
-        processor.context.cssnanoallDone = true;
+        processor.context.addFlag(flagDoneName);
 
         glob("**/*.css", {
             "cwd": processor.context.exported,

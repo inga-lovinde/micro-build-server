@@ -2,29 +2,27 @@
 
 const sequential = require("./sequential");
 
-module.exports = (params, processor) => {
-    const tasks = [];
-
+const createTasks = function *(params) {
     if (!params.skipMbsCheckStyle) {
-        tasks.push({
+        yield {
             params,
             "type": "dotnetcheckstyle"
-        });
+        };
     }
 
-    tasks.push({
+    yield {
         params,
         "type": "dotnetrewrite"
-    });
+    };
 
     if (!params.skipNugetRestore) {
-        tasks.push({
+        yield {
             params,
             "type": "dotnetnugetrestore"
-        });
+        };
     }
 
-    tasks.push({
+    yield {
         "params": {
             "configuration": params.configuration,
             "forceCodeAnalysis": params.forceCodeAnalysis,
@@ -34,7 +32,11 @@ module.exports = (params, processor) => {
             "target": "Rebuild"
         },
         "type": "dotnetcompile"
-    });
+    };
+};
+
+module.exports = (params, processor) => {
+    const tasks = Array.from(createTasks(params));
 
     return sequential({ tasks }, processor);
 };

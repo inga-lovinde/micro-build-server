@@ -6,30 +6,38 @@ const async = require("async");
 const glob = require("glob");
 const settings = require("../../settings");
 
-const processAssemblyInfo = (params, processor, appendInformationalVersion) => (originalContent, cb) => {
-    let content = originalContent;
+const flagDoneName = "dotnetrewriterDone";
 
-    if (!params.skipCodeSigning && !settings.skipCodeSigning) {
-        content = content.replace(
+const processAssemblyInfo = (params, processor, appendInformationalVersion) => (originalContent, cb) => {
+    const processInternalsVisible = (content) => {
+        if (params.skipCodeSigning || settings.skipCodeSigning) {
+            return content;
+        }
+
+        return content.replace(
             /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g,
             (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${settings.codeSigningPublicKey}")`
         );
-    }
+    };
 
-    if (appendInformationalVersion) {
-        content = `${content}\n[assembly: System.Reflection.AssemblyInformationalVersion("${processor.context.versionInfo}")]\n`;
-    }
+    const processInformationalVersion = (content) => {
+        if (!appendInformationalVersion) {
+            return content;
+        }
 
-    return cb(null, content);
+        return `${content}\n[assembly: System.Reflection.AssemblyInformationalVersion("${processor.context.versionInfo}")]\n`;
+    };
+
+    return cb(null, processInformationalVersion(processInternalsVisible(originalContent)));
 };
 
 module.exports = (params, processor) => ({
     "process": () => {
-        if (processor.context.dotnetrewriterDone) {
+        if (processor.context.containsFlag(flagDoneName)) {
             return processor.done();
         }
 
-        processor.context.dotnetrewriterDone = true;
+        processor.context.addFlag(flagDoneName);
 
         return glob("**/{InternalsVisible,AssemblyInfo}*.cs", { "cwd": processor.context.exported }, (globErr, files) => {
             if (globErr) {

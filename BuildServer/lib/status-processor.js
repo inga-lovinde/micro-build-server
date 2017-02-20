@@ -2,7 +2,7 @@
 
 const path = require("path");
 const fs = require("fs");
-
+const _ = require("underscore");
 const reportProcessor = require("./report-processor");
 
 const addBranchInfo = (app, options, callback) => {
@@ -17,10 +17,15 @@ const addBranchInfo = (app, options, callback) => {
             if (err) {
                 return callback(err, options);
             }
-            options.branch = data.toString();
-            options.branchName = options.branch.split("/").pop();
 
-            return callback(null, options);
+            const branch = data.toString();
+            const branchParts = branch.split("/");
+            const branchName = branchParts[branchParts.length - 1];
+
+            return callback(null, _.extend(options, {
+                branch,
+                branchName
+            }));
         });
     });
 };
@@ -37,39 +42,38 @@ const addRevInfo = (app, options, callback) => {
             if (err) {
                 return callback(err, options);
             }
-            options.rev = data.toString();
 
-            return callback(null, options);
+            const rev = data.toString();
+
+            return callback(null, _.extend(options, { rev }));
         });
     });
 };
 
 const parseOptions = (app, options, callback) => {
+    if (options.rev && !(/^[\da-f]{40}$/i).test(options.rev)) {
+        return callback(`Wrong rev format: ${options.rev}`, options);
+    }
+
     const result = {
         "owner": options.owner,
         "reponame": options.reponame
     };
 
-    if (options.rev && !(/^[\da-f]{40}$/i).test(options.rev)) {
-        return callback(`Wrong rev format: ${options.rev}`, options);
-    }
-
     if (options.rev) {
-        result.rev = options.rev;
-
-        return addBranchInfo(app, result, callback);
+        return addBranchInfo(app, _.extend(result, { "rev": options.rev }), callback);
     }
 
     if (/^[\da-f]{40}$/i.test(options.branchName)) {
-        result.rev = options.branchName;
-
-        return addBranchInfo(app, result, callback);
+        return addBranchInfo(app, _.extend(result, { "rev": options.branchName }), callback);
     }
 
-    result.branchName = options.branchName || "master";
-    result.branch = `refs/heads/${result.branchName}`;
+    const branchName = options.branchName || "master";
 
-    return addRevInfo(app, result, callback);
+    return addRevInfo(app, _.extend(result, {
+        "branch": `refs/heads/${branchName}`,
+        branchName
+    }), callback);
 };
 
 exports.getReport = (app, options, callback) => parseOptions(app, options, (err, result) => {

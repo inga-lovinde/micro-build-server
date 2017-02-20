@@ -1,58 +1,92 @@
 "use strict";
 
 const url = require("url");
+const _ = require("underscore");
 const statusProcessor = require("../lib/status-processor");
 
 const parseOptionsFromReferer = (path, callback) => {
     const pathParts = path.split("/").filter((value) => value);
-    const result = {};
     const [, secondPart, thirdPart] = pathParts;
 
     if (!secondPart) {
-        return callback("BadRequest", result);
+        return callback("BadRequest", {});
     }
 
     if (thirdPart === "tree") {
-        [result.owner, result.reponame, , result.branchName, result.rev] = pathParts;
-    } else {
-        [result.owner, result.reponame, result.branchName, result.rev] = pathParts;
+        const [owner, reponame, , branchName, rev] = pathParts;
+
+        return callback(null, {
+            branchName,
+            owner,
+            reponame,
+            rev
+        });
     }
 
-    return callback(null, result);
+    const [owner, reponame, branchName, rev] = pathParts;
+
+    return callback(null, {
+        branchName,
+        owner,
+        reponame,
+        rev
+    });
 };
 
 const createShowReport = (res) => (err, inputOptions) => {
-    const options = inputOptions || {};
+    const options = _.extendOwn(inputOptions || {}, { err });
 
-    options.err = err;
     res.render("status", options);
 };
 
 exports.image = (req, res) => {
-    const handle = (err, options) => {
+    const getAdditionalOptions = (err, options) => {
         if (err === "ReportFileNotFound") {
-            options.status = "Building";
-        } else if (err) {
-            options.status = "StatusError";
-            options.message = err;
-        } else if (options.report.result === "MBSNotFound") {
-            options.status = "MBSNotUsed";
-        } else if (options.report.err) {
-            options.status = "Error";
-            options.message = options.report.err;
-        } else if ((options.report.result.warns.$allMessages || []).length) {
+            return { "status": "Building" };
+        }
+
+        if (err) {
+            return {
+                "message": err,
+                "status": "StatusError"
+            };
+        }
+
+        if (options.report.result === "MBSNotFound") {
+            return { "status": "MBSNotUsed" };
+        }
+
+        if (options.report.err) {
+            return {
+                "message": options.report.err,
+                "status": "Error"
+            };
+        }
+
+        if ((options.report.result.warns.$allMessages || []).length) {
             const [firstWarn] = options.report.result.warns.$allMessages;
 
-            options.status = "Warning";
-            options.message = firstWarn.message;
-        } else {
-            options.status = "OK";
-            if ((options.report.result.infos.$allMessages || []).length) {
-                options.message = options.report.result.infos.$allMessages[options.report.result.infos.$allMessages.length - 1].message;
-            }
+            return {
+                "message": firstWarn.message,
+                "status": "Warning"
+            };
         }
+
+        const allInfos = options.report.result.infos.$allMessages || [];
+
+        if (allInfos.length) {
+            return {
+                "message": allInfos[allInfos.length - 1].message,
+                "status": "OK"
+            };
+        }
+
+        return { "status": "OK" };
+    };
+
+    const handle = (err, options) => {
         res.setHeader("Content-Type", "image/svg+xml");
-        res.render("status-image", options);
+        res.render("status-image", _.extend(options, getAdditionalOptions(err, options)));
     };
 
     parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", (err, options) => {

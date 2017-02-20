@@ -20,8 +20,7 @@ const settings = require("./settings");
 
 const app = express();
 
-// All environments
-app.set("port", process.env.PORT || settings.port);
+app.set("port", process.env.PORT || settings.port); // eslint-disable-line no-process-env
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 app.set("gitpath", settings.gitpath);
