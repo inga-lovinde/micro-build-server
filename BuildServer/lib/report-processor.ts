@@ -6,6 +6,7 @@ import { createGzip, createGunzip } from "zlib";
 import * as glob from "glob";
 import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
 import * as _ from "underscore";
+import * as JSONParse from "json-parse-safe";
 
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
@@ -62,12 +63,16 @@ export const readReport = (releaseDir, callback) => {
             readStream.destroy();
 
             const data = writable.getContentsAsString();
-
             if (!data) {
                 return callback("ReportFileNotFound");
             }
 
-            return callback(null, JSON.parse(data));
+            const { error, value } = JSONParse(data);
+            if (error) {
+                return callback("ReportFileMalformed");
+            }
+
+            return callback(null, value);
         });
 };
 

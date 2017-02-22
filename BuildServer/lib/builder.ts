@@ -4,6 +4,7 @@ import { join } from "path";
 import { exists, readFile, writeFileSync } from "fs";
 import { mkdirsSync, remove } from "fs-extra";
 import { parallel, queue } from "async";
+import * as JSONParse from "json-parse-safe";
 import { gitLoader } from "./git/loader";
 import { processTask } from "./task-processor";
 import { writeReport } from "./report-processor";
@@ -60,14 +61,6 @@ const wrapGitLoader = (skipGitLoader) => {
     }
 
     return (gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
-};
-
-const safeParseJson = (data):any => {
-    try {
-        return { "parsed": JSON.parse(data) };
-    } catch (err) {
-        return { err };
-    }
 };
 
 export const build = (options, buildCallback) => {
@@ -187,15 +180,15 @@ export const build = (options, buildCallback) => {
                     return done(readErr, "MBSUnableToRead");
                 }
 
-                const { parsed, err } = safeParseJson(data);
+                const { value, error } = JSONParse(data);
 
-                if (err) {
+                if (error) {
                     console.log(`Malformed data: ${data}`);
 
-                    return done(err, "MBSMalformed");
+                    return done(error, "MBSMalformed");
                 }
 
-                return processTask(parsed, {
+                return processTask(value, {
                     branch,
                     exported,
                     owner,

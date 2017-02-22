@@ -1,5 +1,6 @@
 "use strict";
 
+import * as JSONParse from "json-parse-safe";
 import { build } from "../lib/builder";
 import { commentOnPullRequest } from "../lib/commenter";
 
@@ -90,13 +91,21 @@ const processPullRequest = (req, res, payload) => {
     );
 };
 
+const getPayload = (body) => {
+    if (!body.payload) {
+        return body;
+    }
+
+    return JSONParse(body.payload).value;
+}
+
 export default (req, res) => {
     if (!req.body || (!req.body.payload && !req.body.repository)) {
         return res.end();
     }
 
     const eventType = req.header("x-github-event");
-    const payload = (req.body.payload && JSON.parse(req.body.payload)) || req.body;
+    const payload = getPayload(req.body);
 
     if (eventType === "push") {
         return processPush(req, res, payload);

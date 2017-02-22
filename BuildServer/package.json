@@ -19,6 +19,7 @@
     "glob": "~7.1.1",
     "graceful-fs": "^4.1.11",
     "jade": "*",
+    "json-parse-safe": "^1.0.3",
     "method-override": "^2.3.7",
     "morgan": "^1.7.0",
     "mustache": "~2.3.0",

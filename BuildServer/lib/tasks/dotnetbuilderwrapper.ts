@@ -2,6 +2,7 @@
 
 import { spawn } from "child_process";
 import { WritableStreamBuffer } from "stream-buffers";
+import * as JSONParse from "json-parse-safe";
 import settings from "../../settings";
 
 const wrapBuilder = (builder, input, onExit) => {
@@ -26,14 +27,6 @@ const wrapBuilder = (builder, input, onExit) => {
     builder.stdin.end();
 };
 
-const safeParseJson = (data):any => {
-    try {
-        return { "parsed": JSON.parse(data) };
-    } catch (err) {
-        return { err };
-    }
-};
-
 export default (params, processor) => ({
     "process": () => {
         const input = JSON.stringify(params);
@@ -48,16 +41,16 @@ export default (params, processor) => ({
                 return processor.done();
             }
 
-            const { parsed, err } = safeParseJson(result);
+            const { value, error } = JSONParse(result);
 
-            if (err || !parsed || !parsed.Messages) {
-                processor.onError(`Malformed JSON: ${err}`);
+            if (error || !value || !value.Messages) {
+                processor.onError(`Malformed JSON: ${error}`);
                 processor.onInfo(result);
 
                 return processor.done();
             }
 
-            const messages = parsed.Messages;
+            const messages = value.Messages;
 
             messages.forEach((message) => {
                 if (!message) {
