@@ -1,10 +1,10 @@
 "use strict";
 
-import glob = require("glob");
+import * as glob from "glob";
 
 const doneFlagName = "uglifyjsallDone";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
         if (processor.context.containsFlag(doneFlagName)) {
             processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");

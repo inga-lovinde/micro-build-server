@@ -1,11 +1,11 @@
 "use strict";
 
-import path = require("path");
-import fs = require("fs");
-import zlib = require("zlib");
-import glob = require("glob");
-import streamBuffers = require("stream-buffers");
-import _ = require("underscore");
+import { join } from "path";
+import { createReadStream, createWriteStream, exists } from "fs";
+import { createGzip, createGunzip } from "zlib";
+import * as glob from "glob";
+import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
+import * as _ from "underscore";
 
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
@@ -30,12 +30,12 @@ export const writeReport = (releaseDir, err, result, callback) => {
         result
     });
 
-    const readable = new streamBuffers.ReadableStreamBuffer(readableStreamBufferOptions);
-    const writeStream = fs.createWriteStream(path.join(releaseDir, reportFilename));
+    const readable = new ReadableStreamBuffer(readableStreamBufferOptions);
+    const writeStream = createWriteStream(join(releaseDir, reportFilename));
 
     readable
         .on("error", callback)
-        .pipe(zlib.createGzip())
+        .pipe(createGzip())
         .on("error", callback)
         .pipe(writeStream)
         .on("error", callback)
@@ -49,12 +49,12 @@ export const writeReport = (releaseDir, err, result, callback) => {
 };
 
 export const readReport = (releaseDir, callback) => {
-    const readStream = fs.createReadStream(path.join(releaseDir, reportFilename));
-    const writable = new streamBuffers.WritableStreamBuffer();
+    const readStream = createReadStream(join(releaseDir, reportFilename));
+    const writable = new WritableStreamBuffer();
 
     readStream
         .on("error", callback)
-        .pipe(zlib.createGunzip())
+        .pipe(createGunzip())
         .on("error", callback)
         .pipe(writable)
         .on("error", callback)
@@ -72,7 +72,7 @@ export const readReport = (releaseDir, callback) => {
 };
 
 export const loadReport = (app, options, callback) => {
-    const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
 
     glob("**", {
         "cwd": releaseDir,
@@ -82,10 +82,10 @@ export const loadReport = (app, options, callback) => {
             return callback(err, options);
         }
 
-        const reportFile = path.join(releaseDir, reportFilename);
+        const reportFile = join(releaseDir, reportFilename);
 
-        return fs.exists(reportFile, (exists) => {
-            if (!exists) {
+        return exists(reportFile, (reportFileExists) => {
+            if (!reportFileExists) {
                 return callback("ReportFileNotFound", options);
             }
 
@@ -105,12 +105,12 @@ export const loadReport = (app, options, callback) => {
 
 export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
     const options = _.extend(originalOptions, { "attemptsGetReport": (Number(originalOptions.attemptsGetReport) || Number()) + 1 });
-    const releaseDir = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
-    const reportFile = path.join(releaseDir, reportFilename);
+    const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const reportFile = join(releaseDir, reportFilename);
 
-    fs.exists(reportFile, (exists) => {
-        if (!exists) {
-            return setTimeout(() => fs.exists(releaseDir, (dirExists) => {
+    exists(reportFile, (reportFileExists) => {
+        if (!reportFileExists) {
+            return setTimeout(() => exists(releaseDir, (dirExists) => {
                 if (!dirExists) {
                     return callback("Release directory not found. Probably repository hooks are not configured");
                 }

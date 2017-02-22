@@ -1,15 +1,15 @@
 "use strict";
 
-import fs = require("fs");
-import path = require("path");
+import { writeFile } from "fs";
+import { join } from "path";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
-        const filePath = path.join(processor.context.exported, params.filename);
+        const filePath = join(processor.context.exported, params.filename);
 
         processor.onInfo(`Writing to ${filePath}`);
 
-        fs.writeFile(filePath, params.data, (err) => {
+        writeFile(filePath, params.data, (err) => {
             if (err) {
                 processor.onError(`Unable to write file: ${err}`);
             } else {

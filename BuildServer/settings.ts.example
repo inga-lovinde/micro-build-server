@@ -1,6 +1,6 @@
 "use strict";
 
-const GitHubApi = require("github");
+import GitHubApi = require("github");
 
 const createGithub = () => new GitHubApi({
     "debug": false,
@@ -8,11 +8,10 @@ const createGithub = () => new GitHubApi({
     "host": "pos-github.payonline.ru",
     "pathPrefix": "/api/v3",
     "protocol": "https",
-    "timeout": 5000,
-    "version": "3.0.0"
+    "timeout": 5000
 });
 
-export = {
+export default {
     "builderExecutable": "../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe",
     "codeSigningKeyFile": null,
     "codeSigningPublicKey": null,

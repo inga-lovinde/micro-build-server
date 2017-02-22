@@ -1,9 +1,9 @@
 "use strict";
 
-import path = require("path");
-import Archiver = require("archiver");
+import { join } from "path";
+import * as Archiver from "archiver";
 
-import reportProcessor = require("../lib/report-processor");
+import { readReport } from "../lib/report-processor";
 
 const getDatePart = (report) => {
     if (!report.date) {
@@ -23,7 +23,7 @@ const getDatePart = (report) => {
     return `${year}.${month}.${day}.${hours}.${minutes}.${seconds}`;
 };
 
-export = (req, res, next) => {
+export default (req, res, next) => {
     const options = {
         "branch": `/refs/heads/${req.params.branch}`,
         "branchName": req.params.branch,
@@ -32,9 +32,9 @@ export = (req, res, next) => {
         "rev": req.params.rev
     };
 
-    const releasePath = path.join(req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const releasePath = join(req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
 
-    reportProcessor.readReport(releasePath, (err, report) => {
+    readReport(releasePath, (err, report) => {
         if (err) {
             return next(err);
         }

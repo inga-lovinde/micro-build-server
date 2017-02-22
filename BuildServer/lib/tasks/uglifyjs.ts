@@ -1,15 +1,15 @@
 "use strict";
 
-import fs = require("fs");
-import path = require("path");
-import UglifyJS = require("uglify-js");
+import { writeFile } from "fs";
+import { join, normalize } from "path";
+import { minify } from "uglify-js";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
-        const filePath = path.normalize(path.join(processor.context.exported, params.filename));
-        const result = UglifyJS.minify(filePath);
+        const filePath = normalize(join(processor.context.exported, params.filename));
+        const result = minify(filePath);
 
-        fs.writeFile(filePath, result.code, (err) => {
+        writeFile(filePath, result.code, (err) => {
             if (err) {
                 processor.onError(`Unable to write uglified script for ${params.filename}: ${err}`);
             } else {

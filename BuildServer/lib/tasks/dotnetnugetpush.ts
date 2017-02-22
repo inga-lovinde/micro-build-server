@@ -1,9 +1,9 @@
 "use strict";
 
-import _ = require("underscore");
-import dotnetnugetprocessinternal = require("./dotnetnugetprocessinternal");
+import * as _ from "underscore";
+import dotnetnugetprocessinternal from "./dotnetnugetprocessinternal";
 
-export = (params, processor) => dotnetnugetprocessinternal(_.extendOwn(params, {
+export default (params, processor) => dotnetnugetprocessinternal(_.extendOwn(params, {
     "getFinalTask": (nupkg) => ({
         "params": { "Package": nupkg },
         "type": "dotnetnugetpushonly"

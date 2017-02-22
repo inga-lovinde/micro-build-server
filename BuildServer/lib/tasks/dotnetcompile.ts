@@ -1,11 +1,11 @@
 "use strict";
 
-import path = require("path");
-import _ = require("underscore");
-import settings = require("../../settings");
-import dotnetbuilderwrapper = require("./dotnetbuilderwrapper");
+import { join } from "path";
+import * as _ from "underscore";
+import settings from "../../settings";
+import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
-export = (params, processor) => {
+export default (params, processor) => {
     if (settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
         processor.onError("Code analysis is not supported");
 
@@ -28,7 +28,7 @@ export = (params, processor) => {
         "Configuration": params.configuration,
         "OutputDirectory": params.overrideOutputDirectory,
         "SkipCodeAnalysis": skipCodeAnalysis,
-        "SolutionPath": path.join(processor.context.exported, params.solution),
+        "SolutionPath": join(processor.context.exported, params.solution),
         "Target": params.target,
         "command": "compile"
     };

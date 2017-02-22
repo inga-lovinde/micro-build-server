@@ -1,8 +1,8 @@
 "use strict";
 
-import conditional = require("./conditional");
+import conditional from "./conditional";
 
-export = (params, processor) => conditional({
+export default (params, processor) => conditional({
     "branch": "master",
     "otherwise": {
         "name": "nuget-pack",

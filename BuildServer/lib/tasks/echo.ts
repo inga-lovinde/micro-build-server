@@ -1,6 +1,6 @@
 "use strict";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
         if (params.error) {
             processor.onError(params.error);

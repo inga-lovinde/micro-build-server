@@ -10,7 +10,7 @@ require("fs").readdirSync(__dirname)
             const name = file.replace(".ts", "");
 
             // eslint-disable-next-line global-require
-            tasks[name] = require(`./${file}`);
+            tasks[name] = require(`./${file}`).default;
         }
     });
 

@@ -1,6 +1,6 @@
 "use strict";
 
-import _ = require("underscore");
+import * as _ from "underscore";
 import tasks from "./tasks";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.

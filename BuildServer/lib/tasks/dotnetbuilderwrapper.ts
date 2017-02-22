@@ -1,12 +1,12 @@
 "use strict";
 
 import { spawn } from "child_process";
-import streamBuffers = require("stream-buffers");
-import settings = require("../../settings");
+import { WritableStreamBuffer } from "stream-buffers";
+import settings from "../../settings";
 
 const wrapBuilder = (builder, input, onExit) => {
-    const resultBuffer = new streamBuffers.WritableStreamBuffer();
-    const errorBuffer = new streamBuffers.WritableStreamBuffer();
+    const resultBuffer = new WritableStreamBuffer();
+    const errorBuffer = new WritableStreamBuffer();
 
     builder.stdout.on("data", (data) => {
         resultBuffer.write(data);
@@ -34,7 +34,7 @@ const safeParseJson = (data):any => {
     }
 };
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
         const input = JSON.stringify(params);
         const builder = spawn(settings.builderExecutable, [params.command]);

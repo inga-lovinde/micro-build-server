@@ -1,10 +1,10 @@
 "use strict";
 
-import path = require("path");
-import fs = require("fs");
-import async = require("async");
-import glob = require("glob");
-import settings = require("../../settings");
+import { join } from "path";
+import { readFile, writeFile } from "fs";
+import { parallel, waterfall } from "async";
+import * as glob from "glob";
+import settings from "../../settings";
 
 const flagDoneName = "dotnetrewriterDone";
 
@@ -31,7 +31,7 @@ const processAssemblyInfo = (params, processor, appendInformationalVersion) => (
     return cb(null, processInformationalVersion(processInternalsVisible(originalContent)));
 };
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
         if (processor.context.containsFlag(flagDoneName)) {
             return processor.done();
@@ -54,10 +54,10 @@ export = (params, processor) => ({
                 return processor.done();
             }
 
-            return async.parallel(files.map((file) => (callback) => async.waterfall([
-                fs.readFile.bind(null, path.join(processor.context.exported, file), { "encoding": "utf8" }),
+            return parallel(files.map((file) => (callback) => waterfall([
+                readFile.bind(null, join(processor.context.exported, file), { "encoding": "utf8" }),
                 processAssemblyInfo(params, processor, file.toLowerCase().includes("assemblyinfo.cs")),
-                fs.writeFile.bind(null, path.join(processor.context.exported, file))
+                writeFile.bind(null, join(processor.context.exported, file))
             ], (err) => {
                 if (err) {
                     processor.onError(`Unable to rewrite file ${file}: ${err}`);

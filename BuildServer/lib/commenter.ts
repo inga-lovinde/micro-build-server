@@ -1,8 +1,8 @@
 "use strict";
 
-import _ = require("underscore");
-import reportProcessor = require("./report-processor");
-import settings = require("../settings");
+import * as _ from "underscore";
+import { getStatusMessageFromRelease } from "./report-processor";
+import settings from "../settings";
 
 const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 const versionNamePattern = /^v\d+(\.\d+)*$/;
@@ -140,7 +140,7 @@ export const commentOnPullRequest = (originalOptions, callback) => {
     const optionsGithub = _.extend(originalOptions, { "github": settings.createGithub(originalOptions.baseRepoOptions.owner) });
     const options = _.extend(optionsGithub, { "onTenthAttempt": () => writeComment(optionsGithub, "Waiting for build to finish...", () => {}) });
 
-    return checkPullRequest(options, () => reportProcessor.getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
+    return checkPullRequest(options, () => getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
         const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)
             .replace(/`/g, "` ");
         const message = statusMessageErr

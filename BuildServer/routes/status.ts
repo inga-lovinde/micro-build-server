@@ -1,8 +1,8 @@
 "use strict";
 
-import url = require("url");
-import _ = require("underscore");
-import statusProcessor = require("../lib/status-processor");
+import { parse } from "url";
+import * as _ from "underscore";
+import { getReport } from "../lib/status-processor";
 
 const parseOptionsFromReferer = (path, callback) => {
     const pathParts = path.split("/").filter((value) => value);
@@ -89,12 +89,12 @@ export const image = (req, res) => {
         res.render("status-image", _.extend(options, getAdditionalOptions(err, options)));
     };
 
-    parseOptionsFromReferer(url.parse(req.headers.referer || "").pathname || "", (err, options) => {
+    parseOptionsFromReferer(parse(req.headers.referer || "").pathname || "", (err, options) => {
         if (err) {
             return handle(err, options);
         }
 
-        return statusProcessor.getReport(req.app, options, handle);
+        return getReport(req.app, options, handle);
     });
 };
 
@@ -107,7 +107,7 @@ export const page = (req, res) => {
         "rev": req.params.rev
     };
 
-    statusProcessor.getReport(req.app, options, createShowReport(res));
+    getReport(req.app, options, createShowReport(res));
 };
 
 export const pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
@@ -115,5 +115,5 @@ export const pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0
         return createShowReport(res)(err, options);
     }
 
-    return statusProcessor.getReport(req.app, options, createShowReport(res));
+    return getReport(req.app, options, createShowReport(res));
 });

@@ -1,9 +1,9 @@
 "use strict";
 
-import glob = require("glob");
+import * as glob from "glob";
 const flagDoneName = "eslintbrowserallDone";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
         if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("eslintbrowserall task is executed more than once; this is probably a bug in your mbs.json");

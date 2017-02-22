@@ -1,8 +1,8 @@
 "use strict";
 
-import sequential = require("./sequential");
+import sequential from "./sequential";
 
-export = (params, processor) => sequential({
+export default (params, processor) => sequential({
     "tasks": [
         {
             "name": "build",

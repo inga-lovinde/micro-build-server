@@ -1,8 +1,8 @@
 "use strict";
 
-import glob = require("glob");
+import * as glob from "glob";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => glob(params.mask, {
         "cwd": processor.context.exported,
         "dot": true

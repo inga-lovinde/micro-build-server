@@ -1,6 +1,6 @@
 "use strict";
 
-import sequential = require("./sequential");
+import sequential from "./sequential";
 
 const createTasks = function *(params) {
     if (!params.skipMbsCheckStyle) {
@@ -35,7 +35,7 @@ const createTasks = function *(params) {
     };
 };
 
-export = (params, processor) => {
+export default (params, processor) => {
     const tasks = Array.from(createTasks(params));
 
     return sequential({ tasks }, processor);

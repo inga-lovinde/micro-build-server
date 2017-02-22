@@ -1,6 +1,6 @@
 "use strict";
 
-export = (req, res) => {
+export default (req, res) => {
     const options = {
         "branch": `/refs/heads/${req.params.branch}`,
         "branchName": req.params.branch,

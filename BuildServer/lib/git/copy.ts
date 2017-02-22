@@ -1,9 +1,9 @@
 "use strict";
 
 import { EventEmitter } from "events"; // eslint-disable-line fp/no-events
-import path = require("path");
-import fs = require("fs");
-import async = require("async");
+import { join } from "path";
+import { writeFile, mkdir } from "fs";
+import { parallel } from "async";
 import { Copier } from "recursive-tree-copy";
 
 const safeGetEntries = (tree):any => {
@@ -17,20 +17,20 @@ const safeGetEntries = (tree):any => {
 const gitToFsCopier = new Copier({
     "concurrency": 4,
     "copyLeaf": (entry, targetDir, callback) => {
-        const targetPath = path.join(targetDir, entry.name());
+        const targetPath = join(targetDir, entry.name());
 
         entry.getBlob((err, blob) => {
             if (err) {
                 return callback(err);
             }
 
-            return fs.writeFile(targetPath, blob.content(), callback);
+            return writeFile(targetPath, blob.content(), callback);
         });
     },
     "createTargetTree": (tree, targetDir, callback) => {
-        const targetSubdir = path.join(targetDir, tree.name);
+        const targetSubdir = join(targetDir, tree.name);
 
-        fs.mkdir(targetSubdir, (err) => {
+        mkdir(targetSubdir, (err) => {
             // Workaround for broken trees
             if (err && err.code !== "EEXIST") {
                 return callback(err);
@@ -50,7 +50,7 @@ const gitToFsCopier = new Copier({
                 return emitter.emit("error", err);
             }
 
-            return async.parallel(entries.map((entry) => (callback) => {
+            return parallel(entries.map((entry) => (callback) => {
                 if (entry.isTree()) {
                     return entry.getTree((getTreeErr, subTree) => {
                         if (getTreeErr) {

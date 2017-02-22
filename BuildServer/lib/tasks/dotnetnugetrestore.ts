@@ -1,14 +1,14 @@
 "use strict";
 
-import path = require("path");
-import sequential = require("./sequential");
+import { join } from "path";
+import sequential from "./sequential";
 
-export = (params, processor) => sequential({
+export default (params, processor) => sequential({
     "tasks": [
         {
             "params": {
                 "BaseDirectory": processor.context.exported,
-                "SolutionPath": path.join(processor.context.exported, params.solution),
+                "SolutionPath": join(processor.context.exported, params.solution),
                 "command": "nugetrestore"
             },
             "type": "dotnetbuilderwrapper"

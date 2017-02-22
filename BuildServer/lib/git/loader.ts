@@ -1,16 +1,8 @@
 "use strict";
 
-import nodegit = require("nodegit");
-import fse = require("fs-extra");
+import { Repository, Remote } from "nodegit";
+import { mkdirsSync, removeSync } from "fs-extra";
 import { gitToFs } from "./copy";
-
-const mkdirs = (path) => {
-    fse.mkdirsSync(path); // eslint-disable-line no-sync
-};
-
-const removedirs = (path) => {
-    fse.removeSync(path); // eslint-disable-line no-sync
-};
 
 const fixUrl = (url) => {
     if (!url.startsWith("https://")) {
@@ -30,19 +22,19 @@ options = {
 }
  */
 
-export = (options, globalCallback) => {
+export const gitLoader = (options, globalCallback) => {
     const url = fixUrl(options.remote);
     const path = `${options.local}/${options.hash}`;
     const exported = options.exported;
 
-    removedirs(path);
-    mkdirs(path);
+    removeSync(path); // eslint-disable-line no-sync
+    mkdirsSync(path); // eslint-disable-line no-sync
 
     console.log(`Cloning ${url} to ${path}`);
 
-    nodegit.Repository.init(path, 1)
+    Repository.init(path, 1)
         .catch(globalCallback)
-        .then((repo) => nodegit.Remote.create(repo, "origin", url)
+        .then((repo) => Remote.create(repo, "origin", url)
             .catch(globalCallback)
             .then((remote) => remote.fetch([options.branch])
                 .catch(globalCallback)
@@ -56,8 +48,8 @@ export = (options, globalCallback) => {
                     return repo.getCommit(options.hash)
                         .catch(globalCallback)
                         .then((commit) => {
-                            removedirs(exported);
-                            mkdirs(exported);
+                            removeSync(exported);
+                            mkdirsSync(exported);
 
                             gitToFs(commit, exported, (err, result) => {
                                 repo.free();

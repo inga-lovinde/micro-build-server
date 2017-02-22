@@ -1,10 +1,10 @@
 "use strict";
 
-import postreceive = require("./postreceive");
-import manual = require("./manual");
-import status = require("./status");
-import artifact = require("./artifact");
-import release = require("./release");
+import postreceive from "./postreceive";
+import * as manual from "./manual";
+import * as status from "./status";
+import artifact from "./artifact";
+import release from "./release";
 
 const index = (req, res) => res.render("index", { "title": `Express<br/>\r\n${req}` });
 

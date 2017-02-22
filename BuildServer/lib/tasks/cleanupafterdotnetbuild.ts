@@ -1,8 +1,8 @@
 "use strict";
 
-import glob = require("glob");
+import * as glob from "glob";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
         "cwd": processor.context.exported,
         "dot": true

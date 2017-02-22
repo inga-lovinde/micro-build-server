@@ -1,15 +1,15 @@
 "use strict";
 
-import path = require("path");
-import fse = require("fs-extra");
+import { join } from "path";
+import { remove } from "fs-extra";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
-        const sourceFilePath = path.join(processor.context.exported, params.filename);
+        const sourceFilePath = join(processor.context.exported, params.filename);
 
         processor.onInfo(`Deleting ${sourceFilePath}`);
 
-        fse.remove(sourceFilePath, (err) => {
+        remove(sourceFilePath, (err) => {
             if (err) {
                 processor.onError(`Unable to delete file: ${err}`);
             } else {

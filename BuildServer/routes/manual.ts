@@ -1,7 +1,7 @@
 "use strict";
 
-import _ = require("underscore");
-import builder = require("../lib/builder");
+import * as _ from "underscore";
+import { build } from "../lib/builder";
 
 export const get = (req, res) => res.render("manual");
 
@@ -11,7 +11,7 @@ export const post = (req, res) => {
         "url": `https://pos-github.payonline.ru/${req.body.owner}/${req.body.reponame}`
     });
 
-    builder.build(options, (err, result) => {
+    build(options, (err, result) => {
         console.log("Done processing manual request");
         console.log(`Error: ${err}`);
         res.render("manual-done", {

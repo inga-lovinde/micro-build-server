@@ -1,19 +1,19 @@
 "use strict";
 
-import path = require("path");
-import fs = require("fs");
-import _ = require("underscore");
-import reportProcessor = require("./report-processor");
+import { join } from "path";
+import { exists, readFile } from "fs";
+import * as _ from "underscore";
+import { loadReport } from "./report-processor";
 
 const addBranchInfo = (app, options, callback) => {
-    const branchFile = path.join(app.get("releasepath"), options.owner, options.reponame, "$revs", `${options.rev}.branch`);
+    const branchFile = join(app.get("releasepath"), options.owner, options.reponame, "$revs", `${options.rev}.branch`);
 
-    fs.exists(branchFile, (exists) => {
+    exists(branchFile, (exists) => {
         if (!exists) {
             return callback("BranchFileNotFound", options);
         }
 
-        return fs.readFile(branchFile, (err, data) => {
+        return readFile(branchFile, (err, data) => {
             if (err) {
                 return callback(err, options);
             }
@@ -31,14 +31,14 @@ const addBranchInfo = (app, options, callback) => {
 };
 
 const addRevInfo = (app, options, callback) => {
-    const revFile = path.join(app.get("releasepath"), options.owner, options.reponame, options.branch, "latest.id");
+    const revFile = join(app.get("releasepath"), options.owner, options.reponame, options.branch, "latest.id");
 
-    fs.exists(revFile, (exists) => {
+    exists(revFile, (exists) => {
         if (!exists) {
             return callback("RevFileNotFound", options);
         }
 
-        return fs.readFile(revFile, (err, data) => {
+        return readFile(revFile, (err, data) => {
             if (err) {
                 return callback(err, options);
             }
@@ -81,5 +81,5 @@ export const getReport = (app, options, callback) => parseOptions(app, options, 
         return callback(err, {});
     }
 
-    return reportProcessor.loadReport(app, result, callback);
+    return loadReport(app, result, callback);
 });

@@ -1,7 +1,7 @@
 "use strict";
 
-import builder = require("../lib/builder");
-import commenter = require("../lib/commenter");
+import { build } from "../lib/builder";
+import { commentOnPullRequest } from "../lib/commenter";
 
 const getBranchDescription = (options) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
 
@@ -18,7 +18,7 @@ const processPush = (req, res, payload) => {
 
     console.log(`Got push event for ${getBranchDescription(options)}`);
 
-    builder.build(options, (err, result) => {
+    build(options, (err, result) => {
         console.log("Done processing request from GitHub");
         console.log(`Error: ${err}`);
         res.send(`Done processing request from GitHub\r\nError: ${err}\r\nResult: ${result}`);
@@ -78,7 +78,7 @@ const processPullRequest = (req, res, payload) => {
         return res.send("");
     }
 
-    return commenter.commentOnPullRequest(
+    return commentOnPullRequest(
         (action === "closed" && masterOptions) || options,
         (err, data) => {
             if (err) {
@@ -90,7 +90,7 @@ const processPullRequest = (req, res, payload) => {
     );
 };
 
-export = (req, res) => {
+export default (req, res) => {
     if (!req.body || (!req.body.payload && !req.body.repository)) {
         return res.end();
     }

@@ -1,7 +1,7 @@
 "use strict";
 
-import path = require("path");
-import sequential = require("./sequential");
+import { join } from "path";
+import sequential from "./sequential";
 
 const postfixLength = 16;
 const fourDigits = 10000;
@@ -15,7 +15,7 @@ const addPostfix = (version, params, processor) => {
     return `${version}-r${processor.context.rev.substr(0, postfixLength)}`;
 };
 
-export = (params, processor) => {
+export default (params, processor) => {
     const date = new Date();
     const major = params.major || "0";
     const minor = (date.getFullYear() * fourDigits) + ((date.getMonth() + 1) * twoDigits) + date.getDate();
@@ -29,7 +29,7 @@ export = (params, processor) => {
                 "params": {
                     "BaseDirectory": processor.context.exported,
                     "OutputDirectory": processor.context.exported,
-                    "SpecPath": path.join(processor.context.exported, params.nuspec),
+                    "SpecPath": join(processor.context.exported, params.nuspec),
                     "Version": version,
                     "command": "nugetpack"
                 },

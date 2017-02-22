@@ -1,16 +1,16 @@
 "use strict";
 
-import path = require("path");
-import fse = require("fs-extra");
+import { join } from "path";
+import { copy } from "fs-extra";
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
-        const sourceFilePath = path.join(processor.context.exported, params.filename);
-        const targetFilePath = path.join(processor.context.release, params.filename);
+        const sourceFilePath = join(processor.context.exported, params.filename);
+        const targetFilePath = join(processor.context.release, params.filename);
 
         processor.onInfo(`Copying ${sourceFilePath} to ${targetFilePath}`);
 
-        fse.copy(sourceFilePath, targetFilePath, (err) => {
+        copy(sourceFilePath, targetFilePath, (err) => {
             if (err) {
                 processor.onError(`Unable to copy file: ${err}`);
             } else {

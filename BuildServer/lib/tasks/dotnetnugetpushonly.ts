@@ -1,12 +1,12 @@
 "use strict";
 
-import path = require("path");
-import dotnetbuilderwrapper = require("./dotnetbuilderwrapper");
-import settings = require("../../settings");
+import { join } from "path";
+import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
+import settings from "../../settings";
 
-export = (params, processor) => dotnetbuilderwrapper({
+export default (params, processor) => dotnetbuilderwrapper({
     "ApiKey": settings.nugetApiKey,
     "NugetHost": settings.nugetHost,
-    "Package": path.join(processor.context.exported, params.Package),
+    "Package": join(processor.context.exported, params.Package),
     "command": "nugetpush"
 }, processor);

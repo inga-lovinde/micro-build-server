@@ -1,7 +1,7 @@
 "use strict";
 
-import async = require("async");
+import { series } from "async";
 
 const mapper = (processor) => (task) => (callback) => processor.processTask(task, callback);
 
-export = (params, processor) => ({ "process": () => async.series(params.tasks.map(mapper(processor)), () => processor.done()) });
+export default (params, processor) => ({ "process": () => series(params.tasks.map(mapper(processor)), () => processor.done()) });

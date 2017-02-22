@@ -1,36 +1,36 @@
 "use strict";
 
-import path = require("path");
-import fs = require("fs");
-import Mustache = require("mustache");
-import sequential = require("./sequential");
+import { join } from "path";
+import { readFileSync } from "fs";
+import { render } from "mustache";
+import sequential from "./sequential";
 
 // eslint-disable-next-line no-sync
-const msbuildTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.msbuild"), { "encoding": "utf8" });
+const msbuildTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.msbuild"), { "encoding": "utf8" });
 // eslint-disable-next-line no-sync
-const deployTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.bat"), { "encoding": "utf8" });
+const deployTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.bat"), { "encoding": "utf8" });
 // eslint-disable-next-line no-sync
-const versionTemplate = fs.readFileSync(path.join(__dirname, "/dotnetpackwebapp.template.version.aspx"), { "encoding": "utf8" });
+const versionTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.version.aspx"), { "encoding": "utf8" });
 
-export = (params, processor) => sequential({
+export default (params, processor) => sequential({
     "tasks": [
         {
             "params": {
-                "data": Mustache.render(msbuildTemplate, params),
+                "data": render(msbuildTemplate, params),
                 "filename": "MakePackage.msbuild"
             },
             "type": "writefile"
         },
         {
             "params": {
-                "data": Mustache.render(deployTemplate, params),
+                "data": render(deployTemplate, params),
                 "filename": "Deploy.bat"
             },
             "type": "writefile"
         },
         {
             "params": {
-                "data": Mustache.render(versionTemplate, params),
+                "data": render(versionTemplate, params),
                 "filename": "version.aspx"
             },
             "type": "writefile"

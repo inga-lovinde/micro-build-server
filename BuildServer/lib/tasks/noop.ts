@@ -1,3 +1,3 @@
 "use strict";
 
-export = (params, processor) => ({ "process": () => processor.done() });
+export default (params, processor) => ({ "process": () => processor.done() });

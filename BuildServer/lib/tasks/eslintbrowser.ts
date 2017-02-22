@@ -1,15 +1,15 @@
 "use strict";
 
-import path = require("path");
+import { join } from "path";
 import { CLIEngine } from "eslint";
-import settings = require("../../settings");
+import settings from "../../settings";
 const cli = new CLIEngine({ "configFile": settings.eslintBrowserConfig });
 
 const errorSeverity = 2;
 
-export = (params, processor) => ({
+export default (params, processor) => ({
     "process": () => {
-        const filePath = path.join(processor.context.exported, params.filename);
+        const filePath = join(processor.context.exported, params.filename);
         const result = cli.executeOnFiles([filePath]);
 
         processor.onInfo(`ESLinted ${params.filename}`);

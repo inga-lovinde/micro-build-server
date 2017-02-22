@@ -1,14 +1,14 @@
 "use strict";
 
-import path = require("path");
-import fs = require("fs");
-import fse = require("fs-extra");
-import async = require("async");
-import gitLoader = require("./git/loader");
-import processor = require("./task-processor");
-import reportProcessor = require("./report-processor");
-import mailSender = require("./mail-sender");
-import settings = require("../settings");
+import { join } from "path";
+import { exists, readFile, writeFileSync } from "fs";
+import { mkdirsSync, remove } from "fs-extra";
+import { parallel, queue } from "async";
+import { gitLoader } from "./git/loader";
+import { processTask } from "./task-processor";
+import { writeReport } from "./report-processor";
+import { send as sendMail } from "./mail-sender";
+import settings from "../settings";
 
 const codePostfix = "";
 const mailLazinessLevel = 1000;
@@ -77,11 +77,11 @@ export const build = (options, buildCallback) => {
     const rev = options.rev;
     const branch = options.branch;
     const skipGitLoader = options.skipGitLoader;
-    const local = path.join(options.app.get("gitpath"), "r");
-    const tmp = path.join(options.app.get("tmpcodepath"), rev.substr(0, maxTmpcodepathLength));
+    const local = join(options.app.get("gitpath"), "r");
+    const tmp = join(options.app.get("tmpcodepath"), rev.substr(0, maxTmpcodepathLength));
     const exported = tmp + codePostfix;
-    const release = path.join(options.app.get("releasepath"), owner, reponame, branch, rev);
-    const statusQueue = async.queue((task, queueCallback) => task(queueCallback), 1);
+    const release = join(options.app.get("releasepath"), owner, reponame, branch, rev);
+    const statusQueue = queue((task, queueCallback) => task(queueCallback), 1);
     const actualGitLoader = wrapGitLoader(skipGitLoader);
     const date = new Date();
     const versionMajor = date.getFullYear();
@@ -99,11 +99,11 @@ export const build = (options, buildCallback) => {
         "state": "pending"
     }, queueCallback));
 
-    fse.mkdirsSync(release);
+    mkdirsSync(release);
 
-    fs.writeFileSync(path.join(options.app.get("releasepath"), owner, reponame, branch, "latest.id"), rev);
-    fse.mkdirsSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs"));
-    fs.writeFileSync(path.join(options.app.get("releasepath"), owner, reponame, "$revs", `${rev}.branch`), branch);
+    writeFileSync(join(options.app.get("releasepath"), owner, reponame, branch, "latest.id"), rev);
+    mkdirsSync(join(options.app.get("releasepath"), owner, reponame, "$revs"));
+    writeFileSync(join(options.app.get("releasepath"), owner, reponame, "$revs", `${rev}.branch`), branch);
 
     const createErrorMessageForMail = (doneErr) => {
         if (!doneErr) {
@@ -129,8 +129,8 @@ export const build = (options, buildCallback) => {
         const warnMessage = (allWarns[0] || {}).message;
         const infoMessage = (allInfos[allInfos.length - 1] || {}).message;
 
-        reportProcessor.writeReport(release, doneErr, result, (writeErr) => {
-            statusQueue.push((queueCallback) => async.parallel([
+        writeReport(release, doneErr, result, (writeErr) => {
+            statusQueue.push((queueCallback) => parallel([
                 (parallelCallback) => notifyStatus({
                     "description": errorMessage || warnMessage || infoMessage || "Success",
                     "hash": rev,
@@ -138,7 +138,7 @@ export const build = (options, buildCallback) => {
                     reponame,
                     "state": createFinalState(!doneErr)
                 }, parallelCallback),
-                (parallelCallback) => mailSender.send({
+                (parallelCallback) => sendMail({
                     "from": settings.smtp.sender,
                     "headers": { "X-Laziness-level": mailLazinessLevel },
                     "subject": createBuildDoneMessage(doneErr, `${owner}/${reponame}/${branch}`),
@@ -150,7 +150,7 @@ export const build = (options, buildCallback) => {
                         return process.nextTick(parallelCallback);
                     }
 
-                    return fse.remove(tmp, parallelCallback);
+                    return remove(tmp, parallelCallback);
                 }
             ], queueCallback));
 
@@ -177,12 +177,12 @@ export const build = (options, buildCallback) => {
 
         console.log("Done loading from git");
 
-        return fs.exists(path.join(exported, "mbs.json"), (exists) => {
+        return exists(join(exported, "mbs.json"), (exists) => {
             if (!exists) {
                 return done(null, "MBSNotFound");
             }
 
-            return fs.readFile(path.join(exported, "mbs.json"), (readErr, data) => {
+            return readFile(join(exported, "mbs.json"), (readErr, data) => {
                 if (readErr) {
                     return done(readErr, "MBSUnableToRead");
                 }
@@ -195,7 +195,7 @@ export const build = (options, buildCallback) => {
                     return done(err, "MBSMalformed");
                 }
 
-                return processor.processTask(parsed, {
+                return processTask(parsed, {
                     branch,
                     exported,
                     owner,
