@@ -6,11 +6,11 @@ import { writeFile, mkdir } from "fs";
 import { parallel } from "async";
 import { Copier } from "recursive-tree-copy";
 
-const safeGetEntries = (tree):any => {
+const safeGetEntries = (tree, callback) => {
     try {
-        return { "entries": tree.gitTree.entries() };
+        return callback(null, tree.gitTree.entries());
     } catch (err) {
-        return { err };
+        return callback(err);
     }
 };
 
@@ -43,11 +43,9 @@ const gitToFsCopier = new Copier({
     "walkSourceTree": (tree) => {
         const emitter = new EventEmitter();
 
-        process.nextTick(() => {
-            const { entries, err } = safeGetEntries(tree);
-
-            if (err) {
-                return emitter.emit("error", err);
+        process.nextTick(() => safeGetEntries(tree, (getEntriesErr, entries) => {
+            if (getEntriesErr) {
+                return emitter.emit("error", getEntriesErr);
             }
 
             return parallel(entries.map((entry) => (callback) => {
@@ -80,7 +78,7 @@ const gitToFsCopier = new Copier({
 
                 return emitter.emit("done");
             });
-        });
+        }));
 
         return emitter;
     }
