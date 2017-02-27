@@ -13,7 +13,7 @@ const maxCommentLength = 64000;
 
 const writeComment = (options, message, callback) => options.github.issues.createComment({
     "body": message,
-    "number": options.number,
+    "number": options.pullRequestNumber,
     "owner": options.baseRepoOptions.owner,
     "repo": options.baseRepoOptions.reponame
 }, callback);
@@ -24,7 +24,7 @@ const closePullRequest = (options, message, callback) => writeComment(options, m
     }
 
     return options.github.issues.edit({
-        "number": options.number,
+        "number": options.pullRequestNumber,
         "owner": options.baseRepoOptions.owner,
         "repo": options.baseRepoOptions.reponame,
         "state": "closed"

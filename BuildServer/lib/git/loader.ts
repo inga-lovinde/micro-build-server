@@ -38,9 +38,9 @@ export const gitLoader = (options, globalCallback) => {
             .catch(globalCallback)
             .then((remote) => remote.fetch([options.branch])
                 .catch(globalCallback)
-                .then((number) => {
-                    if (number) {
-                        return globalCallback(`Failed to fetch commit: error number ${number}`);
+                .then((errorNumber) => {
+                    if (errorNumber) {
+                        return globalCallback(`Failed to fetch commit: error number ${errorNumber}`);
                     }
 
                     console.log(`Cloned ${url} to ${path}`);

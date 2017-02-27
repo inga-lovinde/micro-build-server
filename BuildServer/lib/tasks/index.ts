@@ -1,6 +1,6 @@
 "use strict";
 
-var tasks = {};
+let tasks = {};
 
 // Code taken from http://stackoverflow.com/a/17204293
 // eslint-disable-next-line no-sync

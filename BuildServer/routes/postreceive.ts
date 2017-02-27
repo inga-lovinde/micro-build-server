@@ -28,7 +28,7 @@ const processPush = (req, res, payload) => {
 
 const processPullRequest = (req, res, payload) => {
     const action = payload.action;
-    const number = payload.number;
+    const pullRequestNumber = payload.number;
     const pullRequest = payload.pull_request;
     const head = pullRequest.head;
     const headRepo = head.repo;
@@ -52,14 +52,14 @@ const processPullRequest = (req, res, payload) => {
         "app": req.app,
         baseRepoOptions,
         headRepoOptions,
-        number
+        pullRequestNumber
     };
     const masterOptions = {
         action,
         "app": req.app,
         baseRepoOptions,
         "headRepoOptions": baseRepoOptions,
-        number
+        pullRequestNumber
     };
 
     console.log(`Got pull request ${action} event, `
@@ -97,7 +97,7 @@ const getPayload = (body) => {
     }
 
     return JSONParse(body.payload).value;
-}
+};
 
 export default (req, res) => {
     if (!req.body || (!req.body.payload && !req.body.repository)) {
