@@ -2,7 +2,7 @@
 
 import { createWriteStream } from "fs";
 import { join, normalize } from "path";
-import * as Archiver from "archiver";
+import { create as createArchiver } from "archiver";
 
 export default (params, processor) => ({
     "process": () => {
@@ -12,7 +12,7 @@ export default (params, processor) => ({
         processor.onInfo(`Compressing "${params.directory}" to "${params.archive}"`);
 
         const output = createWriteStream(targetArchivePath);
-        const archive = new Archiver("zip");
+        const archive = createArchiver("zip");
 
         output.on("close", () => processor.done());
 

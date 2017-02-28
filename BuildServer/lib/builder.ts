@@ -74,7 +74,7 @@ export const build = (options, buildCallback) => {
     const tmp = join(options.app.get("tmpcodepath"), rev.substr(0, maxTmpcodepathLength));
     const exported = tmp + codePostfix;
     const release = join(options.app.get("releasepath"), owner, reponame, branch, rev);
-    const statusQueue = queue((task, queueCallback) => task(queueCallback), 1);
+    const statusQueue = queue((task: (callback: any) => void, queueCallback) => task(queueCallback), 1);
     const actualGitLoader = wrapGitLoader(skipGitLoader);
     const date = new Date();
     const versionMajor = date.getFullYear();

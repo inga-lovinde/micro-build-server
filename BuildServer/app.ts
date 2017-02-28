@@ -1,9 +1,9 @@
 "use strict";
 
-import * as realFs from "fs";
-import * as fs from "graceful-fs";
+import * as fs from "fs";
+import { gracefulify } from "graceful-fs";
 
-fs.gracefulify(realFs);
+gracefulify(fs);
 
 import * as express from "express";
 import * as routes from "./routes";

@@ -2,6 +2,7 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es6",
+        "sourceMap": false,
         "typeRoots": [
             "node_modules/@types"
         ]
@@ -11,5 +12,8 @@
         "settings.ts",
         "lib/**/*.ts",
         "routes/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules/**/*.ts"
     ]
 }

@@ -8,6 +8,40 @@ import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
 import * as _ from "underscore";
 import * as JSONParse from "json-parse-safe";
 
+interface Message {
+    message: string;
+    prefix: string;
+};
+
+interface PartialMessagesLeaf {
+    $messages: string[];
+};
+
+interface PartialMessagesRecursive {
+    [propName: string]: Messages;
+};
+
+interface PartialMessagesRoot {
+    $allMessages: Message[];
+};
+
+type Messages = PartialMessagesLeaf & PartialMessagesRecursive;
+
+type MessagesRoot = PartialMessagesLeaf & PartialMessagesRecursive & PartialMessagesRoot;
+
+interface ReportResult {
+    errors: MessagesRoot;
+    warns: MessagesRoot;
+    infos: MessagesRoot;
+    messages: MessagesRoot;
+};
+
+interface Report {
+    date: number;
+    err?: string;
+    result?: ReportResult;
+};
+
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
 const attemptsTimeout = 30000;
@@ -20,11 +54,11 @@ const readableStreamBufferOptions = {
     "frequency": 1
 };
 
-const getAllErrors = (report) => ((report.result || {}).errors || {}).$allMessages || [];
-const getAllWarns = (report) => ((report.result || {}).warns || {}).$allMessages || [];
-const getAllInfos = (report) => ((report.result || {}).infos || {}).$allMessages || [];
+const getAllErrors = (report: Report): Message[] => (report.result && report.result.errors && report.result.errors.$allMessages) || [];
+const getAllWarns = (report: Report): Message[] => (report.result && report.result.warns && report.result.errors.$allMessages) || [];
+const getAllInfos = (report: Report): Message[] => (report.result && report.result.infos && report.result.errors.$allMessages) || [];
 
-export const writeReport = (releaseDir, err, result, callback) => {
+export const writeReport = (releaseDir, err, result: ReportResult, callback) => {
     const data = JSON.stringify({
         "date": Date.now(),
         err,
@@ -67,7 +101,7 @@ export const readReport = (releaseDir, callback) => {
                 return callback("ReportFileNotFound");
             }
 
-            const { error, value } = JSONParse(data);
+            const { error, value }: { error: any, value?: Report } = JSONParse(data);
             if (error) {
                 return callback("ReportFileMalformed");
             }

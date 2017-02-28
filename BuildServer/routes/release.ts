@@ -1,7 +1,7 @@
 "use strict";
 
 import { join } from "path";
-import * as Archiver from "archiver";
+import { create as createArchiver } from "archiver";
 
 import { readReport } from "../lib/report-processor";
 
@@ -39,7 +39,7 @@ export default (req, res, next) => {
             return next(err);
         }
 
-        const archive = new Archiver("zip");
+        const archive = createArchiver("zip");
 
         archive.on("error", next);
         res.attachment(`${options.reponame}.${getDatePart(report)}.${options.rev}.zip`, ".");
