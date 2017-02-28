@@ -31,41 +31,39 @@ const processAssemblyInfo = (params, processor, appendInformationalVersion) => (
     return cb(null, processInformationalVersion(processInternalsVisible(originalContent)));
 };
 
-export default ((params, processor) => ({
-    process: () => {
-        if (processor.context.containsFlag(flagDoneName)) {
+export default ((params, processor) => () => {
+    if (processor.context.containsFlag(flagDoneName)) {
+        return processor.done();
+    }
+
+    processor.context.addFlag(flagDoneName);
+
+    return glob("**/{InternalsVisible,AssemblyInfo}*.cs", { cwd: processor.context.exported }, (globErr, files) => {
+        if (globErr) {
+            processor.onError(globErr);
+
             return processor.done();
         }
 
-        processor.context.addFlag(flagDoneName);
+        processor.onInfo(`Found ${files.length} AssemblyInfo.cs files`);
 
-        return glob("**/{InternalsVisible,AssemblyInfo}*.cs", { cwd: processor.context.exported }, (globErr, files) => {
-            if (globErr) {
-                processor.onError(globErr);
+        if (!files || !files.length) {
+            processor.onWarn("No AssemblyInfo.cs found");
 
-                return processor.done();
+            return processor.done();
+        }
+
+        return parallel(files.map((file) => (callback) => waterfall([
+            readFile.bind(null, join(processor.context.exported, file), { encoding: "utf8" }),
+            processAssemblyInfo(params, processor, file.toLowerCase().includes("assemblyinfo.cs")),
+            writeFile.bind(null, join(processor.context.exported, file)),
+        ], (err) => {
+            if (err) {
+                processor.onError(`Unable to rewrite file ${file}: ${err}`);
+            } else {
+                processor.onInfo(`Rewritten file ${file}`);
             }
-
-            processor.onInfo(`Found ${files.length} AssemblyInfo.cs files`);
-
-            if (!files || !files.length) {
-                processor.onWarn("No AssemblyInfo.cs found");
-
-                return processor.done();
-            }
-
-            return parallel(files.map((file) => (callback) => waterfall([
-                readFile.bind(null, join(processor.context.exported, file), { encoding: "utf8" }),
-                processAssemblyInfo(params, processor, file.toLowerCase().includes("assemblyinfo.cs")),
-                writeFile.bind(null, join(processor.context.exported, file)),
-            ], (err) => {
-                if (err) {
-                    processor.onError(`Unable to rewrite file ${file}: ${err}`);
-                } else {
-                    processor.onInfo(`Rewritten file ${file}`);
-                }
-                callback(err);
-            })), processor.done.bind(processor));
-        });
-    },
-})) as Task;
+            callback(err);
+        })), processor.done);
+    });
+}) as Task;

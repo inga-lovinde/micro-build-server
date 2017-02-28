@@ -4,11 +4,8 @@ import * as _ from "underscore";
 import tasks from "./tasks";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
-const createTaskProcessor = (task, outerProcessor: TaskProcessor, callback) => {
-    const result: TaskProcessor = {};
-    const createTaskWorker = () => tasks[task.type](task.params || {}, result);
+const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
     const errors: string[] = [];
-    const process = () => createTaskWorker().process();
     const getOuterPrefix = (prefix) => {
         if (task.name && prefix) {
             return `${task.name}/${prefix}`;
@@ -22,20 +19,17 @@ const createTaskProcessor = (task, outerProcessor: TaskProcessor, callback) => {
     };
     const onWarn = (message, prefix) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
     const onInfo = (message, prefix) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
-    const processTask = (innerTask, innerCallback) => {
-        const innerProcessor = createTaskProcessor(innerTask, result, innerCallback);
 
-        innerProcessor.process();
+    let result: TaskProcessor;
+    result = {
+        context: outerProcessor.context,
+        done: () => callback(errors.join("\r\n")),
+        onError,
+        onWarn,
+        onInfo,
+        process: () => tasks[task.type](task.params || {}, result)(),
+        processTask: (innerTask, innerCallback) => createTaskProcessor(innerTask, result, innerCallback).process(),
     };
-    const done = () => callback(errors.join("\r\n"));
-
-    result.process = process;
-    result.onError = onError;
-    result.onWarn = onWarn;
-    result.onInfo = onInfo;
-    result.processTask = processTask;
-    result.done = done;
-    result.context = outerProcessor.context;
 
     return result;
 };

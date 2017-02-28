@@ -2,7 +2,7 @@
 
 import { readdirSync } from "fs";
 
-const tasks: Tasks = {};
+const tasks = {};
 
 // Code taken from http://stackoverflow.com/a/17204293
 readdirSync(__dirname)
@@ -13,4 +13,4 @@ readdirSync(__dirname)
         }
     });
 
-export default tasks;
+export default tasks as Tasks;

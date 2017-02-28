@@ -28,49 +28,47 @@ const wrapBuilder = (builder, input, onExit) => {
     builder.stdin.end();
 };
 
-export default ((params, processor) => ({
-    process: () => {
-        const input = JSON.stringify(params);
-        const builder = spawn(settings.builderExecutable, [params.command]);
+export default ((params, processor) => () => {
+    const input = JSON.stringify(params);
+    const builder = spawn(settings.builderExecutable, [params.command]);
 
-        processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${input}`);
+    processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${input}`);
 
-        wrapBuilder(builder, input, (code, result, builderError) => {
-            if (code || builderError) {
-                processor.onError(`Return code is ${code}\r\n${builderError}`);
-
-                return processor.done();
-            }
-
-            const { value, error } = JSONParse(result);
-
-            if (error || !value || !value.Messages) {
-                processor.onError(`Malformed JSON: ${error}`);
-                processor.onInfo(result);
-
-                return processor.done();
-            }
-
-            const messages = value.Messages;
-
-            messages.forEach((message) => {
-                if (!message) {
-                    return processor.onError("Message is null");
-                }
-
-                switch (message.Type) {
-                case "info":
-                    return processor.onInfo(message.Body);
-                case "warn":
-                    return processor.onWarn(message.Body);
-                default:
-                    return processor.onError(message.Body);
-                }
-            });
-
-            processor.onInfo(`Done DotNetBuilderWrapper processing (at ${new Date().toISOString()})`);
+    wrapBuilder(builder, input, (code, result, builderError) => {
+        if (code || builderError) {
+            processor.onError(`Return code is ${code}\r\n${builderError}`);
 
             return processor.done();
+        }
+
+        const { value, error } = JSONParse(result);
+
+        if (error || !value || !value.Messages) {
+            processor.onError(`Malformed JSON: ${error}`);
+            processor.onInfo(result);
+
+            return processor.done();
+        }
+
+        const messages = value.Messages;
+
+        messages.forEach((message) => {
+            if (!message) {
+                return processor.onError("Message is null");
+            }
+
+            switch (message.Type) {
+            case "info":
+                return processor.onInfo(message.Body);
+            case "warn":
+                return processor.onWarn(message.Body);
+            default:
+                return processor.onError(message.Body);
+            }
         });
-    },
-})) as Task;
+
+        processor.onInfo(`Done DotNetBuilderWrapper processing (at ${new Date().toISOString()})`);
+
+        return processor.done();
+    });
+}) as Task;
