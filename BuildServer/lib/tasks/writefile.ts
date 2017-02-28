@@ -3,8 +3,8 @@
 import { writeFile } from "fs";
 import { join } from "path";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const filePath = join(processor.context.exported, params.filename);
 
         processor.onInfo(`Writing to ${filePath}`);
@@ -18,5 +18,5 @@ export default (params, processor) => ({
 
             return processor.done();
         });
-    }
-});
+    },
+})) as Task;

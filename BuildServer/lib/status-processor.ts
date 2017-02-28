@@ -1,8 +1,9 @@
 "use strict";
 
-import { join } from "path";
 import { exists, readFile } from "fs";
+import { join } from "path";
 import * as _ from "underscore";
+
 import { loadReport } from "./report-processor";
 
 const addBranchInfo = (app, options, callback) => {
@@ -24,7 +25,7 @@ const addBranchInfo = (app, options, callback) => {
 
             return callback(null, _.extend(options, {
                 branch,
-                branchName
+                branchName,
             }));
         });
     });
@@ -56,23 +57,23 @@ const parseOptions = (app, options, callback) => {
     }
 
     const result = {
-        "owner": options.owner,
-        "reponame": options.reponame
+        owner: options.owner,
+        reponame: options.reponame,
     };
 
     if (options.rev) {
-        return addBranchInfo(app, _.extend(result, { "rev": options.rev }), callback);
+        return addBranchInfo(app, _.extend(result, { rev: options.rev }), callback);
     }
 
     if (/^[\da-f]{40}$/i.test(options.branchName)) {
-        return addBranchInfo(app, _.extend(result, { "rev": options.branchName }), callback);
+        return addBranchInfo(app, _.extend(result, { rev: options.branchName }), callback);
     }
 
     const branchName = options.branchName || "master";
 
     return addRevInfo(app, _.extend(result, {
-        "branch": `refs/heads/${branchName}`,
-        branchName
+        branch: `refs/heads/${branchName}`,
+        branchName,
     }), callback);
 };
 

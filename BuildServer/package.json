@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "start": "forever -c node app.js",
-    "build": "./node_modules/.bin/tsc -p .",
+    "build": "./node_modules/.bin/tsc -p . --noEmitOnError",
     "pretest": "./node_modules/.bin/tsc -p . --noEmit",
-    "test": "./node_modules/.bin/tslint --project tsconfig.json --type-check"
+    "test": "./node_modules/.bin/tslint --config tslint.json --project tsconfig.json --type-check"
   },
   "dependencies": {
     "archiver": "^1.3.0",
@@ -52,6 +52,7 @@
     "@types/uglify-js": "^2.6.28",
     "@types/underscore": "^1.7.36",
     "tslint": "^4.4.2",
+    "tslint-eslint-rules": "^3.4.0",
     "typescript": "^2.2.1"
   }
 }

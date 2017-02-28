@@ -1,10 +1,10 @@
 "use strict";
 
-import { join } from "path";
 import { remove } from "fs-extra";
+import { join } from "path";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const sourceFilePath = join(processor.context.exported, params.filename);
 
         processor.onInfo(`Deleting ${sourceFilePath}`);
@@ -18,5 +18,5 @@ export default (params, processor) => ({
 
             return processor.done();
         });
-    }
-});
+    },
+})) as Task;

@@ -15,7 +15,7 @@ const addPostfix = (version, params, processor) => {
     return `${version}-r${processor.context.rev.substr(0, postfixLength)}`;
 };
 
-export default (params, processor) => {
+export default ((params, processor) => {
     const date = new Date();
     const major = params.major || "0";
     const minor = (date.getFullYear() * fourDigits) + ((date.getMonth() + 1) * twoDigits) + date.getDate();
@@ -24,18 +24,18 @@ export default (params, processor) => {
     const nupkg = `${params.name}.${version}.nupkg`;
 
     return sequential({
-        "tasks": [
+        tasks: [
             {
-                "params": {
-                    "BaseDirectory": processor.context.exported,
-                    "OutputDirectory": processor.context.exported,
-                    "SpecPath": join(processor.context.exported, params.nuspec),
-                    "Version": version,
-                    "command": "nugetpack"
+                params: {
+                    BaseDirectory: processor.context.exported,
+                    OutputDirectory: processor.context.exported,
+                    SpecPath: join(processor.context.exported, params.nuspec),
+                    Version: version,
+                    command: "nugetpack",
                 },
-                "type": "dotnetbuilderwrapper"
+                type: "dotnetbuilderwrapper",
             },
-            params.getFinalTask(nupkg)
-        ]
+            params.getFinalTask(nupkg),
+        ],
     }, processor);
-};
+}) as Task;

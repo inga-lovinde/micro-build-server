@@ -1,11 +1,11 @@
 "use strict";
 
+import { create as createArchiver } from "archiver";
 import { createWriteStream } from "fs";
 import { join, normalize } from "path";
-import { create as createArchiver } from "archiver";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const sourceDirectoryPath = normalize(join(processor.context.exported, String(params.directory || "")));
         const targetArchivePath = normalize(join(processor.context.release, params.archive));
 
@@ -20,5 +20,5 @@ export default (params, processor) => ({
         archive.pipe(output);
         archive.directory(sourceDirectoryPath, false);
         archive.finalize();
-    }
-});
+    },
+})) as Task;

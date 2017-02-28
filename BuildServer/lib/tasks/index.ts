@@ -1,15 +1,14 @@
 "use strict";
 
-let tasks = {};
+import { readdirSync } from "fs";
+
+const tasks: Tasks = {};
 
 // Code taken from http://stackoverflow.com/a/17204293
-// eslint-disable-next-line no-sync
-require("fs").readdirSync(__dirname)
+readdirSync(__dirname)
     .forEach((file) => {
         if (file.match(/\.ts$/) !== null && file !== "index.ts") {
             const name = file.replace(".ts", "");
-
-            // eslint-disable-next-line global-require
             tasks[name] = require(`./${file}`).default;
         }
     });

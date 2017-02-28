@@ -1,7 +1,7 @@
 "use strict";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         if (params.error) {
             processor.onError(params.error);
         }
@@ -15,5 +15,5 @@ export default (params, processor) => ({
         }
 
         processor.done();
-    }
-});
+    },
+})) as Task;

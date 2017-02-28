@@ -1,7 +1,8 @@
 "use strict";
 
-import { parse } from "url";
 import * as _ from "underscore";
+import { parse } from "url";
+
 import { getReport } from "../lib/status-processor";
 
 const parseOptionsFromReferer = (path, callback) => {
@@ -19,7 +20,7 @@ const parseOptionsFromReferer = (path, callback) => {
             branchName,
             owner,
             reponame,
-            rev
+            rev,
         });
     }
 
@@ -29,7 +30,7 @@ const parseOptionsFromReferer = (path, callback) => {
         branchName,
         owner,
         reponame,
-        rev
+        rev,
     });
 };
 
@@ -42,24 +43,24 @@ const createShowReport = (res) => (err, inputOptions) => {
 export const image = (req, res) => {
     const getAdditionalOptions = (err, options) => {
         if (err === "ReportFileNotFound") {
-            return { "status": "Building" };
+            return { status: "Building" };
         }
 
         if (err) {
             return {
-                "message": err,
-                "status": "StatusError"
+                message: err,
+                status: "StatusError",
             };
         }
 
         if (options.report.result === "MBSNotFound") {
-            return { "status": "MBSNotUsed" };
+            return { status: "MBSNotUsed" };
         }
 
         if (options.report.err) {
             return {
-                "message": options.report.err,
-                "status": "Error"
+                message: options.report.err,
+                status: "Error",
             };
         }
 
@@ -67,8 +68,8 @@ export const image = (req, res) => {
             const [firstWarn] = options.report.result.warns.$allMessages;
 
             return {
-                "message": firstWarn.message,
-                "status": "Warning"
+                message: firstWarn.message,
+                status: "Warning",
             };
         }
 
@@ -76,12 +77,12 @@ export const image = (req, res) => {
 
         if (allInfos.length) {
             return {
-                "message": allInfos[allInfos.length - 1].message,
-                "status": "OK"
+                message: allInfos[allInfos.length - 1].message,
+                status: "OK",
             };
         }
 
-        return { "status": "OK" };
+        return { status: "OK" };
     };
 
     const handle = (err, options) => {
@@ -100,11 +101,11 @@ export const image = (req, res) => {
 
 export const page = (req, res) => {
     const options = {
-        "branch": `/refs/heads/${req.params.branch}`,
-        "branchName": req.params.branch,
-        "owner": req.params.owner,
-        "reponame": req.params.reponame,
-        "rev": req.params.rev
+        branch: `/refs/heads/${req.params.branch}`,
+        branchName: req.params.branch,
+        owner: req.params.owner,
+        reponame: req.params.reponame,
+        rev: req.params.rev,
     };
 
     getReport(req.app, options, createShowReport(res));

@@ -1,10 +1,10 @@
 "use strict";
 
-import { join } from "path";
 import { copy } from "fs-extra";
+import { join } from "path";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const sourceFilePath = join(processor.context.exported, params.filename);
         const targetFilePath = join(processor.context.release, params.filename);
 
@@ -19,5 +19,5 @@ export default (params, processor) => ({
 
             return processor.done();
         });
-    }
-});
+    },
+})) as Task;

@@ -1,7 +1,7 @@
 "use strict";
 
-import { join } from "path";
 import { create as createArchiver } from "archiver";
+import { join } from "path";
 
 import { readReport } from "../lib/report-processor";
 
@@ -25,11 +25,11 @@ const getDatePart = (report) => {
 
 export default (req, res, next) => {
     const options = {
-        "branch": `/refs/heads/${req.params.branch}`,
-        "branchName": req.params.branch,
-        "owner": req.params.owner,
-        "reponame": req.params.reponame,
-        "rev": req.params.rev
+        branch: `/refs/heads/${req.params.branch}`,
+        branchName: req.params.branch,
+        owner: req.params.owner,
+        reponame: req.params.reponame,
+        rev: req.params.rev,
     };
 
     const releasePath = join(req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);

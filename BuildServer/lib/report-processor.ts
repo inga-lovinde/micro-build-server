@@ -1,46 +1,12 @@
 "use strict";
 
-import { join } from "path";
 import { createReadStream, createWriteStream, exists } from "fs";
-import { createGzip, createGunzip } from "zlib";
 import * as glob from "glob";
+import * as JSONParse from "json-parse-safe";
+import { join } from "path";
 import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
 import * as _ from "underscore";
-import * as JSONParse from "json-parse-safe";
-
-interface Message {
-    message: string;
-    prefix: string;
-};
-
-interface PartialMessagesLeaf {
-    $messages: string[];
-};
-
-interface PartialMessagesRecursive {
-    [propName: string]: Messages;
-};
-
-interface PartialMessagesRoot {
-    $allMessages: Message[];
-};
-
-type Messages = PartialMessagesLeaf & PartialMessagesRecursive;
-
-type MessagesRoot = PartialMessagesLeaf & PartialMessagesRecursive & PartialMessagesRoot;
-
-interface ReportResult {
-    errors: MessagesRoot;
-    warns: MessagesRoot;
-    infos: MessagesRoot;
-    messages: MessagesRoot;
-};
-
-interface Report {
-    date: number;
-    err?: string;
-    result?: ReportResult;
-};
+import { createGunzip, createGzip } from "zlib";
 
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
@@ -50,8 +16,8 @@ const directoryCheckTimeout = 2000;
 const attemptsDebugFrequency = 10;
 
 const readableStreamBufferOptions = {
-    "chunkSize": 262144,
-    "frequency": 1
+    chunkSize: 262144,
+    frequency: 1,
 };
 
 const getAllErrors = (report: Report): Message[] => (report.result && report.result.errors && report.result.errors.$allMessages) || [];
@@ -60,9 +26,9 @@ const getAllInfos = (report: Report): Message[] => (report.result && report.resu
 
 export const writeReport = (releaseDir, err, result: ReportResult, callback) => {
     const data = JSON.stringify({
-        "date": Date.now(),
+        date: Date.now(),
         err,
-        result
+        result,
     });
 
     const readable = new ReadableStreamBuffer(readableStreamBufferOptions);
@@ -114,8 +80,8 @@ export const loadReport = (app, options, callback) => {
     const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
 
     glob("**", {
-        "cwd": releaseDir,
-        "mark": true
+        cwd: releaseDir,
+        mark: true,
     }, (err, files) => {
         if (err) {
             return callback(err, options);
@@ -135,7 +101,7 @@ export const loadReport = (app, options, callback) => {
 
                 return callback(null, _.extend(options, {
                     files,
-                    report
+                    report,
                 }));
             });
         });
@@ -143,7 +109,7 @@ export const loadReport = (app, options, callback) => {
 };
 
 export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
-    const options = _.extend(originalOptions, { "attemptsGetReport": (Number(originalOptions.attemptsGetReport) || Number()) + 1 });
+    const options = _.extend(originalOptions, { attemptsGetReport: (Number(originalOptions.attemptsGetReport) || Number()) + 1 });
     const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
     const reportFile = join(releaseDir, reportFilename);
 
@@ -181,19 +147,17 @@ export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
             const infos = getAllInfos(report);
 
             if (errors.length + warns.length) {
-                return callback(_.map(
-                    errors, (message) => `ERR: ${message.message}`
-                ).concat(_.map(
-                    warns, (message) => `WARN: ${message.message}`
-                ))
-               .join("\r\n"));
+                const formattedErrors = _.map(errors, (message) => `ERR: ${message.message}`);
+                const formattedWarns = _.map(warns, (message) => `WARN: ${message.message}`);
+
+                return callback(formattedErrors.concat(formattedWarns).join("\r\n"));
             }
 
             if (!report.result || report.err) {
                 return callback(`CRITICAL ERROR: ${report.err}`);
             }
 
-            return callback(null, (infos[infos.length - 1] || { "message": "OK" }).message);
+            return callback(null, (infos[infos.length - 1] || { message: "OK" }).message);
         }), reportReadTimeout);
     });
 };

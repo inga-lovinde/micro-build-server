@@ -2,27 +2,27 @@
 
 import sequential from "./sequential";
 
-export default (params, processor) => sequential({
-    "tasks": [
+export default ((params, processor) => sequential({
+    tasks: [
         {
-            "params": { "excludeFiles": params.eslintExcludeFiles },
-            "type": "eslintbrowserall"
+            params: { excludeFiles: params.eslintExcludeFiles },
+            type: "eslintbrowserall",
         },
-        { "type": "uglifyjsall" },
-        { "type": "cssnanoall" },
+        { type: "uglifyjsall" },
+        { type: "cssnanoall" },
         {
-            "params": {
-                "data": processor.context.versionInfo,
-                "filename": "version.txt"
+            params: {
+                data: processor.context.versionInfo,
+                filename: "version.txt",
             },
-            "type": "writefile"
+            type: "writefile",
         },
         {
-            "params": {
-                "archive": `${processor.context.reponame}.zip`,
-                "directory": ""
+            params: {
+                archive: `${processor.context.reponame}.zip`,
+                directory: "",
             },
-            "type": "zip"
-        }
-    ]
-}, processor);
+            type: "zip",
+        },
+    ],
+}, processor)) as Task;

@@ -4,8 +4,8 @@ import * as glob from "glob";
 
 const doneFlagName = "uglifyjsallDone";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         if (processor.context.containsFlag(doneFlagName)) {
             processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
         }
@@ -13,8 +13,8 @@ export default (params, processor) => ({
         processor.context.addFlag(doneFlagName);
 
         glob("**/*.js", {
-            "cwd": processor.context.exported,
-            "dot": true
+            cwd: processor.context.exported,
+            dot: true,
         }, (err, files) => {
             if (err) {
                 processor.onError(err);
@@ -23,15 +23,15 @@ export default (params, processor) => ({
             }
 
             return processor.processTask({
-                "params": {
-                    "tasks": files.map((file) => ({
-                        "name": file,
-                        "params": { "filename": file },
-                        "type": "uglifyjs"
-                    }))
+                params: {
+                    tasks: files.map((file) => ({
+                        name: file,
+                        params: { filename: file },
+                        type: "uglifyjs",
+                    })),
                 },
-                "type": (params.preventParallelTests && "sequential") || "parallel"
+                type: (params.preventParallelTests && "sequential") || "parallel",
             }, processor.done.bind(processor));
         });
-    }
-});
+    },
+})) as Task;

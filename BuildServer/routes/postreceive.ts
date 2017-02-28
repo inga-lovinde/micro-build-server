@@ -9,12 +9,12 @@ const getBranchDescription = (options) => `${options.owner}/${options.reponame}:
 const processPush = (req, res, payload) => {
     const repository = payload.repository;
     const options = {
-        "app": req.app,
-        "branch": payload.ref,
-        "owner": repository.owner.name,
-        "reponame": repository.name,
-        "rev": payload.after,
-        "url": repository.url
+        app: req.app,
+        branch: payload.ref,
+        owner: repository.owner.name,
+        reponame: repository.name,
+        rev: payload.after,
+        url: repository.url,
     };
 
     console.log(`Got push event for ${getBranchDescription(options)}`);
@@ -33,33 +33,33 @@ const processPullRequest = (req, res, payload) => {
     const head = pullRequest.head;
     const headRepo = head.repo;
     const headRepoOptions = {
-        "branch": `refs/heads/${head.ref}`,
-        "branchname": head.ref,
-        "owner": headRepo.owner.name || headRepo.owner.login,
-        "reponame": headRepo.name,
-        "rev": head.sha,
-        "url": headRepo.url
+        branch: `refs/heads/${head.ref}`,
+        branchname: head.ref,
+        owner: headRepo.owner.name || headRepo.owner.login,
+        reponame: headRepo.name,
+        rev: head.sha,
+        url: headRepo.url,
     };
     const base = pullRequest.base;
     const baseRepo = base.repo;
     const baseRepoOptions = {
-        "branchname": base.ref,
-        "owner": baseRepo.owner.name || baseRepo.owner.login,
-        "reponame": baseRepo.name
+        branchname: base.ref,
+        owner: baseRepo.owner.name || baseRepo.owner.login,
+        reponame: baseRepo.name,
     };
     const options = {
         action,
-        "app": req.app,
+        app: req.app,
         baseRepoOptions,
         headRepoOptions,
-        pullRequestNumber
+        pullRequestNumber,
     };
     const masterOptions = {
         action,
-        "app": req.app,
+        app: req.app,
         baseRepoOptions,
-        "headRepoOptions": baseRepoOptions,
-        pullRequestNumber
+        headRepoOptions: baseRepoOptions,
+        pullRequestNumber,
     };
 
     console.log(`Got pull request ${action} event, `
@@ -79,16 +79,13 @@ const processPullRequest = (req, res, payload) => {
         return res.send("");
     }
 
-    return commentOnPullRequest(
-        (action === "closed" && masterOptions) || options,
-        (err, data) => {
-            if (err) {
-                console.log(`Unable to post comment: ${err}`);
-            }
-
-            res.send(err || data);
+    return commentOnPullRequest((action === "closed" && masterOptions) || options, (err, data) => {
+        if (err) {
+            console.log(`Unable to post comment: ${err}`);
         }
-    );
+
+        res.send(err || data);
+    });
 };
 
 const getPayload = (body) => {

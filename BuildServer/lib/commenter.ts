@@ -1,8 +1,9 @@
 "use strict";
 
 import * as _ from "underscore";
-import { getStatusMessageFromRelease } from "./report-processor";
+
 import settings from "../settings";
+import { getStatusMessageFromRelease } from "./report-processor";
 
 const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 const versionNamePattern = /^v\d+(\.\d+)*$/;
@@ -12,10 +13,10 @@ const httpNotFound = 404;
 const maxCommentLength = 64000;
 
 const writeComment = (options, message, callback) => options.github.issues.createComment({
-    "body": message,
-    "number": options.pullRequestNumber,
-    "owner": options.baseRepoOptions.owner,
-    "repo": options.baseRepoOptions.reponame
+    body: message,
+    number: options.pullRequestNumber,
+    owner: options.baseRepoOptions.owner,
+    repo: options.baseRepoOptions.reponame,
 }, callback);
 
 const closePullRequest = (options, message, callback) => writeComment(options, message, (err) => {
@@ -24,17 +25,17 @@ const closePullRequest = (options, message, callback) => writeComment(options, m
     }
 
     return options.github.issues.edit({
-        "number": options.pullRequestNumber,
-        "owner": options.baseRepoOptions.owner,
-        "repo": options.baseRepoOptions.reponame,
-        "state": "closed"
+        number: options.pullRequestNumber,
+        owner: options.baseRepoOptions.owner,
+        repo: options.baseRepoOptions.reponame,
+        state: "closed",
     }, callback);
 });
 
 const checkHasIssue = (options, issueNumber, callback) => options.github.issues.get({
-    "number": issueNumber,
-    "owner": options.baseRepoOptions.owner,
-    "repo": options.baseRepoOptions.reponame
+    number: issueNumber,
+    owner: options.baseRepoOptions.owner,
+    repo: options.baseRepoOptions.reponame,
 }, (getIssueErr, result) => {
     if (getIssueErr && getIssueErr.code !== httpNotFound) {
         return callback(getIssueErr);
@@ -52,9 +53,9 @@ const checkHasIssue = (options, issueNumber, callback) => options.github.issues.
 });
 
 const checkHasReleases = (options, callback) => options.github.repos.getReleases({
-    "owner": options.baseRepoOptions.owner,
-    "per_page": 1,
-    "repo": options.baseRepoOptions.reponame
+    owner: options.baseRepoOptions.owner,
+    per_page: 1,
+    repo: options.baseRepoOptions.reponame,
 }, (getReleasesErr, result) => {
     if (getReleasesErr) {
         return callback(getReleasesErr);
@@ -101,7 +102,8 @@ const checkPullRequest = (options, callback) => {
         return closePullRequest(options, `Only merging to master or version branch is allowed; merging to '${base.branchname}'  is not supported`, callback);
     }
 
-    const issueNumber = featureNamePattern.exec(head.branchname)[1];
+    const execResult = featureNamePattern.exec(head.branchname);
+    const issueNumber = execResult && execResult[1];
 
     return checkHasIssue(options, issueNumber, (hasIssueErr, hasIssue, issueTitle) => {
         if (hasIssueErr) {
@@ -137,8 +139,8 @@ const checkPullRequest = (options, callback) => {
 };
 
 export const commentOnPullRequest = (originalOptions, callback) => {
-    const optionsGithub = _.extend(originalOptions, { "github": settings.createGithub(originalOptions.baseRepoOptions.owner) });
-    const options = _.extend(optionsGithub, { "onTenthAttempt": () => writeComment(optionsGithub, "Waiting for build to finish...", () => {}) });
+    const optionsGithub = _.extend(originalOptions, { github: settings.createGithub(originalOptions.baseRepoOptions.owner) });
+    const options = _.extend(optionsGithub, { onTenthAttempt: () => writeComment(optionsGithub, "Waiting for build to finish...", _.noop) });
 
     return checkPullRequest(options, () => getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
         const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)

@@ -2,21 +2,21 @@
 
 import sequential from "./sequential";
 
-export default (params, processor) => sequential({
-    "tasks": [
+export default ((params, processor) => sequential({
+    tasks: [
         {
-            "name": "build",
+            name: "build",
             params,
-            "type": "dotnetbuildwithoutcleanup"
+            type: "dotnetbuildwithoutcleanup",
         },
         {
-            "name": "test",
+            name: "test",
             params,
-            "type": "dotnetnunitall"
+            type: "dotnetnunitall",
         },
         {
-            "name": "cleanup",
-            "type": "cleanupafterdotnetbuild"
-        }
-    ]
-}, processor);
+            name: "cleanup",
+            type: "cleanupafterdotnetbuild",
+        },
+    ],
+}, processor)) as Task;

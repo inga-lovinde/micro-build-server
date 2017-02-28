@@ -1,11 +1,11 @@
 "use strict";
 
+import { process as cssnanoProcess } from "cssnano";
 import { readFile, writeFile } from "fs";
 import { join } from "path";
-import { process as cssnanoProcess } from "cssnano";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const filePath = join(processor.context.exported, params.filename);
 
         readFile(filePath, (readErr, css) => {
@@ -32,6 +32,5 @@ export default (params, processor) => ({
                     });
                 });
         });
-    }
-});
-
+    },
+})) as Task;

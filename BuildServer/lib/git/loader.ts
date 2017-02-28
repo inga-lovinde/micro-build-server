@@ -1,7 +1,8 @@
 "use strict";
 
-import { Repository, Remote } from "nodegit";
 import { mkdirsSync, removeSync } from "fs-extra";
+import { Remote, Repository } from "nodegit";
+
 import { gitToFs } from "./copy";
 
 const fixUrl = (url) => {
@@ -27,8 +28,8 @@ export const gitLoader = (options, globalCallback) => {
     const path = `${options.local}/${options.hash}`;
     const exported = options.exported;
 
-    removeSync(path); // eslint-disable-line no-sync
-    mkdirsSync(path); // eslint-disable-line no-sync
+    removeSync(path);
+    mkdirsSync(path);
 
     console.log(`Cloning ${url} to ${path}`);
 

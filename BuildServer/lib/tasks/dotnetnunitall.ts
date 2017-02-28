@@ -3,8 +3,8 @@
 import * as glob from "glob";
 const flagDoneName = "dotnetnunitallDone";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
         }
@@ -12,8 +12,8 @@ export default (params, processor) => ({
         processor.context.addFlag(flagDoneName);
 
         glob("**/{bin,build}/**/*.{Tests,Test,UnitTests}.dll", {
-            "cwd": processor.context.exported,
-            "dot": true
+            cwd: processor.context.exported,
+            dot: true,
         }, (err, files) => {
             if (err) {
                 processor.onError(err);
@@ -28,15 +28,15 @@ export default (params, processor) => ({
             }
 
             return processor.processTask({
-                "params": {
-                    "tasks": files.map((file) => ({
-                        "name": file,
-                        "params": { "assembly": file },
-                        "type": "dotnetnunit"
-                    }))
+                params: {
+                    tasks: files.map((file) => ({
+                        name: file,
+                        params: { assembly: file },
+                        type: "dotnetnunit",
+                    })),
                 },
-                "type": (params.preventParallelTests && "sequential") || "parallel"
+                type: (params.preventParallelTests && "sequential") || "parallel",
             }, processor.done.bind(processor));
         });
-    }
-});
+    },
+})) as Task;

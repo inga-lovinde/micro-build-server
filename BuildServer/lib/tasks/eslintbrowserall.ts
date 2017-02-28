@@ -3,8 +3,8 @@
 import * as glob from "glob";
 const flagDoneName = "eslintbrowserallDone";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         if (processor.context.containsFlag(flagDoneName)) {
             processor.onWarn("eslintbrowserall task is executed more than once; this is probably a bug in your mbs.json");
         }
@@ -14,8 +14,8 @@ export default (params, processor) => ({
         const excludeFiles = params.excludeFiles || [];
 
         glob("**/*.js", {
-            "cwd": processor.context.exported,
-            "dot": true
+            cwd: processor.context.exported,
+            dot: true,
         }, (err, files) => {
             if (err) {
                 processor.onError(err);
@@ -24,15 +24,15 @@ export default (params, processor) => ({
             }
 
             return processor.processTask({
-                "params": {
-                    "tasks": files.filter((file) => !excludeFiles.includes(file)).map((file) => ({
-                        "name": file,
-                        "params": { "filename": file },
-                        "type": "eslintbrowser"
-                    }))
+                params: {
+                    tasks: files.filter((file) => !excludeFiles.includes(file)).map((file) => ({
+                        name: file,
+                        params: { filename: file },
+                        type: "eslintbrowser",
+                    })),
                 },
-                "type": (params.preventParallelTests && "sequential") || "parallel"
+                type: (params.preventParallelTests && "sequential") || "parallel",
             }, processor.done.bind(processor));
         });
-    }
-});
+    },
+})) as Task;

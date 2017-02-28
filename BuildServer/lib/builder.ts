@@ -1,15 +1,16 @@
 "use strict";
 
-import { join } from "path";
+import { parallel, queue } from "async";
 import { exists, readFile, writeFileSync } from "fs";
 import { mkdirsSync, remove } from "fs-extra";
-import { parallel, queue } from "async";
 import * as JSONParse from "json-parse-safe";
-import { gitLoader } from "./git/loader";
-import { processTask } from "./task-processor";
-import { writeReport } from "./report-processor";
-import { send as sendMail } from "./mail-sender";
+import { join } from "path";
+
 import settings from "../settings";
+import { gitLoader } from "./git/loader";
+import { send as sendMail } from "./mail-sender";
+import { writeReport } from "./report-processor";
+import { processTask } from "./task-processor";
 
 const codePostfix = "";
 const mailLazinessLevel = 1000;
@@ -35,12 +36,12 @@ const createBuildDoneMessage = (isSuccess, name) => {
 
 const notifyStatus = (options, notifyStatusCallback) => {
     const status = {
-        "description": String(options.description || "").substr(0, maxDescriptionLength),
-        "owner": options.owner,
-        "repo": options.reponame,
-        "sha": options.hash,
-        "state": options.state,
-        "target_url": `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`
+        description: String(options.description || "").substr(0, maxDescriptionLength),
+        owner: options.owner,
+        repo: options.reponame,
+        sha: options.hash,
+        state: options.state,
+        target_url: `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`,
     };
 
     settings.createGithub(options.owner).repos.createStatus(status, (createStatusErr) => {
@@ -85,11 +86,11 @@ export const build = (options, buildCallback) => {
     const versionInfo = `${version}; built from ${rev}; repository: ${owner}/${reponame}; branch: ${branch}`;
 
     statusQueue.push((queueCallback) => notifyStatus({
-        "description": "Preparing to build...",
-        "hash": rev,
+        description: "Preparing to build...",
+        hash: rev,
         owner,
         reponame,
-        "state": "pending"
+        state: "pending",
     }, queueCallback));
 
     mkdirsSync(release);
@@ -125,18 +126,18 @@ export const build = (options, buildCallback) => {
         writeReport(release, doneErr, result, (writeErr) => {
             statusQueue.push((queueCallback) => parallel([
                 (parallelCallback) => notifyStatus({
-                    "description": errorMessage || warnMessage || infoMessage || "Success",
-                    "hash": rev,
+                    description: errorMessage || warnMessage || infoMessage || "Success",
+                    hash: rev,
                     owner,
                     reponame,
-                    "state": createFinalState(!doneErr)
+                    state: createFinalState(!doneErr),
                 }, parallelCallback),
                 (parallelCallback) => sendMail({
-                    "from": settings.smtp.sender,
-                    "headers": { "X-Laziness-level": mailLazinessLevel },
-                    "subject": createBuildDoneMessage(doneErr, `${owner}/${reponame}/${branch}`),
-                    "text": `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n${createErrorMessageForMail(doneErr)}${createResultMessageForMail(result)}`,
-                    "to": settings.smtp.receiver
+                    from: settings.smtp.sender,
+                    headers: { "X-Laziness-level": mailLazinessLevel },
+                    subject: createBuildDoneMessage(doneErr, `${owner}/${reponame}/${branch}`),
+                    text: `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n${createErrorMessageForMail(doneErr)}${createResultMessageForMail(result)}`,
+                    to: settings.smtp.receiver,
                 }, parallelCallback),
                 (parallelCallback) => {
                     if (doneErr) {
@@ -144,7 +145,7 @@ export const build = (options, buildCallback) => {
                     }
 
                     return remove(tmp, parallelCallback);
-                }
+                },
             ], queueCallback));
 
             if (writeErr) {
@@ -158,9 +159,9 @@ export const build = (options, buildCallback) => {
     actualGitLoader({
         branch,
         exported,
-        "hash": rev,
+        hash: rev,
         local,
-        "remote": `${url}.git`
+        remote: `${url}.git`,
     }, (gitLoaderErr) => {
         if (gitLoaderErr) {
             console.log(gitLoaderErr);
@@ -196,7 +197,7 @@ export const build = (options, buildCallback) => {
                     reponame,
                     rev,
                     tmp,
-                    versionInfo
+                    versionInfo,
                 }, (processErr, result) => {
                     if (processErr) {
                         return done(processErr, result);

@@ -5,22 +5,22 @@ import { gracefulify } from "graceful-fs";
 
 gracefulify(fs);
 
+import { json as bodyJson, urlencoded as bodyUrlencoded } from "body-parser";
+import * as errorhandler from "errorhandler";
 import * as express from "express";
-import * as routes from "./routes";
 import { createServer } from "http";
+import * as methodOverride from "method-override";
+import * as morgan from "morgan";
 import { join } from "path";
 import * as serveFavicon from "serve-favicon";
-import * as morgan from "morgan";
-import { json as bodyJson, urlencoded as bodyUrlencoded } from "body-parser";
-import * as methodOverride from "method-override";
 import * as serveStatic from "serve-static";
-import * as errorhandler from "errorhandler";
 
+import * as routes from "./routes";
 import settings from "./settings";
 
 const app = express();
 
-app.set("port", settings.port); // eslint-disable-line no-process-env
+app.set("port", settings.port);
 app.set("views", join(__dirname, "views"));
 app.set("view engine", "jade");
 app.set("gitpath", settings.gitpath);
@@ -28,8 +28,8 @@ app.set("tmpcodepath", settings.tmpcodepath);
 app.set("releasepath", settings.releasepath);
 app.use(serveFavicon(join(__dirname, "public/images/favicon.png")));
 app.use(morgan("dev"));
-app.use(bodyJson({ "limit": "10mb" }));
-app.use(bodyUrlencoded({ "extended": false }));
+app.use(bodyJson({ limit: "10mb" }));
+app.use(bodyUrlencoded({ extended: false }));
 app.use(methodOverride());
 app.use(serveStatic(join(__dirname, "public")));
 

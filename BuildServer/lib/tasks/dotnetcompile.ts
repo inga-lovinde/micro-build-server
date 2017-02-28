@@ -5,7 +5,7 @@ import * as _ from "underscore";
 import settings from "../../settings";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
-export default (params, processor) => {
+export default ((params, processor) => {
     if (settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
         processor.onError("Code analysis is not supported");
 
@@ -17,7 +17,7 @@ export default (params, processor) => {
             return {};
         }
 
-        return { "SigningKey": settings.codeSigningKeyFile };
+        return { SigningKey: settings.codeSigningKeyFile };
     };
 
     const skipCodeAnalysis = settings.isCodeAnalysisUnsupported
@@ -25,13 +25,13 @@ export default (params, processor) => {
         || (settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis);
 
     const compileParams = {
-        "Configuration": params.configuration,
-        "OutputDirectory": params.overrideOutputDirectory,
-        "SkipCodeAnalysis": skipCodeAnalysis,
-        "SolutionPath": join(processor.context.exported, params.solution),
-        "Target": params.target,
-        "command": "compile"
+        Configuration: params.configuration,
+        OutputDirectory: params.overrideOutputDirectory,
+        SkipCodeAnalysis: skipCodeAnalysis,
+        SolutionPath: join(processor.context.exported, params.solution),
+        Target: params.target,
+        command: "compile",
     };
 
     return dotnetbuilderwrapper(_.extend(compileParams, getAdditionalSigningParameters()), processor);
-};
+}) as Task;

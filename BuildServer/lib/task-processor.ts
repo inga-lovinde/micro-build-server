@@ -4,10 +4,10 @@ import * as _ from "underscore";
 import tasks from "./tasks";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
-const TaskProcessor = function (task, outerProcessor, callback) {
-    const that = this;
-    const createTaskWorker = () => tasks[task.type](task.params || {}, that);
-    const errors = [];
+const createTaskProcessor = (task, outerProcessor: TaskProcessor, callback) => {
+    const result: TaskProcessor = {};
+    const createTaskWorker = () => tasks[task.type](task.params || {}, result);
+    const errors: string[] = [];
     const process = () => createTaskWorker().process();
     const getOuterPrefix = (prefix) => {
         if (task.name && prefix) {
@@ -23,40 +23,42 @@ const TaskProcessor = function (task, outerProcessor, callback) {
     const onWarn = (message, prefix) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
     const onInfo = (message, prefix) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
     const processTask = (innerTask, innerCallback) => {
-        const innerProcessor = new TaskProcessor(innerTask, that, innerCallback);
+        const innerProcessor = createTaskProcessor(innerTask, result, innerCallback);
 
         innerProcessor.process();
     };
     const done = () => callback(errors.join("\r\n"));
 
-    that.process = process;
-    that.onError = onError;
-    that.onWarn = onWarn;
-    that.onInfo = onInfo;
-    that.processTask = processTask;
-    that.done = done;
-    that.context = outerProcessor.context;
+    result.process = process;
+    result.onError = onError;
+    result.onWarn = onWarn;
+    result.onInfo = onInfo;
+    result.processTask = processTask;
+    result.done = done;
+    result.context = outerProcessor.context;
+
+    return result;
 };
 
 const pushMessage = (list, message, parts, index) => {
     if (!index) {
-        list.$allMessages = list.$allMessages || []; // eslint-disable-line fp/no-mutation
-        list.$allMessages.push({ // eslint-disable-line fp/no-mutating-methods
+        list.$allMessages = list.$allMessages || [];
+        list.$allMessages.push({
             message,
-            "prefix": parts.join("/")
+            prefix: parts.join("/"),
         });
     }
 
-    list.$messages = list.$messages || []; // eslint-disable-line fp/no-mutation
+    list.$messages = list.$messages || [];
     if (index === parts.length) {
-        return list.$messages.push(message); // eslint-disable-line fp/no-mutating-methods
+        return list.$messages.push(message);
     }
 
     return pushMessage(list, message, parts, index + 1);
 };
 
 const addFlag = (flags) => (flagName) => {
-    flags[flagName] = true; // eslint-disable-line fp/no-mutation
+    flags[flagName] = true;
 };
 
 const containsFlag = (flags) => (flagName) => flags[flagName];
@@ -73,19 +75,19 @@ export const processTask = (task, context, callback) => {
         pushMessage(messages, message, parts, 0);
     };
     const flags = {};
-    const processor = new TaskProcessor(task, {
-        "context": _.extend(context, {
-            "addFlag": addFlag(flags),
-            "containsFlag": containsFlag(flags)
+    const processor = createTaskProcessor(task, {
+        context: _.extend(context, {
+            addFlag: addFlag(flags),
+            containsFlag: containsFlag(flags),
         }),
-        "onError": messageProcessor(errors),
-        "onInfo": messageProcessor(infos),
-        "onWarn": messageProcessor(warns)
+        onError: messageProcessor(errors),
+        onInfo: messageProcessor(infos),
+        onWarn: messageProcessor(warns),
     }, (err) => callback(err, {
         errors,
         infos,
         messages,
-        warns
+        warns,
     }));
 
     processor.process();

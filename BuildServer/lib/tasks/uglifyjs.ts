@@ -4,8 +4,8 @@ import { writeFile } from "fs";
 import { join, normalize } from "path";
 import { minify } from "uglify-js";
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const filePath = normalize(join(processor.context.exported, params.filename));
         const result = minify(filePath);
 
@@ -18,6 +18,5 @@ export default (params, processor) => ({
 
             processor.done();
         });
-    }
-});
-
+    },
+})) as Task;

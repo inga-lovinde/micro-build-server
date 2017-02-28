@@ -7,8 +7,8 @@ export const get = (req, res) => res.render("manual");
 
 export const post = (req, res) => {
     const options = _.extend(req.body, {
-        "app": req.app,
-        "url": `https://pos-github.payonline.ru/${req.body.owner}/${req.body.reponame}`
+        app: req.app,
+        url: `https://pos-github.payonline.ru/${req.body.owner}/${req.body.reponame}`,
     });
 
     build(options, (err, result) => {
@@ -16,7 +16,7 @@ export const post = (req, res) => {
         console.log(`Error: ${err}`);
         res.render("manual-done", {
             err,
-            result
+            result,
         });
     });
 };

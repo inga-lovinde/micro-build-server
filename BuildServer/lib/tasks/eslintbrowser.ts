@@ -1,14 +1,15 @@
 "use strict";
 
-import { join } from "path";
 import { CLIEngine } from "eslint";
+import { join } from "path";
 import settings from "../../settings";
-const cli = new CLIEngine({ "configFile": settings.eslintBrowserConfig });
+
+const cli = new CLIEngine({ configFile: settings.eslintBrowserConfig });
 
 const errorSeverity = 2;
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const filePath = join(processor.context.exported, params.filename);
         const result = cli.executeOnFiles([filePath]);
 
@@ -27,6 +28,5 @@ export default (params, processor) => ({
         });
 
         processor.done();
-    }
-});
-
+    },
+})) as Task;

@@ -1,8 +1,9 @@
 "use strict";
 
 import { spawn } from "child_process";
-import { WritableStreamBuffer } from "stream-buffers";
 import * as JSONParse from "json-parse-safe";
+import { WritableStreamBuffer } from "stream-buffers";
+
 import settings from "../../settings";
 
 const wrapBuilder = (builder, input, onExit) => {
@@ -27,8 +28,8 @@ const wrapBuilder = (builder, input, onExit) => {
     builder.stdin.end();
 };
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         const input = JSON.stringify(params);
         const builder = spawn(settings.builderExecutable, [params.command]);
 
@@ -71,5 +72,5 @@ export default (params, processor) => ({
 
             return processor.done();
         });
-    }
-});
+    },
+})) as Task;

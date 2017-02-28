@@ -2,10 +2,10 @@
 
 import * as glob from "glob";
 
-export default (params, processor) => ({
-    "process": () => glob(params.mask, {
-        "cwd": processor.context.exported,
-        "dot": true
+export default ((params, processor) => ({
+    process: () => glob(params.mask, {
+        cwd: processor.context.exported,
+        dot: true,
     }, (err, files) => {
         if (err) {
             processor.onError(err);
@@ -18,14 +18,14 @@ export default (params, processor) => ({
         }
 
         return processor.processTask({
-            "params": {
-                "tasks": files.map((file) => ({
-                    "name": file,
-                    "params": { "filename": file },
-                    "type": "copy"
-                }))
+            params: {
+                tasks: files.map((file) => ({
+                    name: file,
+                    params: { filename: file },
+                    type: "copy",
+                })),
             },
-            "type": "parallel"
+            type: "parallel",
         }, processor.done.bind(processor));
-    })
-});
+    }),
+})) as Task;

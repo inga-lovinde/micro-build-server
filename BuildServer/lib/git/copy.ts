@@ -1,9 +1,9 @@
 "use strict";
 
-import { EventEmitter } from "events"; // eslint-disable-line fp/no-events
-import { join } from "path";
-import { writeFile, mkdir } from "fs";
 import { parallel } from "async";
+import { EventEmitter } from "events";
+import { mkdir, writeFile } from "fs";
+import { join } from "path";
 import { Copier } from "recursive-tree-copy";
 
 const safeGetEntries = (tree, callback) => {
@@ -15,8 +15,8 @@ const safeGetEntries = (tree, callback) => {
 };
 
 const gitToFsCopier = new Copier({
-    "concurrency": 4,
-    "copyLeaf": (entry, targetDir, callback) => {
+    concurrency: 4,
+    copyLeaf: (entry, targetDir, callback) => {
         const targetPath = join(targetDir, entry.name());
 
         entry.getBlob((err, blob) => {
@@ -27,7 +27,7 @@ const gitToFsCopier = new Copier({
             return writeFile(targetPath, blob.content(), callback);
         });
     },
-    "createTargetTree": (tree, targetDir, callback) => {
+    createTargetTree: (tree, targetDir, callback) => {
         const targetSubdir = join(targetDir, tree.name);
 
         mkdir(targetSubdir, (err) => {
@@ -39,8 +39,8 @@ const gitToFsCopier = new Copier({
             return callback(null, targetSubdir);
         });
     },
-    "finalizeTargetTree": (targetSubdir, callback) => callback(),
-    "walkSourceTree": (tree) => {
+    finalizeTargetTree: (targetSubdir, callback) => callback(),
+    walkSourceTree: (tree) => {
         const emitter = new EventEmitter();
 
         process.nextTick(() => safeGetEntries(tree, (getEntriesErr, entries) => {
@@ -56,8 +56,8 @@ const gitToFsCopier = new Copier({
                         }
 
                         emitter.emit("tree", {
-                            "gitTree": subTree,
-                            "name": entry.name()
+                            gitTree: subTree,
+                            name: entry.name(),
                         });
 
                         return callback();
@@ -81,7 +81,7 @@ const gitToFsCopier = new Copier({
         }));
 
         return emitter;
-    }
+    },
 });
 
 export const gitToFs = (commit, exportDir, callback) => commit.getTree((err, tree) => {
@@ -90,7 +90,7 @@ export const gitToFs = (commit, exportDir, callback) => commit.getTree((err, tre
     }
 
     return gitToFsCopier.copy({
-        "gitTree": tree,
-        "name": "."
+        gitTree: tree,
+        name: ".",
     }, exportDir, callback);
 });

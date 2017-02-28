@@ -1,9 +1,9 @@
 "use strict";
 
-import { join } from "path";
-import { readFile, writeFile } from "fs";
 import { parallel, waterfall } from "async";
+import { readFile, writeFile } from "fs";
 import * as glob from "glob";
+import { join } from "path";
 import settings from "../../settings";
 
 const flagDoneName = "dotnetrewriterDone";
@@ -14,10 +14,10 @@ const processAssemblyInfo = (params, processor, appendInformationalVersion) => (
             return content;
         }
 
-        return content.replace(
-            /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g,
-            (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${settings.codeSigningPublicKey}")`
-        );
+        const pattern = /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g;
+        const replacer = (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${settings.codeSigningPublicKey}")`;
+
+        return content.replace(pattern, replacer);
     };
 
     const processInformationalVersion = (content) => {
@@ -31,15 +31,15 @@ const processAssemblyInfo = (params, processor, appendInformationalVersion) => (
     return cb(null, processInformationalVersion(processInternalsVisible(originalContent)));
 };
 
-export default (params, processor) => ({
-    "process": () => {
+export default ((params, processor) => ({
+    process: () => {
         if (processor.context.containsFlag(flagDoneName)) {
             return processor.done();
         }
 
         processor.context.addFlag(flagDoneName);
 
-        return glob("**/{InternalsVisible,AssemblyInfo}*.cs", { "cwd": processor.context.exported }, (globErr, files) => {
+        return glob("**/{InternalsVisible,AssemblyInfo}*.cs", { cwd: processor.context.exported }, (globErr, files) => {
             if (globErr) {
                 processor.onError(globErr);
 
@@ -55,9 +55,9 @@ export default (params, processor) => ({
             }
 
             return parallel(files.map((file) => (callback) => waterfall([
-                readFile.bind(null, join(processor.context.exported, file), { "encoding": "utf8" }),
+                readFile.bind(null, join(processor.context.exported, file), { encoding: "utf8" }),
                 processAssemblyInfo(params, processor, file.toLowerCase().includes("assemblyinfo.cs")),
-                writeFile.bind(null, join(processor.context.exported, file))
+                writeFile.bind(null, join(processor.context.exported, file)),
             ], (err) => {
                 if (err) {
                     processor.onError(`Unable to rewrite file ${file}: ${err}`);
@@ -67,5 +67,5 @@ export default (params, processor) => ({
                 callback(err);
             })), processor.done.bind(processor));
         });
-    }
-});
+    },
+})) as Task;
