@@ -115,13 +115,13 @@ export const build = (options, buildCallback) => {
         return result.messages.$allMessages.map((msg) => `${msg.prefix}\t${msg.message}`).join("\r\n");
     };
 
-    const done = (doneErr, result?) => {
-        const allErrors = ((result || {}).errors || {}).$allMessages || [];
-        const allWarns = ((result || {}).warns || {}).$allMessages || [];
-        const allInfos = ((result || {}).infos || {}).$allMessages || [];
-        const errorMessage = (allErrors[0] || {}).message || doneErr;
-        const warnMessage = (allWarns[0] || {}).message;
-        const infoMessage = (allInfos[allInfos.length - 1] || {}).message;
+    const done = (doneErr, result?: ReportResult) => {
+        const allErrors = (result && result.errors && result.errors.$allMessages) || [];
+        const allWarns = (result && result.warns && result.errors.$allMessages) || [];
+        const allInfos = (result && result.infos && result.errors.$allMessages) || [];
+        const errorMessage = (allErrors[0] && allErrors[0].message) || doneErr;
+        const warnMessage = allWarns[0] && allWarns[0].message;
+        const infoMessage = allInfos[allInfos.length - 1] && allInfos[allInfos.length - 1].message;
 
         writeReport(release, doneErr, result, (writeErr) => {
             statusQueue.push((queueCallback) => parallel([
@@ -173,12 +173,12 @@ export const build = (options, buildCallback) => {
 
         return exists(join(exported, "mbs.json"), (exists) => {
             if (!exists) {
-                return done(null, "MBSNotFound");
+                return done("MBSNotFound");
             }
 
             return readFile(join(exported, "mbs.json"), (readErr, data) => {
                 if (readErr) {
-                    return done(readErr, "MBSUnableToRead");
+                    return done(`MBSUnableToRead: ${readErr}`);
                 }
 
                 const { value, error } = JSONParse(data);
@@ -186,7 +186,7 @@ export const build = (options, buildCallback) => {
                 if (error) {
                     console.log(`Malformed data: ${data}`);
 
-                    return done(error, "MBSMalformed");
+                    return done("MBSMalformed");
                 }
 
                 return processTask(value, {

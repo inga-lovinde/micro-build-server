@@ -36,19 +36,25 @@ const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, 
 
 const pushMessage = (list, message, parts, index) => {
     if (!index) {
-        list.$allMessages = list.$allMessages || [];
         list.$allMessages.push({
             message,
             prefix: parts.join("/"),
         });
     }
 
-    list.$messages = list.$messages || [];
-    if (index === parts.length) {
-        return list.$messages.push(message);
+    if (index < parts.length) {
+        if (!list[parts[index]]) {
+            list[parts[index]] = {};
+        }
+
+        return pushMessage(list[parts[index]], message, parts, index + 1);
     }
 
-    return pushMessage(list, message, parts, index + 1);
+    if (!list.$messages) {
+        list.$messages = [];
+    }
+
+    return list.$messages.push(message);
 };
 
 const addFlag = (flags) => (flagName) => {
@@ -58,10 +64,10 @@ const addFlag = (flags) => (flagName) => {
 const containsFlag = (flags) => (flagName) => flags[flagName];
 
 export const processTask = (task, context, callback) => {
-    const errors = {};
-    const warns = {};
-    const infos = {};
-    const messages = {};
+    const errors: MessagesRoot = { $allMessages: [] };
+    const warns: MessagesRoot = { $allMessages: [] };
+    const infos: MessagesRoot = { $allMessages: [] };
+    const messages: MessagesRoot = { $allMessages: [] };
     const messageProcessor = (list) => (message, prefix) => {
         const parts = prefix.split("/");
 

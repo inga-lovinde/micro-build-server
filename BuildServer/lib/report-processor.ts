@@ -24,12 +24,12 @@ const getAllErrors = (report: Report): Message[] => (report.result && report.res
 const getAllWarns = (report: Report): Message[] => (report.result && report.result.warns && report.result.errors.$allMessages) || [];
 const getAllInfos = (report: Report): Message[] => (report.result && report.result.infos && report.result.errors.$allMessages) || [];
 
-export const writeReport = (releaseDir, err, result: ReportResult, callback) => {
+export const writeReport = (releaseDir, err, result: ReportResult | undefined, callback) => {
     const data = JSON.stringify({
         date: Date.now(),
         err,
         result,
-    });
+    } as Report);
 
     const readable = new ReadableStreamBuffer(readableStreamBufferOptions);
     const writeStream = createWriteStream(join(releaseDir, reportFilename));
