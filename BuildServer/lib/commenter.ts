@@ -39,7 +39,7 @@ const checkHasIssue = (options, issueNumber, callback) => options.github.issues.
 }, (getIssueErr, result) => {
     if (getIssueErr) {
         if (getIssueErr.code !== httpNotFound) {
-            return callback(getIssueErr);
+            return callback(getIssueErr.message);
         }
 
         return callback(null, false);
@@ -115,7 +115,7 @@ const checkPullRequest = (options, callback) => {
 
     return checkHasIssue(options, issueNumber, (hasIssueErr, hasIssue, issueTitle) => {
         if (hasIssueErr) {
-            return writeComment(options, `Unable to check for issue:\r\n\r\n${hasIssueErr.message}`, callback);
+            return writeComment(options, `Unable to check for issue:\r\n\r\n${hasIssueErr}`, callback);
         }
 
         if (!hasIssue) {
