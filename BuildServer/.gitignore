@@ -18,6 +18,5 @@ data
 *.crt
 settings.js
 settings.ts
-*.d.ts
 
 iisnode
