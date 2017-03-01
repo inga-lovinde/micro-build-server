@@ -3,6 +3,8 @@
 import { copy } from "fs-extra";
 import { join } from "path";
 
+import { Task } from "../../types";
+
 export default ((params, processor) => () => {
     const sourceFilePath = join(processor.context.exported, params.filename);
     const targetFilePath = join(processor.context.release, params.filename);

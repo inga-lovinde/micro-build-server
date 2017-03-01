@@ -8,6 +8,8 @@ import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
 import * as _ from "underscore";
 import { createGunzip, createGzip } from "zlib";
 
+import { Message, Report, ReportResult } from "../types";
+
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
 const attemptsTimeout = 30000;

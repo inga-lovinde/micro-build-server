@@ -5,6 +5,7 @@ import * as JSONParse from "json-parse-safe";
 import { WritableStreamBuffer } from "stream-buffers";
 
 import settings from "../../settings";
+import { Task } from "../../types";
 
 const wrapBuilder = (builder, input, onExit) => {
     const stdoutPromise = new Promise((resolve, reject) => {

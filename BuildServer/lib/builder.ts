@@ -7,6 +7,7 @@ import * as JSONParse from "json-parse-safe";
 import { join } from "path";
 
 import settings from "../settings";
+import { ReportResult } from "../types";
 import { gitLoader } from "./git/loader";
 import { send as sendMail } from "./mail-sender";
 import { writeReport } from "./report-processor";

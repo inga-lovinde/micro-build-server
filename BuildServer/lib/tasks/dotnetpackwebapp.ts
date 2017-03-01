@@ -3,6 +3,8 @@
 import { readFileSync } from "fs";
 import { render } from "mustache";
 import { join } from "path";
+
+import { Task } from "../../types";
 import sequential from "./sequential";
 
 const msbuildTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.msbuild"), { encoding: "utf8" });

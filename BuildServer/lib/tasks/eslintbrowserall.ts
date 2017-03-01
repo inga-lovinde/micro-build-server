@@ -1,6 +1,9 @@
 "use strict";
 
 import * as glob from "glob";
+
+import { Task } from "../../types";
+
 const flagDoneName = "eslintbrowserallDone";
 
 export default ((params, processor) => () => {

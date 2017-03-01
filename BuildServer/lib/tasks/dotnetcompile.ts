@@ -2,7 +2,9 @@
 
 import { join } from "path";
 import * as _ from "underscore";
+
 import settings from "../../settings";
+import { Task } from "../../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
 export default ((params, processor) => {

@@ -2,7 +2,9 @@
 
 import { CLIEngine } from "eslint";
 import { join } from "path";
+
 import settings from "../../settings";
+import { Task } from "../../types";
 
 const cli = new CLIEngine({ configFile: settings.eslintBrowserConfig });
 

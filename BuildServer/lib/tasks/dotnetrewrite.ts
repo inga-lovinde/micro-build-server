@@ -4,7 +4,9 @@ import { parallel, waterfall } from "async";
 import { readFile, writeFile } from "fs";
 import * as glob from "glob";
 import { join } from "path";
+
 import settings from "../../settings";
+import { Task } from "../../types";
 
 const flagDoneName = "dotnetrewriterDone";
 

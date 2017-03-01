@@ -2,6 +2,8 @@
 
 import * as glob from "glob";
 
+import { Task } from "../../types";
+
 const doneFlagName = "uglifyjsallDone";
 
 export default ((params, processor) => () => {

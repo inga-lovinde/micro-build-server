@@ -3,6 +3,8 @@
 import { readdirSync } from "fs";
 import * as _ from "underscore";
 
+import { Tasks } from "../../types";
+
 const taskNames = _.unique(readdirSync(__dirname).map((file) => {
     if (file.match(/\.ts$/) !== null) {
         return file.substr(0, file.length - 3);

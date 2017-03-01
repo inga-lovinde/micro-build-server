@@ -1,5 +1,7 @@
 "use strict";
 
+import { Task } from "../../types";
+
 export default ((params, processor) => () => {
     if (params.error) {
         processor.onError(params.error);

@@ -3,6 +3,7 @@
 import { join } from "path";
 
 import settings from "../../settings";
+import { Task } from "../../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
 export default ((params, processor) => dotnetbuilderwrapper({

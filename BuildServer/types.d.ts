@@ -62,3 +62,16 @@ interface Task {
 interface Tasks {
     readonly [taskName: string]: Task;
 }
+
+export {
+    Message,
+    MessagesRoot,
+    Report,
+    ReportResult,
+    Task,
+    TaskInfo,
+    TaskProcessor,
+    TaskProcessorCore,
+    TaskProcessorCallback,
+    Tasks
+}

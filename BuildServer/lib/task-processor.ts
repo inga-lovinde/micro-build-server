@@ -1,6 +1,8 @@
 "use strict";
 
 import * as _ from "underscore";
+
+import { MessagesRoot, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "../types";
 import tasks from "./tasks";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.

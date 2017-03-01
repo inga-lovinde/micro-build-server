@@ -2,6 +2,8 @@
 
 import * as glob from "glob";
 
+import { Task } from "../../types";
+
 export default ((params, processor) => () => glob(params.mask, {
     cwd: processor.context.exported,
     dot: true,
