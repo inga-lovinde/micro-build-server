@@ -37,11 +37,19 @@ const checkHasIssue = (options, issueNumber, callback) => options.github.issues.
     owner: options.baseRepoOptions.owner,
     repo: options.baseRepoOptions.reponame,
 }, (getIssueErr, result) => {
-    if (getIssueErr && getIssueErr.code !== httpNotFound) {
-        return callback(getIssueErr);
+    if (getIssueErr) {
+        if (getIssueErr.code !== httpNotFound) {
+            return callback(getIssueErr);
+        }
+
+        return callback(null, false);
     }
 
-    if (getIssueErr || result.number.toString() !== issueNumber) {
+    if (!result.number) {
+        return callback(`Unable to get issue info for ${options.baseRepoOptions.owner}/${options.baseRepoOptions.reponame}/#${issueNumber}: ${JSON.stringify(result)}`);
+    }
+
+    if (result.number.toString() !== issueNumber) {
         return callback(null, false);
     }
 
