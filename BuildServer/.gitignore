@@ -17,6 +17,7 @@ node_modules
 data
 *.crt
 *.js
+*.js.map
 settings.ts
 
 iisnode
