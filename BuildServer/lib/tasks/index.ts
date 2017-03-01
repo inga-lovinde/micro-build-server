@@ -1,16 +1,18 @@
 "use strict";
 
 import { readdirSync } from "fs";
+import * as _ from "underscore";
 
-const tasks = {};
+const taskNames = _.unique(readdirSync(__dirname).map((file) => {
+    if (file.match(/\.ts$/) !== null) {
+        return file.substr(0, file.length - 3);
+    }
 
-// Code taken from http://stackoverflow.com/a/17204293
-readdirSync(__dirname)
-    .forEach((file) => {
-        if (file.match(/\.ts$/) !== null && file !== "index.ts") {
-            const name = file.replace(".ts", "");
-            tasks[name] = require(`./${file}`).default;
-        }
-    });
+    if (file.match(/\.js$/) !== null) {
+        return file.substr(0, file.length - 3);
+    }
 
-export default tasks as Tasks;
+    return "";
+}).filter((file) => file && file !== "index"));
+
+export default _.object(taskNames.map((name) => [name, require(`./${name}`).default])) as Tasks;
