@@ -16,7 +16,7 @@ node_modules
 
 data
 *.crt
-settings.js
+*.js
 settings.ts
 
 iisnode
