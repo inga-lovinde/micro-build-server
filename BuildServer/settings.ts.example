@@ -1,0 +1,57 @@
+"use strict";
+
+import GitHubApi = require("github");
+
+const createGithub = () => new GitHubApi({
+    "debug": false,
+    "headers": { "user-agent": "micro-build-server (mbs.pos)" },
+    "host": "pos-github.payonline.ru",
+    "pathPrefix": "/api/v3",
+    "protocol": "https",
+    "timeout": 5000
+});
+
+export default {
+    "builderExecutable": "../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe",
+    "codeSigningKeyFile": null,
+    "codeSigningPublicKey": null,
+    "createGithub": (repoOwner) => {
+        const github = createGithub();
+
+        github.authenticate({
+            "password": "*** OWNER APPLICATION PASSWORD ***",
+            "type": "basic",
+            "username": repoOwner
+        });
+
+        /* Or, alternatively:
+        github.authenticate({
+            "password": "*** MBS APPLICATION PASSWORD ***",
+            "type": "basic",
+            "username": "*** MBS USER ***"
+        });
+        */
+
+        return github;
+    },
+    "eslintBrowserConfig": "settings-eslint-browser.json",
+    "gitpath": "M:/g",
+    "ignoreCodeAnalysisByDefault": true,
+    "isCodeAnalysisUnsupported": false,
+    "nugetApiKey": "*** NUGET API KEY ***",
+    "nugetHost": "https://*** NUGET HOST ***/",
+    "port": 3000,
+    "releasepath": "M:/r",
+    "siteRoot": "https://mbs.your.domain/",
+    "skipCodeSigning": true,
+    "smtp": {
+        "auth": {
+            "pass": "*** SMTP PASSWORD ***",
+            "user": "*** SMTP USERNAME ***"
+        },
+        "host": "smtp.host",
+        "receiver": "receiver@your.domain",
+        "sender": "sender@your.domain"
+    },
+    "tmpcodepath": "M:/c"
+};
