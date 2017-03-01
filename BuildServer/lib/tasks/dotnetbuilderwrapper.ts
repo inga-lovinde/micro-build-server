@@ -7,25 +7,40 @@ import { WritableStreamBuffer } from "stream-buffers";
 import settings from "../../settings";
 
 const wrapBuilder = (builder, input, onExit) => {
-    const resultBuffer = new WritableStreamBuffer();
-    const errorBuffer = new WritableStreamBuffer();
-
-    builder.stdout.on("data", (data) => {
-        resultBuffer.write(data);
+    const stdoutPromise = new Promise((resolve, reject) => {
+        const streamBuffer = new WritableStreamBuffer();
+        builder.stdout
+            .on("error", reject)
+            .pipe(streamBuffer)
+            .on("error", reject)
+            .on("finish", () => {
+                streamBuffer.end();
+                resolve(streamBuffer.getContentsAsString());
+            });
     });
 
-    builder.stderr.on("data", (data) => {
-        errorBuffer.write(data);
+    const stderrPromise = new Promise((resolve, reject) => {
+        const streamBuffer = new WritableStreamBuffer();
+        builder.stderr
+            .on("error", reject)
+            .pipe(streamBuffer)
+            .on("error", reject)
+            .on("finish", () => {
+                streamBuffer.end();
+                resolve(streamBuffer.getContentsAsString());
+            });
     });
 
-    builder.on("exit", (code) => {
-        resultBuffer.end();
-        errorBuffer.end();
-        onExit(code, resultBuffer.getContentsAsString(), errorBuffer.getContentsAsString());
+    const builderPromise = new Promise((resolve, reject) => {
+        builder.stdin.write(input);
+        builder.stdin.end();
+        builder.on("exit", resolve);
     });
 
-    builder.stdin.write(input);
-    builder.stdin.end();
+    Promise.all([stdoutPromise, stderrPromise, builderPromise]).then((values) => {
+        const [result, builderError, code] = values;
+        onExit(code, result, builderError);
+    }).catch((err) => onExit(0, undefined, err));
 };
 
 export default ((params, processor) => () => {
