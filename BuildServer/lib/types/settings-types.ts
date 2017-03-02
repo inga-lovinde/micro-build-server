@@ -54,6 +54,9 @@ interface ISmtpSettings {
 interface ISiteSettings {
     port: number | string;
     siteRoot: string;
+    viewspath: string;
+    faviconpath: string;
+    staticcontentpath: string;
 }
 
 interface IGithubSettings {

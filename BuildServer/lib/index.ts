@@ -21,17 +21,17 @@ import * as routes from "./routes";
 const app = express();
 
 app.set("port", settings.port);
-app.set("views", join(__dirname, "views"));
+app.set("views", settings.viewspath);
 app.set("view engine", "jade");
 app.set("gitpath", settings.gitpath);
 app.set("tmpcodepath", settings.tmpcodepath);
 app.set("releasepath", settings.releasepath);
-app.use(serveFavicon(join(__dirname, "public/images/favicon.png")));
+app.use(serveFavicon(settings.faviconpath));
 app.use(morgan("dev"));
 app.use(bodyJson({ limit: "10mb" }));
 app.use(bodyUrlencoded({ extended: false }));
 app.use(methodOverride());
-app.use(serveStatic(join(__dirname, "public")));
+app.use(serveStatic(settings.staticcontentpath));
 
 if (app.get("env") === "development") {
     app.use(errorhandler());
