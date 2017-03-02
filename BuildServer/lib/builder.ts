@@ -8,6 +8,7 @@ import { join } from "path";
 
 import settings from "../settings";
 import { ReportResult } from "../types";
+import { createGithub } from "./github-wrapper";
 import { gitLoader } from "./git/loader";
 import { send as sendMail } from "./mail-sender";
 import { writeReport } from "./report-processor";
@@ -45,7 +46,7 @@ const notifyStatus = (options, notifyStatusCallback) => {
         target_url: `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`,
     };
 
-    settings.createGithub(options.owner).repos.createStatus(status, (createStatusErr) => {
+    createGithub(options.owner).repos.createStatus(status, (createStatusErr) => {
         if (createStatusErr) {
             console.log(`Error while creating status: ${createStatusErr}`);
             console.log(status);

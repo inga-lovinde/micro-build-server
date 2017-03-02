@@ -73,5 +73,5 @@ export {
     TaskProcessor,
     TaskProcessorCore,
     TaskProcessorCallback,
-    Tasks
+    Tasks,
 }

@@ -3,7 +3,20 @@
 import * as _ from "underscore";
 
 import settings from "../settings";
+import { createGithub, IGithub } from "./github-wrapper";
 import { getStatusMessageFromRelease } from "./report-processor";
+
+interface ICommentOnPullRequestOptions {
+    readonly action: string;
+    readonly app: any;
+    readonly baseRepoOptions: any;
+    readonly headRepoOptions: any;
+}
+
+interface ICheckPullRequestOptions extends ICommentOnPullRequestOptions {
+    readonly github: IGithub;
+    readonly onTenthAttempt: () => void;
+}
 
 const featureNamePattern = /^feature-(\d+)(?:-[a-zA-Z0-9]+)+$/;
 const versionNamePattern = /^v\d+(\.\d+)*$/;
@@ -32,35 +45,35 @@ const closePullRequest = (options, message, callback) => writeComment(options, m
     }, callback);
 });
 
-const checkHasIssue = (options, issueNumber, callback) => options.github.issues.get({
+const checkHasIssue = (options: ICheckPullRequestOptions, issueNumber, callback) => options.github.issues.get({
     number: issueNumber,
     owner: options.baseRepoOptions.owner,
     repo: options.baseRepoOptions.reponame,
 }, (getIssueErr, result) => {
     if (getIssueErr) {
-        if (getIssueErr.code !== httpNotFound) {
+        if (getIssueErr.code && getIssueErr.code !== httpNotFound) {
             return callback(getIssueErr.message);
         }
 
         return callback(null, false);
     }
 
-    if (!result.number) {
-        return callback(`Unable to get issue info for ${options.baseRepoOptions.owner}/${options.baseRepoOptions.reponame}/#${issueNumber}: ${JSON.stringify(result)}`);
+    if (!result) {
+        return callback("Result is empty");
     }
 
-    if (result.number.toString() !== issueNumber) {
+    if (result.data.number.toString() !== issueNumber) {
         return callback(null, false);
     }
 
-    if (result.pull_request && result.pull_request.url) {
+    if (result.data.pull_request && result.data.pull_request.url) {
         return callback(null, false);
     }
 
-    return callback(null, true, result.title);
+    return callback(null, true, result.data.title);
 });
 
-const checkHasReleases = (options, callback) => options.github.repos.getReleases({
+const checkHasReleases = (options: ICheckPullRequestOptions, callback) => options.github.repos.getReleases({
     owner: options.baseRepoOptions.owner,
     per_page: 1,
     repo: options.baseRepoOptions.reponame,
@@ -69,10 +82,10 @@ const checkHasReleases = (options, callback) => options.github.repos.getReleases
         return callback(getReleasesErr);
     }
 
-    return callback(null, result && result.length);
+    return callback(null, result && result.data && result.data.length);
 });
 
-const checkPullRequest = (options, callback) => {
+const checkPullRequest = (options: ICheckPullRequestOptions, callback) => {
     const head = options.headRepoOptions;
     const base = options.baseRepoOptions;
 
@@ -146,10 +159,10 @@ const checkPullRequest = (options, callback) => {
     });
 };
 
-export const commentOnPullRequest = (originalOptions, callback) => {
+export const commentOnPullRequest = (originalOptions: ICommentOnPullRequestOptions, callback) => {
     const optionsGithub = {
         ...originalOptions,
-        github: settings.createGithub(originalOptions.baseRepoOptions.owner),
+        github: createGithub(originalOptions.baseRepoOptions.owner),
     };
     const options = {
         ...optionsGithub,
