@@ -8,8 +8,8 @@ import { join } from "path";
 
 import settings from "../settings";
 import { ReportResult } from "../types";
-import { createGithub } from "./github-wrapper";
 import { gitLoader } from "./git/loader";
+import { createGithub } from "./github-wrapper";
 import { send as sendMail } from "./mail-sender";
 import { writeReport } from "./report-processor";
 import { processTask } from "./task-processor";
