@@ -5,10 +5,12 @@ import { readFile, writeFile } from "fs";
 import * as glob from "glob";
 import { join } from "path";
 
-import settings from "../../settings";
-import { Task } from "../../types";
+import rawSettings from "../../settings";
+import { Settings, Task } from "../../types";
 
 const flagDoneName = "dotnetrewriterDone";
+
+const settings: Settings = rawSettings;
 
 const processAssemblyInfo = (params, processor, appendInformationalVersion) => (originalContent, cb) => {
     const processInternalsVisible = (content) => {

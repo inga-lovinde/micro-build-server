@@ -3,9 +3,11 @@
 import { join } from "path";
 import * as _ from "underscore";
 
-import settings from "../../settings";
-import { Task } from "../../types";
+import rawSettings from "../../settings";
+import { Settings, Task } from "../../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
+
+const settings: Settings = rawSettings;
 
 export default ((params, processor) => {
     if (settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {

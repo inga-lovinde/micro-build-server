@@ -3,14 +3,20 @@
 import { CLIEngine } from "eslint";
 import { join } from "path";
 
-import settings from "../../settings";
-import { Task } from "../../types";
+import rawSettings from "../../settings";
+import { Settings, Task } from "../../types";
 
-const cli = new CLIEngine({ configFile: settings.eslintBrowserConfig });
+const settings: Settings = rawSettings;
 
 const errorSeverity = 2;
 
 export default ((params, processor) => () => {
+    if (settings.isCodeAnalysisUnsupported) {
+        return;
+    }
+
+    const cli = new CLIEngine({ configFile: settings.eslintBrowserConfig });
+
     const filePath = join(processor.context.exported, params.filename);
     const result = cli.executeOnFiles([filePath]);
 
