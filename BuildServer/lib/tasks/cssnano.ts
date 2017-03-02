@@ -4,7 +4,7 @@ import { process as cssnanoProcess } from "cssnano";
 import { readFile, writeFile } from "fs";
 import { join } from "path";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 
 export default ((params, processor) => () => {
     const filePath = join(processor.context.exported, params.filename);

@@ -1,8 +1,8 @@
 "use strict";
 
 import * as JSONParse from "json-parse-safe";
-import { build } from "../lib/builder";
-import { commentOnPullRequest } from "../lib/commenter";
+import { build } from "../builder";
+import { commentOnPullRequest } from "../commenter";
 
 const getBranchDescription = (options) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
 

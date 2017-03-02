@@ -2,8 +2,8 @@
 
 import * as _ from "underscore";
 
-import { MessagesRoot, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "../types";
 import tasks from "./tasks";
+import { MessagesRoot, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {

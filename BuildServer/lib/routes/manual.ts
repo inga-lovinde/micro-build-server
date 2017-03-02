@@ -1,7 +1,7 @@
 "use strict";
 
 import * as _ from "underscore";
-import { build } from "../lib/builder";
+import { build } from "../builder";
 
 export const get = (req, res) => res.render("manual");
 

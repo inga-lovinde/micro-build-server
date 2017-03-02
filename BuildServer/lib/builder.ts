@@ -7,12 +7,12 @@ import * as JSONParse from "json-parse-safe";
 import { join } from "path";
 
 import settings from "../settings";
-import { ReportResult } from "../types";
 import { gitLoader } from "./git/loader";
 import { createGithub } from "./github-wrapper";
 import { send as sendMail } from "./mail-sender";
 import { writeReport } from "./report-processor";
 import { processTask } from "./task-processor";
+import { ReportResult } from "./types";
 
 const codePostfix = "";
 const mailLazinessLevel = 1000;

@@ -6,7 +6,7 @@ import * as glob from "glob";
 import { join } from "path";
 
 import rawSettings from "../../settings";
-import { Settings, Task } from "../../types";
+import { Settings, Task } from "../types";
 
 const flagDoneName = "dotnetrewriterDone";
 

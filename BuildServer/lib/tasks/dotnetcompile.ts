@@ -4,7 +4,7 @@ import { join } from "path";
 import * as _ from "underscore";
 
 import rawSettings from "../../settings";
-import { Settings, Task } from "../../types";
+import { Settings, Task } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
 const settings: Settings = rawSettings;

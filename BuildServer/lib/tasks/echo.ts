@@ -1,6 +1,6 @@
 "use strict";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 
 export default ((params, processor) => () => {
     if (params.error) {

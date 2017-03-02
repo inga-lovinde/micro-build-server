@@ -3,7 +3,7 @@
 import * as _ from "underscore";
 import { parse } from "url";
 
-import { getReport } from "../lib/status-processor";
+import { getReport } from "../status-processor";
 
 const parseOptionsFromReferer = (path, callback) => {
     const pathParts = path.split("/").filter((value) => value);

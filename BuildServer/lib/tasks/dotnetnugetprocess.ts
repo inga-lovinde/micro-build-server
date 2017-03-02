@@ -1,6 +1,6 @@
 "use strict";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 import conditional from "./conditional";
 
 export default ((params, processor) => conditional({

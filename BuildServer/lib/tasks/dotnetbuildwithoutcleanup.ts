@@ -1,6 +1,6 @@
 "use strict";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 import sequential from "./sequential";
 
 const createTasks = function *(params) {

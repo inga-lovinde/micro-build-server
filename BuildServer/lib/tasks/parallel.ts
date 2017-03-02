@@ -2,7 +2,7 @@
 
 import { parallel } from "async";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 
 const mapper = (processor) => (task) => (callback) => processor.processTask(task, callback);
 

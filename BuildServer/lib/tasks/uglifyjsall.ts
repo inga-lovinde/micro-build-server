@@ -2,7 +2,7 @@
 
 import * as glob from "glob";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 
 const doneFlagName = "uglifyjsallDone";
 

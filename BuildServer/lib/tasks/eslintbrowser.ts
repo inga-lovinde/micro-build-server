@@ -4,7 +4,7 @@ import { CLIEngine } from "eslint";
 import { join } from "path";
 
 import rawSettings from "../../settings";
-import { Settings, Task } from "../../types";
+import { Settings, Task } from "../types";
 
 const settings: Settings = rawSettings;
 

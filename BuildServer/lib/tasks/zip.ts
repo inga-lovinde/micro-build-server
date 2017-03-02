@@ -4,7 +4,7 @@ import { create as createArchiver } from "archiver";
 import { createWriteStream } from "fs";
 import { join, normalize } from "path";
 
-import { Task } from "../../types";
+import { Task } from "../types";
 
 export default ((params, processor) => () => {
     const sourceDirectoryPath = normalize(join(processor.context.exported, String(params.directory || "")));

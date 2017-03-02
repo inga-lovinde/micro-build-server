@@ -15,8 +15,8 @@ import { join } from "path";
 import * as serveFavicon from "serve-favicon";
 import * as serveStatic from "serve-static";
 
+import settings from "../settings";
 import * as routes from "./routes";
-import settings from "./settings";
 
 const app = express();
 

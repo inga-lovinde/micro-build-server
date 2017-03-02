@@ -3,7 +3,7 @@
 import { create as createArchiver } from "archiver";
 import { join } from "path";
 
-import { readReport } from "../lib/report-processor";
+import { readReport } from "../report-processor";
 
 const getDatePart = (report) => {
     if (!report.date) {
