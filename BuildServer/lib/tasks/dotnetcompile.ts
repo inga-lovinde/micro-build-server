@@ -35,5 +35,8 @@ export default ((params, processor) => {
         command: "compile",
     };
 
-    return dotnetbuilderwrapper(_.extend(compileParams, getAdditionalSigningParameters()), processor);
+    return dotnetbuilderwrapper({
+        ...compileParams,
+        ...getAdditionalSigningParameters(),
+    }, processor);
 }) as Task;

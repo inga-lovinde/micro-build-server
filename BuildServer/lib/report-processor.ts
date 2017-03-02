@@ -98,20 +98,27 @@ export const loadReport = (app, options, callback) => {
 
             return readReport(releaseDir, (readErr, report) => {
                 if (readErr) {
-                    return callback(readErr, _.extend(options, { files }));
+                    return callback(readErr, {
+                        ...options,
+                        files,
+                    });
                 }
 
-                return callback(null, _.extend(options, {
+                return callback(null, {
+                    ...options,
                     files,
                     report,
-                }));
+                });
             });
         });
     });
 };
 
 export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
-    const options = _.extend(originalOptions, { attemptsGetReport: (Number(originalOptions.attemptsGetReport) || Number()) + 1 });
+    const options = {
+        ...originalOptions,
+        attemptsGetReport: (Number(originalOptions.attemptsGetReport) || Number()) + 1,
+    };
     const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
     const reportFile = join(releaseDir, reportFilename);
 

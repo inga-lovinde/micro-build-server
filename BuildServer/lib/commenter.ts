@@ -147,8 +147,14 @@ const checkPullRequest = (options, callback) => {
 };
 
 export const commentOnPullRequest = (originalOptions, callback) => {
-    const optionsGithub = _.extend(originalOptions, { github: settings.createGithub(originalOptions.baseRepoOptions.owner) });
-    const options = _.extend(optionsGithub, { onTenthAttempt: () => writeComment(optionsGithub, "Waiting for build to finish...", _.noop) });
+    const optionsGithub = {
+        ...originalOptions,
+        github: settings.createGithub(originalOptions.baseRepoOptions.owner),
+    };
+    const options = {
+        ...optionsGithub,
+        onTenthAttempt: () => writeComment(optionsGithub, "Waiting for build to finish...", _.noop),
+    };
 
     return checkPullRequest(options, () => getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
         const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)

@@ -35,7 +35,10 @@ const parseOptionsFromReferer = (path, callback) => {
 };
 
 const createShowReport = (res) => (err, inputOptions) => {
-    const options = _.extendOwn(inputOptions || {}, { err });
+    const options = {
+        ...inputOptions || {},
+        err,
+    };
 
     res.render("status", options);
 };
@@ -87,7 +90,10 @@ export const image = (req, res) => {
 
     const handle = (err, options) => {
         res.setHeader("Content-Type", "image/svg+xml");
-        res.render("status-image", _.extend(options, getAdditionalOptions(err, options)));
+        res.render("status-image", {
+            ...options,
+            ...getAdditionalOptions(err, options),
+        });
     };
 
     parseOptionsFromReferer(parse(req.headers.referer || "").pathname || "", (err, options) => {

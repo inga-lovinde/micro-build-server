@@ -78,10 +78,11 @@ export const processTask = (task, context, callback) => {
     };
     const flags = {};
     const processor = createTaskProcessor(task, {
-        context: _.extend(context, {
+        context: {
+            ...context,
             addFlag: addFlag(flags),
             containsFlag: containsFlag(flags),
-        }),
+        },
         onError: messageProcessor(errors),
         onInfo: messageProcessor(infos),
         onWarn: messageProcessor(warns),

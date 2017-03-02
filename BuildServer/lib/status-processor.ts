@@ -23,10 +23,11 @@ const addBranchInfo = (app, options, callback) => {
             const branchParts = branch.split("/");
             const branchName = branchParts[branchParts.length - 1];
 
-            return callback(null, _.extend(options, {
+            return callback(null, {
+                ...options,
                 branch,
                 branchName,
-            }));
+            });
         });
     });
 };
@@ -46,7 +47,10 @@ const addRevInfo = (app, options, callback) => {
 
             const rev = data.toString();
 
-            return callback(null, _.extend(options, { rev }));
+            return callback(null, {
+                ...options,
+                rev,
+            });
         });
     });
 };
@@ -62,19 +66,26 @@ const parseOptions = (app, options, callback) => {
     };
 
     if (options.rev) {
-        return addBranchInfo(app, _.extend(result, { rev: options.rev }), callback);
+        return addBranchInfo(app, {
+            ...result,
+            rev: options.rev,
+        }, callback);
     }
 
     if (/^[\da-f]{40}$/i.test(options.branchName)) {
-        return addBranchInfo(app, _.extend(result, { rev: options.branchName }), callback);
+        return addBranchInfo(app, {
+            ...result,
+            rev: options.branchName,
+        }, callback);
     }
 
     const branchName = options.branchName || "master";
 
-    return addRevInfo(app, _.extend(result, {
+    return addRevInfo(app, {
+        ...result,
         branch: `refs/heads/${branchName}`,
         branchName,
-    }), callback);
+    }, callback);
 };
 
 export const getReport = (app, options, callback) => parseOptions(app, options, (err, result) => {
