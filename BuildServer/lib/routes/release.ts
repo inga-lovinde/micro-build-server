@@ -1,6 +1,7 @@
 "use strict";
 
 import { create as createArchiver } from "archiver";
+import * as express from "express";
 import { join } from "path";
 
 import { readReport } from "../report-processor";
@@ -24,7 +25,7 @@ const getDatePart = (report) => {
     return `${year}.${month}.${day}.${hours}.${minutes}.${seconds}`;
 };
 
-export default (req, res, next) => {
+export default ((req, res, next) => {
     const options = {
         branch: `/refs/heads/${req.params.branch}`,
         branchName: req.params.branch,
@@ -43,10 +44,10 @@ export default (req, res, next) => {
         const archive = createArchiver("zip");
 
         archive.on("error", next);
-        res.attachment(`${options.reponame}.${getDatePart(report)}.${options.rev}.zip`, ".");
+        res.attachment(`${options.reponame}.${getDatePart(report)}.${options.rev}.zip`);
         archive.pipe(res);
         archive.directory(releasePath, false);
 
         return archive.finalize();
     });
-};
+}) as express.RequestHandler;

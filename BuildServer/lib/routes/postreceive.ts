@@ -1,13 +1,23 @@
 "use strict";
 
+import * as express from "express";
 import * as JSONParse from "json-parse-safe";
+
 import { build } from "../builder";
 import { commentOnPullRequest } from "../commenter";
 import { getSettings } from "../settings-wrapper";
+import { HookParameters, HookPullRequestPayload, HookPushPayload } from "../types";
 
-const getBranchDescription = (options) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
+interface IBaseRepoOptions {
+    branch: string;
+    branchname?: string;
+    owner: string;
+    reponame: string;
+}
 
-const processPush = (req, res, payload) => {
+const getBranchDescription = (options: IBaseRepoOptions) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
+
+const processPush = (req: express.Request, res: express.Response, payload: HookPushPayload) => {
     const settings = getSettings(req.app);
     const repository = payload.repository;
     const options = {
@@ -27,7 +37,7 @@ const processPush = (req, res, payload) => {
     });
 };
 
-const processPullRequest = (req, res, payload) => {
+const processPullRequest = (req: express.Request, res: express.Response, payload: HookPullRequestPayload) => {
     const action = payload.action;
     const pullRequestNumber = payload.number;
     const pullRequest = payload.pull_request;
@@ -44,6 +54,7 @@ const processPullRequest = (req, res, payload) => {
     const base = pullRequest.base;
     const baseRepo = base.repo;
     const baseRepoOptions = {
+        branch: `refs/heads/${base.ref}`,
         branchname: base.ref,
         owner: baseRepo.owner.name || baseRepo.owner.login,
         reponame: baseRepo.name,
@@ -79,7 +90,7 @@ const processPullRequest = (req, res, payload) => {
         return res.send("");
     }
 
-    return commentOnPullRequest(settings, (action === "closed" && masterOptions) || options, (err, data) => {
+    return commentOnPullRequest(settings, options, (err, data) => {
         if (err) {
             console.log(`Unable to post comment: ${err}`);
         }
@@ -96,23 +107,27 @@ const getPayload = (body) => {
     return JSONParse(body.payload).value;
 };
 
-export default (req, res) => {
+const getParameters = (req: express.Request): HookParameters => ({
+    eventType: req.header("x-github-event") as any,
+    payload: getPayload(req.body),
+});
+
+export default ((req, res) => {
     if (!req.body || (!req.body.payload && !req.body.repository)) {
         return res.end();
     }
 
-    const eventType = req.header("x-github-event");
-    const payload = getPayload(req.body);
+    const parameters = getParameters(req);
 
-    if (eventType === "push") {
-        return processPush(req, res, payload);
+    if (parameters.eventType === "push") {
+        return processPush(req, res, parameters.payload);
     }
 
-    if (eventType === "pull_request") {
-        return processPullRequest(req, res, payload);
+    if (parameters.eventType === "pull_request") {
+        return processPullRequest(req, res, parameters.payload);
     }
 
-    console.log(`Got "${eventType}" event:`);
+    console.log(`Got "${parameters.eventType}" event:`);
 
     return res.send("Only push/pull_request events are supported");
-};
+}) as express.RequestHandler;

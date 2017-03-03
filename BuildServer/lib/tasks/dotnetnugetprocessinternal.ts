@@ -2,14 +2,14 @@
 
 import { join } from "path";
 
-import { Task } from "../types";
+import { Task, TaskProcessor } from "../types";
 import sequential from "./sequential";
 
 const postfixLength = 16;
 const fourDigits = 10000;
 const twoDigits = 100;
 
-const addPostfix = (version, params, processor) => {
+const addPostfix = (version, params, processor: TaskProcessor) => {
     if (params.withoutCommitSha) {
         return version;
     }

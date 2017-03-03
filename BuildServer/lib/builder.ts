@@ -197,7 +197,6 @@ export const build = (settings: Settings, options, buildCallback) => {
                     release,
                     reponame,
                     rev,
-                    tmp,
                     versionInfo,
                 }, (processErr, result) => {
                     if (processErr) {

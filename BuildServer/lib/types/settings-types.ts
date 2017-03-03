@@ -1,66 +1,66 @@
 import * as Github from "github";
 
 interface IBuilderSettings {
-    builderExecutable: string;
+    readonly builderExecutable: string;
 }
 
 interface ICodeAnalysisSettingsUnsupported {
-    isCodeAnalysisUnsupported: true;
+    readonly isCodeAnalysisUnsupported: true;
 }
 
 interface ICodeAnalysisSettingsSupported {
-    eslintBrowserConfig: string;
-    ignoreCodeAnalysisByDefault: boolean;
-    isCodeAnalysisUnsupported: false;
+    readonly eslintBrowserConfig: string;
+    readonly ignoreCodeAnalysisByDefault: boolean;
+    readonly isCodeAnalysisUnsupported: false;
 }
 
 type CodeAnalysisSettings = ICodeAnalysisSettingsUnsupported | ICodeAnalysisSettingsSupported;
 
 interface ICodeSigningSettingsUnsupported {
-    skipCodeSigning: true;
+    readonly skipCodeSigning: true;
 }
 
 interface ICodeSigningSettingsSupported {
-    codeSigningKeyFile: string;
-    codeSigningPublicKey: string;
-    skipCodeSigning: false;
+    readonly codeSigningKeyFile: string;
+    readonly codeSigningPublicKey: string;
+    readonly skipCodeSigning: false;
 }
 
 type CodeSigningSettings = ICodeSigningSettingsUnsupported | ICodeSigningSettingsSupported;
 
 interface IStorageSettings {
-    gitpath: string;
-    releasepath: string;
-    tmpcodepath: string;
+    readonly gitpath: string;
+    readonly releasepath: string;
+    readonly tmpcodepath: string;
 }
 
 interface INugetSettings {
-    nugetApiKey: string;
-    nugetHost: string;
+    readonly nugetApiKey: string;
+    readonly nugetHost: string;
 }
 
 interface ISmtpSettings {
-    smtp: {
-        auth: {
-            pass: string;
-            user: string;
+    readonly smtp: {
+        readonly auth: {
+            readonly pass: string;
+            readonly user: string;
         },
-        host: string;
-        receiver: string;
-        sender: string;
+        readonly host: string;
+        readonly receiver: string;
+        readonly sender: string;
     };
 }
 
 interface ISiteSettings {
-    port: number | string;
-    siteRoot: string;
-    viewspath: string;
-    faviconpath: string;
-    staticcontentpath: string;
+    readonly port: number | string;
+    readonly siteRoot: string;
+    readonly viewspath: string;
+    readonly faviconpath: string;
+    readonly staticcontentpath: string;
 }
 
 interface IGithubSettings {
-    createGithub: (repoOwner: string) => Github;
+    readonly createGithub: (repoOwner: string) => Github;
 }
 
 export type Settings = IBuilderSettings & CodeAnalysisSettings & CodeSigningSettings & IStorageSettings & INugetSettings & ISmtpSettings & ISiteSettings & IGithubSettings;

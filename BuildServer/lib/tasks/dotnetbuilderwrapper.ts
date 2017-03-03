@@ -1,12 +1,12 @@
 "use strict";
 
-import { spawn } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 import * as JSONParse from "json-parse-safe";
 import { WritableStreamBuffer } from "stream-buffers";
 
 import { Task } from "../types";
 
-const wrapBuilder = (builder, input, onExit) => {
+const wrapBuilder = (builder: ChildProcess, input: string, onExit: (code: number, result: string, builderError: string) => void) => {
     const stdoutPromise = new Promise((resolve, reject) => {
         const streamBuffer = new WritableStreamBuffer();
         builder.stdout
@@ -39,8 +39,8 @@ const wrapBuilder = (builder, input, onExit) => {
 
     Promise.all([stdoutPromise, stderrPromise, builderPromise]).then((values) => {
         const [result, builderError, code] = values;
-        onExit(code, result, builderError);
-    }).catch((err) => onExit(0, undefined, err));
+        onExit(code as number, result as string, builderError as string);
+    }).catch((err) => onExit(0, "", err));
 };
 
 export default ((params, processor) => () => {

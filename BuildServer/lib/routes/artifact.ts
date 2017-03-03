@@ -1,8 +1,10 @@
 "use strict";
 
+import * as express from "express";
+
 import { getSettings } from "../settings-wrapper";
 
-export default (req, res) => {
+export default ((req, res) => {
     const options = {
         branch: `/refs/heads/${req.params.branch}`,
         branchName: req.params.branch,
@@ -17,4 +19,4 @@ export default (req, res) => {
     const pathParts = [settings.releasepath, options.owner, options.reponame, options.branch, options.rev, options.file];
 
     res.sendfile(pathParts.join("/"));
-};
+}) as express.RequestHandler;

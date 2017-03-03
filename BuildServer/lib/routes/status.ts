@@ -1,5 +1,6 @@
 "use strict";
 
+import * as express from "express";
 import * as _ from "underscore";
 import { parse } from "url";
 
@@ -35,7 +36,7 @@ const parseOptionsFromReferer = (path, callback) => {
     });
 };
 
-const createShowReport = (res) => (err, inputOptions) => {
+const createShowReport = (res: express.Response) => (err, inputOptions) => {
     const options = {
         ...inputOptions || {},
         err,
@@ -44,7 +45,7 @@ const createShowReport = (res) => (err, inputOptions) => {
     res.render("status", options);
 };
 
-export const image = (req, res) => {
+export const image: express.RequestHandler = (req, res) => {
     const getAdditionalOptions = (err, options) => {
         if (err === "ReportFileNotFound") {
             return { status: "Building" };
@@ -106,7 +107,7 @@ export const image = (req, res) => {
     });
 };
 
-export const page = (req, res) => {
+export const page: express.RequestHandler = (req, res) => {
     const options = {
         branch: `/refs/heads/${req.params.branch}`,
         branchName: req.params.branch,
@@ -118,10 +119,10 @@ export const page = (req, res) => {
     getReport(getSettings(req.app), options, createShowReport(res));
 };
 
-export const pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
+export const pageFromGithub: express.RequestHandler = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
     if (err) {
         return createShowReport(res)(err, options);
     }
 
-    return getReport(req.app /* xxx */, options, createShowReport(res));
+    return getReport(getSettings(req.app), options, createShowReport(res));
 });

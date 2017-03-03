@@ -5,18 +5,19 @@ import { readFile, writeFile } from "fs";
 import * as glob from "glob";
 import { join } from "path";
 
-import { Settings, Task } from "../types";
+import { Settings, Task, TaskProcessor } from "../types";
 
 const flagDoneName = "dotnetrewriterDone";
 
-const processAssemblyInfo = (params, processor, appendInformationalVersion) => (originalContent, cb) => {
+const processAssemblyInfo = (params, processor: TaskProcessor, appendInformationalVersion: boolean) => (originalContent, cb) => {
     const processInternalsVisible = (content) => {
-        if (params.skipCodeSigning || processor.settings.xxxskipCodeSigning) {
+        if (processor.settings.skipCodeSigning || params.skipCodeSigning) {
             return content;
         }
 
+        const publicKey = processor.settings.codeSigningPublicKey;
         const pattern = /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g;
-        const replacer = (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${processor.settings.codeSigningPublicKey}")`;
+        const replacer = (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${publicKey}")`;
 
         return content.replace(pattern, replacer);
     };

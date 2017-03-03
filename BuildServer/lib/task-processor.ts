@@ -3,7 +3,7 @@
 import * as _ from "underscore";
 
 import tasks from "./tasks";
-import { MessagesRoot, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
+import { MessagesRoot, ProcessTaskContext, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
@@ -66,7 +66,7 @@ const addFlag = (flags) => (flagName) => {
 
 const containsFlag = (flags) => (flagName) => flags[flagName];
 
-export const processTask = (settings: Settings, task, context, callback) => {
+export const processTask = (settings: Settings, task, context: ProcessTaskContext, callback) => {
     const errors: MessagesRoot = { $allMessages: [] };
     const warns: MessagesRoot = { $allMessages: [] };
     const infos: MessagesRoot = { $allMessages: [] };

@@ -1,5 +1,20 @@
 import { Settings } from "./settings-types";
 
+export interface IProcessTaskContext {
+    readonly exported: string;
+    readonly release: string;
+    readonly owner: string;
+    readonly reponame: string;
+    readonly branch: string;
+    readonly rev: string;
+    readonly versionInfo: string;
+}
+
+interface ITaskProcessorContext extends IProcessTaskContext {
+    readonly addFlag: (flagName: string) => void;
+    readonly containsFlag: (flagName: string) => boolean;
+}
+
 export type TaskProcessorCallback = (err: string) => void;
 
 export interface ITaskProcessorCore {
@@ -7,7 +22,7 @@ export interface ITaskProcessorCore {
     readonly onWarn: (message: string, prefix?: string) => void;
     readonly onInfo: (message: string, prefix?: string) => void;
     readonly settings: Settings;
-    readonly context?: any;
+    readonly context: ITaskProcessorContext;
 }
 
 export interface ITaskProcessor extends ITaskProcessorCore {
@@ -17,9 +32,9 @@ export interface ITaskProcessor extends ITaskProcessorCore {
 }
 
 export interface ITaskInfo {
-    name?: string;
-    type: string;
-    params: any;
+    readonly name?: string;
+    readonly type: string;
+    readonly params: any;
 }
 
 export type Task = (params: any, processor: ITaskProcessor) => () => void;
