@@ -1,0 +1,56 @@
+"use strict";
+
+import * as GitHubApi from "github";
+import { join } from "path";
+import run from "./lib";
+import { Settings } from "./lib/types";
+
+const createGithub = () => new GitHubApi({
+    debug: false,
+    headers: { "user-agent": "micro-build-server" },
+    host: "github.enterprise.host",
+    pathPrefix: "/api/v3",
+    protocol: "https",
+    timeout: 5000,
+});
+
+const settings: Settings = {
+    builderExecutable: "../DotNetBuilder/bin/Debug/MicroBuildServer.DotNetBuilder.exe",
+    createGithub: (repoOwner) => {
+        const github = createGithub();
+
+        github.authenticate({
+            password: "password",
+            type: "basic",
+            username: "username",
+        });
+
+        return github;
+    },
+    eslintBrowserConfig: join(__dirname, "settings-eslint-browser.json"),
+    faviconpath: join(__dirname, "public/images/favicon.png"),
+    gitpath: "M:/g",
+    ignoreCodeAnalysisByDefault: true,
+    isCodeAnalysisUnsupported: false,
+    nugetApiKey: "NUGET-API-KEY",
+    nugetHost: "https://nuget.host/",
+    port: 3000,
+    // port: process.env["PORT"],
+    releasepath: "M:/r",
+    siteRoot: "https://mbs.host/",
+    skipCodeSigning: true,
+    smtp: {
+        auth: {
+            pass: "password",
+            user: "username",
+        },
+        host: "smtp.host",
+        receiver: "receiver@your.domain",
+        sender: "sender@your.domain",
+    },
+    staticcontentpath: join(__dirname, "public"),
+    tmpcodepath: "M:/c",
+    viewspath: join(__dirname, "views"),
+};
+
+run(settings);
