@@ -4,7 +4,7 @@ import * as glob from "glob";
 
 import { Task } from "../types";
 
-export default ((params, processor) => () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
+export default ((_params, processor) => () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
     cwd: processor.context.exported,
     dot: true,
 }, (err, files) => {

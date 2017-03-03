@@ -57,12 +57,12 @@ const notifyStatus = (settings: Settings, options, notifyStatusCallback) => {
     });
 };
 
-const wrapGitLoader = (skipGitLoader) => {
+const wrapGitLoader: (skipGitLoader: boolean) => typeof gitLoader = (skipGitLoader) => {
     if (!skipGitLoader) {
         return gitLoader;
     }
 
-    return (gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
+    return (_gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
 };
 
 export const build = (settings: Settings, options, buildCallback) => {

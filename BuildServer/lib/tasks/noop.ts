@@ -2,4 +2,4 @@
 
 import { Task } from "../types";
 
-export default ((params, processor) => processor.done()) as Task;
+export default ((_params, processor) => processor.done()) as Task;

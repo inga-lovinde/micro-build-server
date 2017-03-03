@@ -31,7 +31,7 @@ const wrapBuilder = (builder: ChildProcess, input: string, onExit: (code: number
             });
     });
 
-    const builderPromise = new Promise((resolve, reject) => {
+    const builderPromise = new Promise((resolve) => {
         builder.stdin.write(input);
         builder.stdin.end();
         builder.on("exit", resolve);

@@ -11,7 +11,6 @@ import * as express from "express";
 import { createServer } from "http";
 import * as methodOverride from "method-override";
 import * as morgan from "morgan";
-import { join } from "path";
 import * as serveFavicon from "serve-favicon";
 import * as serveStatic from "serve-static";
 
@@ -42,7 +41,7 @@ const run = (settings: Settings) => {
     app.route("/").get(routes.index);
     app.route("/github/postreceive")
         .post(routes.postreceive)
-        .get((req, res) => res.send("Only automated POST requests are allowed for postreceive route"));
+        .get((_req, res) => res.send("Only automated POST requests are allowed for postreceive route"));
 
     app.route("/manual")
         .get(routes.manual.get)

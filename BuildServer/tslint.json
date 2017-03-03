@@ -5,6 +5,7 @@
     ],
     "rules": {
         "no-console": false,
-        "max-line-length": false
+        "max-line-length": false,
+        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
     }
 }

@@ -1,9 +1,8 @@
 "use strict";
 
 import { join } from "path";
-import * as _ from "underscore";
 
-import { Settings, Task } from "../types";
+import { Task } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
 export default ((params, processor) => {

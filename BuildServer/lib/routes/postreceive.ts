@@ -66,12 +66,6 @@ const processPullRequest = (req: express.Request, res: express.Response, payload
         headRepoOptions,
         pullRequestNumber,
     };
-    const masterOptions = {
-        action,
-        baseRepoOptions,
-        headRepoOptions: baseRepoOptions,
-        pullRequestNumber,
-    };
 
     console.log(`Got pull request ${action} event, `
         + `from ${getBranchDescription(headRepoOptions)} (${headRepoOptions.rev}) to ${getBranchDescription(baseRepoOptions)}`);

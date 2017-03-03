@@ -5,7 +5,7 @@ import { readFile, writeFile } from "fs";
 import * as glob from "glob";
 import { join } from "path";
 
-import { Settings, Task, TaskProcessor } from "../types";
+import { Task, TaskProcessor } from "../types";
 
 const flagDoneName = "dotnetrewriterDone";
 
@@ -17,7 +17,7 @@ const processAssemblyInfo = (params, processor: TaskProcessor, appendInformation
 
         const publicKey = processor.settings.codeSigningPublicKey;
         const pattern = /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g;
-        const replacer = (match, p1) => `InternalsVisibleTo("${p1},PublicKey=${publicKey}")`;
+        const replacer = (_match, p1) => `InternalsVisibleTo("${p1},PublicKey=${publicKey}")`;
 
         return content.replace(pattern, replacer);
     };

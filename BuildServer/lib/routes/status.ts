@@ -1,7 +1,6 @@
 "use strict";
 
 import * as express from "express";
-import * as _ from "underscore";
 import { parse } from "url";
 
 import { getSettings } from "../settings-wrapper";

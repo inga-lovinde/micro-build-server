@@ -1,7 +1,5 @@
 "use strict";
 
-import * as _ from "underscore";
-
 import tasks from "./tasks";
 import { MessagesRoot, ProcessTaskContext, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
 

@@ -2,7 +2,6 @@
 
 import { exists, readFile } from "fs";
 import { join } from "path";
-import * as _ from "underscore";
 
 import { loadReport } from "./report-processor";
 import { Settings } from "./types";

@@ -39,7 +39,7 @@ const gitToFsCopier = new Copier({
             return callback(null, targetSubdir);
         });
     },
-    finalizeTargetTree: (targetSubdir, callback) => callback(),
+    finalizeTargetTree: (_targetSubdir, callback) => callback(),
     walkSourceTree: (tree) => {
         const emitter = new EventEmitter();
 
