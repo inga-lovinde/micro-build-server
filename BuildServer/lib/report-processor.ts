@@ -8,7 +8,7 @@ import { ReadableStreamBuffer, WritableStreamBuffer } from "stream-buffers";
 import * as _ from "underscore";
 import { createGunzip, createGzip } from "zlib";
 
-import { Message, Report, ReportResult } from "./types";
+import { Message, Report, ReportResult, Settings } from "./types";
 
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
@@ -78,8 +78,8 @@ export const readReport = (releaseDir, callback) => {
         });
 };
 
-export const loadReport = (app, options, callback) => {
-    const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+export const loadReport = (settings: Settings, options, callback) => {
+    const releaseDir = join(settings.releasepath, options.owner, options.reponame, options.branch, options.rev);
 
     glob("**", {
         cwd: releaseDir,
@@ -114,12 +114,12 @@ export const loadReport = (app, options, callback) => {
     });
 };
 
-export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
+export const getStatusMessageFromRelease = (settings: Settings, originalOptions, callback) => {
     const options = {
         ...originalOptions,
         attemptsGetReport: (Number(originalOptions.attemptsGetReport) || Number()) + 1,
     };
-    const releaseDir = join(app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const releaseDir = join(settings.releasepath, options.owner, options.reponame, options.branch, options.rev);
     const reportFile = join(releaseDir, reportFilename);
 
     exists(reportFile, (reportFileExists) => {
@@ -138,7 +138,7 @@ export const getStatusMessageFromRelease = (app, originalOptions, callback) => {
                     options.onTenthAttempt();
                 }
 
-                return setTimeout(() => exports.getStatusMessageFromRelease(app, options, callback), attemptsTimeout);
+                return setTimeout(() => exports.getStatusMessageFromRelease(settings, options, callback), attemptsTimeout);
             }), directoryCheckTimeout);
         }
 

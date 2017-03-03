@@ -3,6 +3,7 @@
 import * as _ from "underscore";
 import { parse } from "url";
 
+import { getSettings } from "../settings-wrapper";
 import { getReport } from "../status-processor";
 
 const parseOptionsFromReferer = (path, callback) => {
@@ -101,7 +102,7 @@ export const image = (req, res) => {
             return handle(err, options);
         }
 
-        return getReport(req.app, options, handle);
+        return getReport(getSettings(req.app), options, handle);
     });
 };
 
@@ -114,7 +115,7 @@ export const page = (req, res) => {
         rev: req.params.rev,
     };
 
-    getReport(req.app, options, createShowReport(res));
+    getReport(getSettings(req.app), options, createShowReport(res));
 };
 
 export const pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
@@ -122,5 +123,5 @@ export const pageFromGithub = (req, res) => parseOptionsFromReferer(req.params[0
         return createShowReport(res)(err, options);
     }
 
-    return getReport(req.app, options, createShowReport(res));
+    return getReport(req.app /* xxx */, options, createShowReport(res));
 });

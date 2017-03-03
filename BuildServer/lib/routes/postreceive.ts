@@ -3,13 +3,14 @@
 import * as JSONParse from "json-parse-safe";
 import { build } from "../builder";
 import { commentOnPullRequest } from "../commenter";
+import { getSettings } from "../settings-wrapper";
 
 const getBranchDescription = (options) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
 
 const processPush = (req, res, payload) => {
+    const settings = getSettings(req.app);
     const repository = payload.repository;
     const options = {
-        app: req.app,
         branch: payload.ref,
         owner: repository.owner.name,
         reponame: repository.name,
@@ -19,7 +20,7 @@ const processPush = (req, res, payload) => {
 
     console.log(`Got push event for ${getBranchDescription(options)}`);
 
-    build(options, (err, result) => {
+    build(settings, options, (err, result) => {
         console.log("Done processing request from GitHub");
         console.log(`Error: ${err}`);
         res.send(`Done processing request from GitHub\r\nError: ${err}\r\nResult: ${result}`);
@@ -47,16 +48,15 @@ const processPullRequest = (req, res, payload) => {
         owner: baseRepo.owner.name || baseRepo.owner.login,
         reponame: baseRepo.name,
     };
+    const settings = getSettings(req.app);
     const options = {
         action,
-        app: req.app,
         baseRepoOptions,
         headRepoOptions,
         pullRequestNumber,
     };
     const masterOptions = {
         action,
-        app: req.app,
         baseRepoOptions,
         headRepoOptions: baseRepoOptions,
         pullRequestNumber,
@@ -79,7 +79,7 @@ const processPullRequest = (req, res, payload) => {
         return res.send("");
     }
 
-    return commentOnPullRequest((action === "closed" && masterOptions) || options, (err, data) => {
+    return commentOnPullRequest(settings, (action === "closed" && masterOptions) || options, (err, data) => {
         if (err) {
             console.log(`Unable to post comment: ${err}`);
         }

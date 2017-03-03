@@ -4,6 +4,7 @@ import { create as createArchiver } from "archiver";
 import { join } from "path";
 
 import { readReport } from "../report-processor";
+import { getSettings } from "../settings-wrapper";
 
 const getDatePart = (report) => {
     if (!report.date) {
@@ -32,7 +33,7 @@ export default (req, res, next) => {
         rev: req.params.rev,
     };
 
-    const releasePath = join(req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev);
+    const releasePath = join(getSettings(req.app).releasepath, options.owner, options.reponame, options.branch, options.rev);
 
     readReport(releasePath, (err, report) => {
         if (err) {

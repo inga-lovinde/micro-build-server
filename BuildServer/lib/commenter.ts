@@ -2,13 +2,12 @@
 
 import * as _ from "underscore";
 
-import settings from "../settings";
 import { createGithub, IGithub } from "./github-wrapper";
 import { getStatusMessageFromRelease } from "./report-processor";
+import { Settings } from "./types";
 
 interface ICommentOnPullRequestOptions {
     readonly action: string;
-    readonly app: any;
     readonly baseRepoOptions: any;
     readonly headRepoOptions: any;
 }
@@ -159,17 +158,17 @@ const checkPullRequest = (options: ICheckPullRequestOptions, callback) => {
     });
 };
 
-export const commentOnPullRequest = (originalOptions: ICommentOnPullRequestOptions, callback) => {
+export const commentOnPullRequest = (settings: Settings, originalOptions: ICommentOnPullRequestOptions, callback) => {
     const optionsGithub = {
         ...originalOptions,
-        github: createGithub(originalOptions.baseRepoOptions.owner),
+        github: createGithub(settings, originalOptions.baseRepoOptions.owner),
     };
     const options = {
         ...optionsGithub,
         onTenthAttempt: () => writeComment(optionsGithub, "Waiting for build to finish...", _.noop),
     };
 
-    return checkPullRequest(options, () => getStatusMessageFromRelease(options.app, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
+    return checkPullRequest(options, () => getStatusMessageFromRelease(settings, options.headRepoOptions, (statusMessageErr, statusSuccessMessage) => {
         const escapedErr = String(statusMessageErr || "").substring(0, maxCommentLength)
             .replace(/`/g, "` ");
         const message = statusMessageErr

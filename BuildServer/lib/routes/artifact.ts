@@ -1,5 +1,7 @@
 "use strict";
 
+import { getSettings } from "../settings-wrapper";
+
 export default (req, res) => {
     const options = {
         branch: `/refs/heads/${req.params.branch}`,
@@ -10,7 +12,9 @@ export default (req, res) => {
         rev: req.params.rev,
     };
 
-    const pathParts = [req.app.get("releasepath"), options.owner, options.reponame, options.branch, options.rev, options.file];
+    const settings = getSettings(req.app);
+
+    const pathParts = [settings.releasepath, options.owner, options.reponame, options.branch, options.rev, options.file];
 
     res.sendfile(pathParts.join("/"));
 };

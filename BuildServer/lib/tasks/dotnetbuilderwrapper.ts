@@ -4,7 +4,6 @@ import { spawn } from "child_process";
 import * as JSONParse from "json-parse-safe";
 import { WritableStreamBuffer } from "stream-buffers";
 
-import settings from "../../settings";
 import { Task } from "../types";
 
 const wrapBuilder = (builder, input, onExit) => {
@@ -46,7 +45,7 @@ const wrapBuilder = (builder, input, onExit) => {
 
 export default ((params, processor) => () => {
     const input = JSON.stringify(params);
-    const builder = spawn(settings.builderExecutable, [params.command]);
+    const builder = spawn(processor.settings.builderExecutable, [params.command]);
 
     processor.onInfo(`DotNetBuilderWrapper processing (at ${new Date().toISOString()}): ${input}`);
 

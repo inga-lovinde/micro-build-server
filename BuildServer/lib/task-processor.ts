@@ -3,7 +3,7 @@
 import * as _ from "underscore";
 
 import tasks from "./tasks";
-import { MessagesRoot, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
+import { MessagesRoot, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
@@ -31,6 +31,7 @@ const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, 
         onInfo,
         process: () => tasks[task.type](task.params || {}, result)(),
         processTask: (innerTask, innerCallback) => createTaskProcessor(innerTask, result, innerCallback).process(),
+        settings: outerProcessor.settings,
     };
 
     return result;
@@ -65,7 +66,7 @@ const addFlag = (flags) => (flagName) => {
 
 const containsFlag = (flags) => (flagName) => flags[flagName];
 
-export const processTask = (task, context, callback) => {
+export const processTask = (settings: Settings, task, context, callback) => {
     const errors: MessagesRoot = { $allMessages: [] };
     const warns: MessagesRoot = { $allMessages: [] };
     const infos: MessagesRoot = { $allMessages: [] };
@@ -86,6 +87,7 @@ export const processTask = (task, context, callback) => {
         onError: messageProcessor(errors),
         onInfo: messageProcessor(infos),
         onWarn: messageProcessor(warns),
+        settings,
     }, (err) => callback(err, {
         errors,
         infos,

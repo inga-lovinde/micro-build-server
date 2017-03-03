@@ -1,7 +1,8 @@
 "use strict";
 
 import * as RawGithub from "github";
-import settings from "../settings";
+
+import { Settings } from "./types";
 
 interface IHttpError extends Error {
     readonly message: string;
@@ -40,7 +41,7 @@ interface IGithub {
     };
 }
 
-const createGithub = (repoOwner) => settings.createGithub(repoOwner) as any as IGithub;
+const createGithub = (settings: Settings, repoOwner) => settings.createGithub(repoOwner) as any as IGithub;
 
 export {
     IGithub,

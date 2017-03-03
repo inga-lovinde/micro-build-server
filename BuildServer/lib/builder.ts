@@ -6,13 +6,12 @@ import { mkdirsSync, remove } from "fs-extra";
 import * as JSONParse from "json-parse-safe";
 import { join } from "path";
 
-import settings from "../settings";
 import { gitLoader } from "./git/loader";
 import { createGithub } from "./github-wrapper";
 import { send as sendMail } from "./mail-sender";
 import { writeReport } from "./report-processor";
 import { processTask } from "./task-processor";
-import { ReportResult } from "./types";
+import { ReportResult, Settings } from "./types";
 
 const codePostfix = "";
 const mailLazinessLevel = 1000;
@@ -36,7 +35,7 @@ const createBuildDoneMessage = (isSuccess, name) => {
     return `Build failed for ${name}`;
 };
 
-const notifyStatus = (options, notifyStatusCallback) => {
+const notifyStatus = (settings: Settings, options, notifyStatusCallback) => {
     const status = {
         description: String(options.description || "").substr(0, maxDescriptionLength),
         owner: options.owner,
@@ -46,7 +45,7 @@ const notifyStatus = (options, notifyStatusCallback) => {
         target_url: `${settings.siteRoot}status/${options.owner}/${options.reponame}/${options.hash}`,
     };
 
-    createGithub(options.owner).repos.createStatus(status, (createStatusErr) => {
+    createGithub(settings, options.owner).repos.createStatus(status, (createStatusErr) => {
         if (createStatusErr) {
             console.log(`Error while creating status: ${createStatusErr}`);
             console.log(status);
@@ -66,17 +65,17 @@ const wrapGitLoader = (skipGitLoader) => {
     return (gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
 };
 
-export const build = (options, buildCallback) => {
+export const build = (settings: Settings, options, buildCallback) => {
     const url = options.url;
     const owner = options.owner;
     const reponame = options.reponame;
     const rev = options.rev;
     const branch = options.branch;
     const skipGitLoader = options.skipGitLoader;
-    const local = join(options.app.get("gitpath"), "r");
-    const tmp = join(options.app.get("tmpcodepath"), rev.substr(0, maxTmpcodepathLength));
+    const local = join(settings.gitpath, "r");
+    const tmp = join(settings.tmpcodepath, rev.substr(0, maxTmpcodepathLength));
     const exported = tmp + codePostfix;
-    const release = join(options.app.get("releasepath"), owner, reponame, branch, rev);
+    const release = join(settings.releasepath, owner, reponame, branch, rev);
     const statusQueue = queue((task: (callback: any) => void, queueCallback) => task(queueCallback), 1);
     const actualGitLoader = wrapGitLoader(skipGitLoader);
     const date = new Date();
@@ -87,7 +86,7 @@ export const build = (options, buildCallback) => {
     const version = `${versionMajor}.${versionMinor}.${versionBuild}.${versionRev}`;
     const versionInfo = `${version}; built from ${rev}; repository: ${owner}/${reponame}; branch: ${branch}`;
 
-    statusQueue.push((queueCallback) => notifyStatus({
+    statusQueue.push((queueCallback) => notifyStatus(settings, {
         description: "Preparing to build...",
         hash: rev,
         owner,
@@ -97,9 +96,9 @@ export const build = (options, buildCallback) => {
 
     mkdirsSync(release);
 
-    writeFileSync(join(options.app.get("releasepath"), owner, reponame, branch, "latest.id"), rev);
-    mkdirsSync(join(options.app.get("releasepath"), owner, reponame, "$revs"));
-    writeFileSync(join(options.app.get("releasepath"), owner, reponame, "$revs", `${rev}.branch`), branch);
+    writeFileSync(join(settings.releasepath, owner, reponame, branch, "latest.id"), rev);
+    mkdirsSync(join(settings.releasepath, owner, reponame, "$revs"));
+    writeFileSync(join(settings.releasepath, owner, reponame, "$revs", `${rev}.branch`), branch);
 
     const createErrorMessageForMail = (doneErr) => {
         if (!doneErr) {
@@ -127,7 +126,7 @@ export const build = (options, buildCallback) => {
 
         writeReport(release, doneErr, result, (writeErr) => {
             statusQueue.push((queueCallback) => parallel([
-                (parallelCallback) => notifyStatus({
+                (parallelCallback) => notifyStatus(settings, {
                     description: errorMessage || warnMessage || infoMessage || "Success",
                     hash: rev,
                     owner,
@@ -191,7 +190,7 @@ export const build = (options, buildCallback) => {
                     return done("MBSMalformed");
                 }
 
-                return processTask(value, {
+                return processTask(settings, value, {
                     branch,
                     exported,
                     owner,

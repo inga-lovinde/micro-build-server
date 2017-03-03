@@ -5,9 +5,10 @@ import { join } from "path";
 import * as _ from "underscore";
 
 import { loadReport } from "./report-processor";
+import { Settings } from "./types";
 
-const addBranchInfo = (app, options, callback) => {
-    const branchFile = join(app.get("releasepath"), options.owner, options.reponame, "$revs", `${options.rev}.branch`);
+const addBranchInfo = (settings: Settings, options, callback) => {
+    const branchFile = join(settings.releasepath, options.owner, options.reponame, "$revs", `${options.rev}.branch`);
 
     exists(branchFile, (exists) => {
         if (!exists) {
@@ -32,8 +33,8 @@ const addBranchInfo = (app, options, callback) => {
     });
 };
 
-const addRevInfo = (app, options, callback) => {
-    const revFile = join(app.get("releasepath"), options.owner, options.reponame, options.branch, "latest.id");
+const addRevInfo = (settings: Settings, options, callback) => {
+    const revFile = join(settings.releasepath, options.owner, options.reponame, options.branch, "latest.id");
 
     exists(revFile, (exists) => {
         if (!exists) {
@@ -55,7 +56,7 @@ const addRevInfo = (app, options, callback) => {
     });
 };
 
-const parseOptions = (app, options, callback) => {
+const parseOptions = (settings: Settings, options, callback) => {
     if (options.rev && !(/^[\da-f]{40}$/i).test(options.rev)) {
         return callback(`Wrong rev format: ${options.rev}`, options);
     }
@@ -66,14 +67,14 @@ const parseOptions = (app, options, callback) => {
     };
 
     if (options.rev) {
-        return addBranchInfo(app, {
+        return addBranchInfo(settings, {
             ...result,
             rev: options.rev,
         }, callback);
     }
 
     if (/^[\da-f]{40}$/i.test(options.branchName)) {
-        return addBranchInfo(app, {
+        return addBranchInfo(settings, {
             ...result,
             rev: options.branchName,
         }, callback);
@@ -81,17 +82,17 @@ const parseOptions = (app, options, callback) => {
 
     const branchName = options.branchName || "master";
 
-    return addRevInfo(app, {
+    return addRevInfo(settings, {
         ...result,
         branch: `refs/heads/${branchName}`,
         branchName,
     }, callback);
 };
 
-export const getReport = (app, options, callback) => parseOptions(app, options, (err, result) => {
+export const getReport = (settings: Settings, options, callback) => parseOptions(settings, options, (err, result) => {
     if (err) {
         return callback(err, {});
     }
 
-    return loadReport(app, result, callback);
+    return loadReport(settings, result, callback);
 });

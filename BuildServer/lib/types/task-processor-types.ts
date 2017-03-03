@@ -1,9 +1,12 @@
+import { Settings } from "./settings-types";
+
 export type TaskProcessorCallback = (err: string) => void;
 
 export interface ITaskProcessorCore {
     readonly onError: (message: string | Error, prefix?: string) => void;
     readonly onWarn: (message: string, prefix?: string) => void;
     readonly onInfo: (message: string, prefix?: string) => void;
+    readonly settings: Settings;
     readonly context?: any;
 }
 

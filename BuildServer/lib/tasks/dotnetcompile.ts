@@ -3,30 +3,27 @@
 import { join } from "path";
 import * as _ from "underscore";
 
-import rawSettings from "../../settings";
 import { Settings, Task } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
-const settings: Settings = rawSettings;
-
 export default ((params, processor) => {
-    if (settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
+    if (processor.settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
         processor.onError("Code analysis is not supported");
 
         return processor.done();
     }
 
     const getAdditionalSigningParameters = () => {
-        if (settings.skipCodeSigning || params.skipCodeSigning) {
+        if (processor.settings.skipCodeSigning || params.skipCodeSigning) {
             return {};
         }
 
-        return { SigningKey: settings.codeSigningKeyFile };
+        return { SigningKey: processor.settings.codeSigningKeyFile };
     };
 
-    const skipCodeAnalysis = settings.isCodeAnalysisUnsupported
+    const skipCodeAnalysis = processor.settings.isCodeAnalysisUnsupported
         || params.ignoreCodeAnalysis
-        || (settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis);
+        || (processor.settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis);
 
     const compileParams = {
         Configuration: params.configuration,
