@@ -1,7 +1,15 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import conditional from "./conditional";
+
+interface IParameters {
+    readonly major: string;
+    readonly nuspecName: string;
+    readonly version: string;
+    readonly withoutCommitSha: boolean;
+    readonly masterRepoOwner: string;
+}
 
 export default ((params, processor) => conditional({
     branch: "master",
@@ -28,4 +36,4 @@ export default ((params, processor) => conditional({
         },
         type: "dotnetnugetpush",
     },
-}, processor)) as Task;
+}, processor)) as GenericTask<IParameters>;

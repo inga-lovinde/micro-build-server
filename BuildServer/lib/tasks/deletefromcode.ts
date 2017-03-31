@@ -3,7 +3,7 @@
 import { remove } from "fs-extra";
 import { join } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 
 export default ((params, processor) => () => {
     const sourceFilePath = join(processor.context.exported, params.filename);
@@ -19,4 +19,4 @@ export default ((params, processor) => () => {
 
         return processor.done();
     });
-}) as Task;
+}) as GenericTask<{ readonly filename: string }>;

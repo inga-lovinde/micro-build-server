@@ -1,7 +1,12 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import dotnetnugetprocessinternal from "./dotnetnugetprocessinternal";
+
+interface IParameters {
+    readonly name: string;
+    readonly nuspec: string;
+}
 
 export default ((params, processor) => dotnetnugetprocessinternal({
     ...params,
@@ -9,4 +14,4 @@ export default ((params, processor) => dotnetnugetprocessinternal({
         params: { filename: nupkg },
         type: "copy",
     }),
-}, processor)) as Task;
+}, processor)) as GenericTask<IParameters>;

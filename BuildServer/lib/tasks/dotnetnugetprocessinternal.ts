@@ -2,14 +2,23 @@
 
 import { join } from "path";
 
-import { Task, TaskProcessor } from "../types";
+import { GenericTask, TaskInfo, TaskProcessor } from "../types";
 import sequential from "./sequential";
+
+interface IParameters {
+    readonly withoutCommitSha?: boolean;
+    readonly major?: string;
+    readonly version?: string;
+    readonly name: string;
+    readonly nuspec: string;
+    readonly getFinalTask: (nupkg: string) => TaskInfo;
+}
 
 const postfixLength = 16;
 const fourDigits = 10000;
 const twoDigits = 100;
 
-const addPostfix = (version, params, processor: TaskProcessor) => {
+const addPostfix = (version: string, params: IParameters, processor: TaskProcessor) => {
     if (params.withoutCommitSha) {
         return version;
     }
@@ -40,4 +49,4 @@ export default ((params, processor) => {
             params.getFinalTask(nupkg),
         ],
     }, processor);
-}) as Task;
+}) as GenericTask<IParameters>;

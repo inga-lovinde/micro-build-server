@@ -4,7 +4,16 @@ import { ChildProcess, spawn } from "child_process";
 import * as JSONParse from "json-parse-safe";
 import { WritableStreamBuffer } from "stream-buffers";
 
-import { Task } from "../types";
+import { BuilderRequest, GenericTask } from "../types";
+
+interface IDotNetBuilderResponseMessage {
+    readonly Type: string;
+    readonly Body: string;
+}
+
+interface IDotNetBuilderResponse {
+    readonly Messages: IDotNetBuilderResponseMessage[];
+}
 
 const wrapBuilder = (builder: ChildProcess, input: string, onExit: (code: number, result: string, builderError: string) => void) => {
     const stdoutPromise = new Promise((resolve, reject) => {
@@ -56,7 +65,7 @@ export default ((params, processor) => () => {
             return processor.done();
         }
 
-        const { value, error } = JSONParse(result);
+        const { value, error }: { value: IDotNetBuilderResponse, error: any } = JSONParse(result);
 
         if (error || !value || !value.Messages) {
             processor.onError(`Malformed JSON: ${error}`);
@@ -86,4 +95,4 @@ export default ((params, processor) => () => {
 
         return processor.done();
     });
-}) as Task;
+}) as GenericTask<BuilderRequest>;

@@ -1,9 +1,19 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import sequential from "./sequential";
 
-const createTasks = function *(params) {
+interface IParameters {
+    readonly skipMbsCheckStyle?: boolean;
+    readonly forceCodeAnalysis?: boolean;
+    readonly ignoreCodeAnalysis?: boolean;
+    readonly skipCodeSigning?: boolean;
+    readonly skipNugetRestore?: boolean;
+    readonly configuration: string;
+    readonly solution: string;
+}
+
+const createTasks = function *(params: IParameters) {
     if (!params.skipMbsCheckStyle) {
         yield {
             params,
@@ -40,4 +50,4 @@ export default ((params, processor) => {
     const tasks = Array.from(createTasks(params));
 
     return sequential({ tasks }, processor);
-}) as Task;
+}) as GenericTask<IParameters>;

@@ -2,18 +2,11 @@
 
 import { join } from "path";
 
-import { Task } from "../types";
-import sequential from "./sequential";
+import { GenericTask } from "../types";
+import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
-export default ((params, processor) => sequential({
-    tasks: [
-        {
-            params: {
-                BaseDirectory: processor.context.exported,
-                SolutionPath: join(processor.context.exported, params.solution),
-                command: "nugetrestore",
-            },
-            type: "dotnetbuilderwrapper",
-        },
-    ],
-}, processor)) as Task;
+export default ((params, processor) => dotnetbuilderwrapper({
+    BaseDirectory: processor.context.exported,
+    SolutionPath: join(processor.context.exported, params.solution),
+    command: "nugetrestore",
+}, processor)) as GenericTask<{ readonly solution: string }>;

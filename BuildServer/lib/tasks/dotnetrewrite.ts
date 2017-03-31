@@ -5,24 +5,29 @@ import { readFile, writeFile } from "fs";
 import * as glob from "glob";
 import { join } from "path";
 
-import { Task, TaskProcessor } from "../types";
+import { GenericTask, TaskProcessor } from "../types";
+
+interface IParameters {
+    readonly skipCodeSigning: boolean;
+}
+
+type Callback  = (err?: any, result?: string) => void;
 
 const flagDoneName = "dotnetrewriterDone";
 
-const processAssemblyInfo = (params, processor: TaskProcessor, appendInformationalVersion: boolean) => (originalContent, cb) => {
-    const processInternalsVisible = (content) => {
+const processAssemblyInfo = (params: IParameters, processor: TaskProcessor, appendInformationalVersion: boolean) => (originalContent: string, cb: Callback) => {
+    const processInternalsVisible = (content: string) => {
         if (processor.settings.skipCodeSigning || params.skipCodeSigning) {
             return content;
         }
 
         const publicKey = processor.settings.codeSigningPublicKey;
         const pattern = /InternalsVisibleTo\s*\(\s*"([\w.]+)"\s*\)/g;
-        const replacer = (_match, p1) => `InternalsVisibleTo("${p1},PublicKey=${publicKey}")`;
 
-        return content.replace(pattern, replacer);
+        return content.replace(pattern, (_match, p1) => `InternalsVisibleTo("${p1},PublicKey=${publicKey}")`);
     };
 
-    const processInformationalVersion = (content) => {
+    const processInformationalVersion = (content: string) => {
         if (!appendInformationalVersion) {
             return content;
         }
@@ -55,7 +60,7 @@ export default ((params, processor) => () => {
             return processor.done();
         }
 
-        return parallel(files.map((file) => (callback) => waterfall([
+        return parallel(files.map((file) => (callback: Callback) => waterfall([
             readFile.bind(null, join(processor.context.exported, file), { encoding: "utf8" }),
             processAssemblyInfo(params, processor, file.toLowerCase().includes("assemblyinfo.cs")),
             writeFile.bind(null, join(processor.context.exported, file)),
@@ -68,4 +73,4 @@ export default ((params, processor) => () => {
             callback(err);
         })), processor.done);
     });
-}) as Task;
+}) as GenericTask<IParameters>;

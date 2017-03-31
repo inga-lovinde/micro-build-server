@@ -1,24 +1,28 @@
 "use strict";
 
 import tasks from "./tasks";
-import { MessagesRoot, ProcessTaskContext, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
+import { Messages, MessagesRoot, ProcessTaskContext, ReportResult, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
+
+interface IFlags {
+    [flagName: string]: boolean;
+}
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
     const errors: string[] = [];
-    const getOuterPrefix = (prefix) => {
+    const getOuterPrefix = (prefix?: string) => {
         if (task.name && prefix) {
             return `${task.name}/${prefix}`;
         }
 
         return String(task.name || "") + String(prefix || "");
     };
-    const onError = (message, prefix) => {
+    const onError = (message: string, prefix?: string) => {
         errors.push(message);
         outerProcessor.onError(message, getOuterPrefix(prefix));
     };
-    const onWarn = (message, prefix) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
-    const onInfo = (message, prefix) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
+    const onWarn = (message: string, prefix?: string) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
+    const onInfo = (message: string, prefix?: string) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
 
     let result: TaskProcessor;
     result = {
@@ -35,47 +39,50 @@ const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, 
     return result;
 };
 
-const pushMessage = (list, message, parts, index) => {
-    if (!index) {
-        list.$allMessages.push({
-            message,
-            prefix: parts.join("/"),
-        });
-    }
-
+const pushMessage = (list: Messages, message: string, parts: string[], index: number): void => {
     if (index < parts.length) {
         if (!list[parts[index]]) {
             list[parts[index]] = {};
         }
 
-        return pushMessage(list[parts[index]], message, parts, index + 1);
+        return pushMessage(list[parts[index]] as Messages, message, parts, index + 1);
     }
 
     if (!list.$messages) {
         list.$messages = [];
     }
 
-    return list.$messages.push(message);
+    list.$messages.push(message);
+    return;
 };
 
-const addFlag = (flags) => (flagName) => {
+const pushMessageRoot = (list: MessagesRoot, message: string, parts: string[]): void => {
+    list.$allMessages.push({
+        message,
+        prefix: parts.join("/"),
+    });
+
+    pushMessage((list as any) as Messages, message, parts, 0);
+};
+
+const addFlag = (flags: IFlags) => (flagName: string) => {
     flags[flagName] = true;
 };
 
-const containsFlag = (flags) => (flagName) => flags[flagName];
+const containsFlag = (flags: IFlags) => (flagName: string) => flags[flagName];
 
-export const processTask = (settings: Settings, task, context: ProcessTaskContext, callback) => {
+export const processTask = (settings: Settings, task: TaskInfo, context: ProcessTaskContext, callback: (err: any, result: ReportResult) => void) => {
     const errors: MessagesRoot = { $allMessages: [] };
     const warns: MessagesRoot = { $allMessages: [] };
     const infos: MessagesRoot = { $allMessages: [] };
     const messages: MessagesRoot = { $allMessages: [] };
-    const messageProcessor = (list) => (message, prefix) => {
+    const messageProcessor = (list: MessagesRoot) => (message: string, prefix: string) => {
         const parts = prefix.split("/");
 
-        pushMessage(list, message, parts, 0);
-        pushMessage(messages, message, parts, 0);
+        pushMessageRoot(list, message, parts);
+        pushMessageRoot(messages, message, parts);
     };
-    const flags = {};
+    const flags: IFlags = {};
     const processor = createTaskProcessor(task, {
         context: {
             ...context,

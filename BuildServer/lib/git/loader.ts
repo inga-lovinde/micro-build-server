@@ -5,7 +5,19 @@ import { Remote, Repository } from "nodegit";
 
 import { gitToFs } from "./copy";
 
-const fixUrl = (url) => {
+interface IOptions {
+    readonly branch: string;
+    readonly exported: string;
+    readonly hash: string;
+    readonly local: string;
+    readonly remote: string;
+}
+
+interface ISimpleCallback {
+    (err?: any): void;
+}
+
+const fixUrl = (url: string) => {
     if (!url.startsWith("https://")) {
         return url;
     }
@@ -13,17 +25,7 @@ const fixUrl = (url) => {
     return `git://${url.substr("https://".length)}`;
 };
 
-/* Example:
-options = {
-    "remote": "https://github.com/visionmedia/express.git",
-    "local": "D:\\data\\repositories\\visionmedia\\express.git\\",
-    "branch": "1.x",
-    "hash": "82e15cf321fccf3215068814d1ea1aeb3581ddb3",
-    "exported": "D:\\data\\exportedsource\\visionmedia\\express\\82e15cf321fccf3215068814d1ea1aeb3581ddb3\\",
-}
- */
-
-export const gitLoader = (options, globalCallback) => {
+export const gitLoader = (options: IOptions, globalCallback: ISimpleCallback) => {
     const url = fixUrl(options.remote);
     const path = `${options.local}/${options.hash}`;
     const exported = options.exported;
@@ -33,30 +35,34 @@ export const gitLoader = (options, globalCallback) => {
 
     console.log(`Cloning ${url} to ${path}`);
 
-    Repository.init(path, 1)
-        .catch(globalCallback)
-        .then((repo) => Remote.create(repo, "origin", url)
-            .catch(globalCallback)
-            .then((remote) => remote.fetch([options.branch])
-                .catch(globalCallback)
-                .then((errorNumber) => {
+    Repository.init(path, 1).then(
+        (repo) => Remote.create(repo, "origin", url).then(
+            (remote) => remote.fetch([options.branch]).then(
+                (errorNumber) => {
                     if (errorNumber) {
                         return globalCallback(`Failed to fetch commit: error number ${errorNumber}`);
                     }
 
                     console.log(`Cloned ${url} to ${path}`);
 
-                    return repo.getCommit(options.hash)
-                        .catch(globalCallback)
-                        .then((commit) => {
+                    return repo.getCommit(options.hash).then(
+                        (commit) => {
                             removeSync(exported);
                             mkdirsSync(exported);
 
-                            gitToFs(commit, exported, (err, result) => {
+                            gitToFs(commit, exported, (err) => {
                                 repo.free();
 
-                                return globalCallback(err, result);
+                                return globalCallback(err);
                             });
-                        });
-                })));
+                        },
+                        globalCallback,
+                    );
+                },
+                globalCallback,
+            ),
+            globalCallback,
+        ),
+        globalCallback,
+    );
 };

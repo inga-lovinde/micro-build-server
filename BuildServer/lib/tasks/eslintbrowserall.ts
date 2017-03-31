@@ -2,7 +2,8 @@
 
 import * as glob from "glob";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+import parallel from "./parallel";
 
 const flagDoneName = "eslintbrowserallDone";
 
@@ -25,15 +26,12 @@ export default ((params, processor) => () => {
             return processor.done();
         }
 
-        return processor.processTask({
-            params: {
-                tasks: files.filter((file) => !excludeFiles.includes(file)).map((file) => ({
-                    name: file,
-                    params: { filename: file },
-                    type: "eslintbrowser",
-                })),
-            },
-            type: (params.preventParallelTests && "sequential") || "parallel",
-        }, processor.done);
+        return parallel({
+            tasks: files.filter((file) => !excludeFiles.includes(file)).map((file) => ({
+                name: file,
+                params: { filename: file },
+                type: "eslintbrowser",
+            })),
+        }, processor)();
     });
-}) as Task;
+}) as GenericTask<{ readonly excludeFiles?: string[] }>;

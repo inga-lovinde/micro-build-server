@@ -3,7 +3,12 @@
 import { writeFile } from "fs";
 import { join } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+
+interface IParameters {
+    readonly data: string;
+    readonly filename: string;
+}
 
 export default ((params, processor) => () => {
     const filePath = join(processor.context.exported, params.filename);
@@ -19,4 +24,4 @@ export default ((params, processor) => () => {
 
         return processor.done();
     });
-}) as Task;
+}) as GenericTask<IParameters>;

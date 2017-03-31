@@ -5,13 +5,25 @@ import { parse } from "url";
 
 import { getSettings } from "../settings-wrapper";
 import { getReport } from "../status-processor";
+import { Report } from "../types";
 
-const parseOptionsFromReferer = (path, callback) => {
+interface IOptions {
+    readonly branchName: string;
+    readonly owner: string;
+    readonly reponame: string;
+    readonly rev: string;
+}
+
+interface IOptionsWithReport extends IOptions {
+    readonly report: Report;
+}
+
+const parseOptionsFromReferer = (path: string, callback: (err: string | null, options?: IOptions) => void) => {
     const pathParts = path.split("/").filter((value) => value);
     const [, secondPart, thirdPart] = pathParts;
 
     if (!secondPart) {
-        return callback("BadRequest", {});
+        return callback("BadRequest");
     }
 
     if (thirdPart === "tree") {
@@ -35,7 +47,7 @@ const parseOptionsFromReferer = (path, callback) => {
     });
 };
 
-const createShowReport = (res: express.Response) => (err, inputOptions) => {
+const createShowReport = (res: express.Response) => (err: string | null, inputOptions: IOptions | undefined) => {
     const options = {
         ...inputOptions || {},
         err,
@@ -45,31 +57,33 @@ const createShowReport = (res: express.Response) => (err, inputOptions) => {
 };
 
 export const image: express.RequestHandler = (req, res) => {
-    const getAdditionalOptions = (err, options) => {
+    const getAdditionalOptions = (err: string | null, options?: IOptionsWithReport) => {
         if (err === "ReportFileNotFound") {
             return { status: "Building" };
         }
 
-        if (err) {
+        if (err || !options) {
             return {
                 message: err,
                 status: "StatusError",
             };
         }
 
-        if (options.report.result === "MBSNotFound") {
+        if (options.report.err === "MBSNotFound") {
             return { status: "MBSNotUsed" };
         }
 
-        if (options.report.err) {
+        if (options.report.err || !options.report.result) {
             return {
                 message: options.report.err,
                 status: "Error",
             };
         }
 
-        if ((options.report.result.warns.$allMessages || []).length) {
-            const [firstWarn] = options.report.result.warns.$allMessages;
+        const result = options.report.result;
+
+        if ((result.warns.$allMessages || []).length) {
+            const [firstWarn] = result.warns.$allMessages;
 
             return {
                 message: firstWarn.message,
@@ -77,7 +91,7 @@ export const image: express.RequestHandler = (req, res) => {
             };
         }
 
-        const allInfos = options.report.result.infos.$allMessages || [];
+        const allInfos = result.infos.$allMessages || [];
 
         if (allInfos.length) {
             return {
@@ -89,7 +103,7 @@ export const image: express.RequestHandler = (req, res) => {
         return { status: "OK" };
     };
 
-    const handle = (err, options) => {
+    const handle = (err: string | null, options?: IOptionsWithReport) => {
         res.setHeader("Content-Type", "image/svg+xml");
         res.render("status-image", {
             ...options,
@@ -97,9 +111,9 @@ export const image: express.RequestHandler = (req, res) => {
         });
     };
 
-    parseOptionsFromReferer(parse(req.headers.referer || "").pathname || "", (err, options) => {
+    parseOptionsFromReferer(parse(req.headers.referer || "").pathname || "", (err: string | null, options: IOptions) => {
         if (err) {
-            return handle(err, options);
+            return handle(err);
         }
 
         return getReport(getSettings(req.app), options, handle);
@@ -119,7 +133,7 @@ export const page: express.RequestHandler = (req, res) => {
 };
 
 export const pageFromGithub: express.RequestHandler = (req, res) => parseOptionsFromReferer(req.params[0], (err, options) => {
-    if (err) {
+    if (err || !options) {
         return createShowReport(res)(err, options);
     }
 

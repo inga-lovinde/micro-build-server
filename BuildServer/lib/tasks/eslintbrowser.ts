@@ -3,7 +3,7 @@
 import { CLIEngine } from "eslint";
 import { join } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 
 const errorSeverity = 2;
 
@@ -32,4 +32,4 @@ export default ((params, processor) => () => {
     });
 
     processor.done();
-}) as Task;
+}) as GenericTask<{ readonly filename: string }>;

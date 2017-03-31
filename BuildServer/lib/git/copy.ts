@@ -3,10 +3,24 @@
 import { parallel } from "async";
 import { EventEmitter } from "events";
 import { mkdir, writeFile } from "fs";
+import { Commit, Tree, TreeEntry } from "nodegit";
 import { join } from "path";
-import { Copier } from "recursive-tree-copy";
+import { createCopier } from "recursive-tree-copy";
 
-const safeGetEntries = (tree, callback) => {
+interface ISource {
+    gitTree: Tree;
+    name: string;
+}
+
+interface ISimpleCallback {
+    (err?: any): void;
+}
+
+interface INewTreeCallback {
+    (err: any, newTree?: string): void;
+}
+
+const safeGetEntries = (tree: ISource, callback: (err: any, entries?: TreeEntry[]) => void) => {
     try {
         return callback(null, tree.gitTree.entries());
     } catch (err) {
@@ -14,20 +28,20 @@ const safeGetEntries = (tree, callback) => {
     }
 };
 
-const gitToFsCopier = new Copier({
+const gitToFsCopier = createCopier({
     concurrency: 4,
-    copyLeaf: (entry, targetDir, callback) => {
+    copyLeaf: (entry: TreeEntry, targetDir: string, callback: ISimpleCallback) => {
         const targetPath = join(targetDir, entry.name());
 
         entry.getBlob((err, blob) => {
-            if (err) {
+            if (err || !blob) {
                 return callback(err);
             }
 
             return writeFile(targetPath, blob.content(), callback);
         });
     },
-    createTargetTree: (tree, targetDir, callback) => {
+    createTargetTree: (tree: ISource, targetDir: string, callback: INewTreeCallback) => {
         const targetSubdir = join(targetDir, tree.name);
 
         mkdir(targetSubdir, (err) => {
@@ -39,16 +53,16 @@ const gitToFsCopier = new Copier({
             return callback(null, targetSubdir);
         });
     },
-    finalizeTargetTree: (_targetSubdir, callback) => callback(),
-    walkSourceTree: (tree) => {
+    finalizeTargetTree: (_targetSubdir: string, callback: ISimpleCallback) => callback(),
+    walkSourceTree: (tree: ISource) => {
         const emitter = new EventEmitter();
 
         process.nextTick(() => safeGetEntries(tree, (getEntriesErr, entries) => {
-            if (getEntriesErr) {
+            if (getEntriesErr || !entries) {
                 return emitter.emit("error", getEntriesErr);
             }
 
-            return parallel(entries.map((entry) => (callback) => {
+            return parallel(entries.map((entry) => (callback: ISimpleCallback) => {
                 if (entry.isTree()) {
                     return entry.getTree((getTreeErr, subTree) => {
                         if (getTreeErr) {
@@ -84,13 +98,10 @@ const gitToFsCopier = new Copier({
     },
 });
 
-export const gitToFs = (commit, exportDir, callback) => commit.getTree((err, tree) => {
-    if (err) {
-        return callback(err);
-    }
-
-    return gitToFsCopier.copy({
+export const gitToFs = (commit: Commit, exportDir: string, callback: ISimpleCallback) => commit.getTree().then(
+    (tree) => gitToFsCopier.copy({
         gitTree: tree,
         name: ".",
-    }, exportDir, callback);
-});
+    }, exportDir, callback),
+    (err) => callback(err),
+);

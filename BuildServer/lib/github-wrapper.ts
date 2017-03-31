@@ -33,15 +33,17 @@ interface IStatusData {
 
 interface IGithub {
     readonly issues: {
+        createComment(params: RawGithub.IssuesCreateCommentParams, callback: ICallback<never>): void;
+        edit(params: RawGithub.IssuesEditParams, callback: ICallback<never>): void;
         get(params: RawGithub.IssuesGetParams, callback: ICallback<IIssueData>): void;
     };
     readonly repos: {
-        createStatus(params: RawGithub.ReposCreateStatusParams, callback: ICallback<IStatusData>);
-        getReleases(params: RawGithub.ReposGetReleasesParams, callback: ICallback<IReleaseData[]>);
+        createStatus(params: RawGithub.ReposCreateStatusParams, callback: ICallback<IStatusData>): void;
+        getReleases(params: RawGithub.ReposGetReleasesParams, callback: ICallback<IReleaseData[]>): void;
     };
 }
 
-const createGithub = (settings: Settings, repoOwner) => settings.createGithub(repoOwner) as any as IGithub;
+const createGithub = (settings: Settings, repoOwner: string) => settings.createGithub(repoOwner) as IGithub;
 
 export {
     IGithub,

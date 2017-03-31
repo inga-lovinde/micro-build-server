@@ -2,8 +2,12 @@
 
 import { series } from "async";
 
-import { Task, TaskProcessor } from "../types";
+import { GenericTask, TaskInfo, TaskProcessor, TaskProcessorCallback } from "../types";
 
-const mapper = (processor: TaskProcessor) => (task) => (callback) => processor.processTask(task, callback);
+interface IParameters {
+    tasks: TaskInfo[];
+};
 
-export default ((params, processor) => () => series(params.tasks.map(mapper(processor)), processor.done)) as Task;
+const mapper = (processor: TaskProcessor) => (task: TaskInfo) => (callback: TaskProcessorCallback) => processor.processTask(task, callback);
+
+export default ((params, processor) => () => series(params.tasks.map(mapper(processor)), processor.done)) as GenericTask<IParameters>;

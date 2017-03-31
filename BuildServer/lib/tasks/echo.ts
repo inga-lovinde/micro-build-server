@@ -1,6 +1,12 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+
+interface IParameters {
+    readonly error: string;
+    readonly warn: string;
+    readonly info: string;
+}
 
 export default ((params, processor) => () => {
     if (params.error) {
@@ -16,4 +22,4 @@ export default ((params, processor) => () => {
     }
 
     processor.done();
-}) as Task;
+}) as GenericTask<IParameters>;

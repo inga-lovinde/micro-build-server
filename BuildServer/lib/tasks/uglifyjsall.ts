@@ -2,11 +2,12 @@
 
 import * as glob from "glob";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+import parallel from "./parallel";
 
 const doneFlagName = "uglifyjsallDone";
 
-export default ((params, processor) => () => {
+export default ((_params, processor) => () => {
     if (processor.context.containsFlag(doneFlagName)) {
         processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
     }
@@ -23,15 +24,12 @@ export default ((params, processor) => () => {
             return processor.done();
         }
 
-        return processor.processTask({
-            params: {
-                tasks: files.map((file) => ({
-                    name: file,
-                    params: { filename: file },
-                    type: "uglifyjs",
-                })),
-            },
-            type: (params.preventParallelTests && "sequential") || "parallel",
-        }, processor.done);
+        return parallel({
+            tasks: files.map((file) => ({
+                name: file,
+                params: { filename: file },
+                type: "uglifyjs",
+            })),
+        }, processor)();
     });
-}) as Task;
+}) as GenericTask<{}>;

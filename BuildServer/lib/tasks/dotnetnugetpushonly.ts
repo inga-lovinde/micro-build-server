@@ -2,7 +2,7 @@
 
 import { join } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
 export default ((params, processor) => dotnetbuilderwrapper({
@@ -10,4 +10,4 @@ export default ((params, processor) => dotnetbuilderwrapper({
     NugetHost: processor.settings.nugetHost,
     Package: join(processor.context.exported, params.Package),
     command: "nugetpush",
-}, processor)) as Task;
+}, processor)) as GenericTask<{ readonly Package: string }>;

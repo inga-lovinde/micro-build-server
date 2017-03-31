@@ -31,13 +31,19 @@ export interface ITaskProcessor extends ITaskProcessorCore {
     readonly done: () => void;
 }
 
+interface ITaskParameters {
+    readonly [paramName: string]: any;
+}
+
 export interface ITaskInfo {
     readonly name?: string;
     readonly type: string;
-    readonly params: any;
+    readonly params: ITaskParameters;
 }
 
-export type Task = (params: any, processor: ITaskProcessor) => () => void;
+export type GenericTask<TParams> = (params: TParams, processor: ITaskProcessor) => () => void;
+
+export type Task = GenericTask<ITaskParameters>;
 
 export interface ITasks {
     readonly [taskName: string]: Task;

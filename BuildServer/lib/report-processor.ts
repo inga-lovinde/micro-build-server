@@ -10,6 +10,24 @@ import { createGunzip, createGzip } from "zlib";
 
 import { Message, Report, ReportResult, Settings } from "./types";
 
+interface IOptions {
+    readonly branch: string;
+    readonly branchName: string;
+    readonly owner: string;
+    readonly reponame: string;
+    readonly rev: string;
+}
+
+interface IOptionsWithReport extends IOptions {
+    readonly files: string[];
+    readonly report: Report;
+}
+
+interface IGetStatusOptions extends IOptions {
+    readonly attemptsGetReport?: number;
+    readonly onTenthAttempt: () => void;
+}
+
 const reportFilename = "report.json.gz";
 const maxAttemptsNumber = 100;
 const attemptsTimeout = 30000;
@@ -26,7 +44,7 @@ const getAllErrors = (report: Report): Message[] => (report.result && report.res
 const getAllWarns = (report: Report): Message[] => (report.result && report.result.warns && report.result.errors.$allMessages) || [];
 const getAllInfos = (report: Report): Message[] => (report.result && report.result.infos && report.result.errors.$allMessages) || [];
 
-export const writeReport = (releaseDir, err, result: ReportResult | undefined, callback) => {
+export const writeReport = (releaseDir: string, err: string | null, result: ReportResult | undefined, callback: (err?: string) => void) => {
     const data = JSON.stringify({
         date: Date.now(),
         err,
@@ -51,7 +69,7 @@ export const writeReport = (releaseDir, err, result: ReportResult | undefined, c
     readable.stop();
 };
 
-export const readReport = (releaseDir, callback) => {
+export const readReport = (releaseDir: string, callback: (err: string | null, report?: Report) => void) => {
     const readStream = createReadStream(join(releaseDir, reportFilename));
     const writable = new WritableStreamBuffer();
 
@@ -78,7 +96,7 @@ export const readReport = (releaseDir, callback) => {
         });
 };
 
-export const loadReport = (settings: Settings, options, callback) => {
+export const loadReport = (settings: Settings, options: IOptions, callback: (err: Error | string | null, result?: IOptionsWithReport) => void) => {
     const releaseDir = join(settings.releasepath, options.owner, options.reponame, options.branch, options.rev);
 
     glob("**", {
@@ -86,22 +104,19 @@ export const loadReport = (settings: Settings, options, callback) => {
         mark: true,
     }, (err, files) => {
         if (err) {
-            return callback(err, options);
+            return callback(err);
         }
 
         const reportFile = join(releaseDir, reportFilename);
 
         return exists(reportFile, (reportFileExists) => {
             if (!reportFileExists) {
-                return callback("ReportFileNotFound", options);
+                return callback("ReportFileNotFound");
             }
 
             return readReport(releaseDir, (readErr, report) => {
-                if (readErr) {
-                    return callback(readErr, {
-                        ...options,
-                        files,
-                    });
+                if (readErr || !report) {
+                    return callback(readErr);
                 }
 
                 return callback(null, {
@@ -114,7 +129,7 @@ export const loadReport = (settings: Settings, options, callback) => {
     });
 };
 
-export const getStatusMessageFromRelease = (settings: Settings, originalOptions, callback) => {
+export const getStatusMessageFromRelease = (settings: Settings, originalOptions: IGetStatusOptions, callback: (err: string | null, statusMessage?: string) => void) => {
     const options = {
         ...originalOptions,
         attemptsGetReport: (Number(originalOptions.attemptsGetReport) || Number()) + 1,
@@ -143,11 +158,11 @@ export const getStatusMessageFromRelease = (settings: Settings, originalOptions,
         }
 
         return setTimeout(() => readReport(releaseDir, (readErr, report) => {
-            if (readErr) {
+            if (readErr || !report) {
                 return callback(readErr);
             }
 
-            if (report.result === "MBSNotFound") {
+            if (report.err === "MBSNotFound") {
                 return callback("mbs.json is not found");
             }
 

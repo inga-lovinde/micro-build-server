@@ -1,7 +1,11 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import sequential from "./sequential";
+
+interface IParameters {
+    readonly eslintExcludeFiles: boolean;
+}
 
 export default ((params, processor) => sequential({
     tasks: [
@@ -9,8 +13,14 @@ export default ((params, processor) => sequential({
             params: { excludeFiles: params.eslintExcludeFiles },
             type: "eslintbrowserall",
         },
-        { type: "uglifyjsall" },
-        { type: "cssnanoall" },
+        {
+            params: { },
+            type: "uglifyjsall",
+        },
+        {
+            params: { },
+            type: "cssnanoall",
+        },
         {
             params: {
                 data: processor.context.versionInfo,
@@ -26,4 +36,4 @@ export default ((params, processor) => sequential({
             type: "zip",
         },
     ],
-}, processor)) as Task;
+}, processor)) as GenericTask<IParameters>;

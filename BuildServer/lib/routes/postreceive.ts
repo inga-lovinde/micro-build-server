@@ -10,12 +10,12 @@ import { HookParameters, HookPullRequestPayload, HookPushPayload } from "../type
 
 interface IBaseRepoOptions {
     branch: string;
-    branchname?: string;
+    branchName?: string;
     owner: string;
     reponame: string;
 }
 
-const getBranchDescription = (options: IBaseRepoOptions) => `${options.owner}/${options.reponame}:${options.branchname || options.branch}`;
+const getBranchDescription = (options: IBaseRepoOptions) => `${options.owner}/${options.reponame}:${options.branchName || options.branch}`;
 
 const processPush = (req: express.Request, res: express.Response, payload: HookPushPayload) => {
     const settings = getSettings(req.app);
@@ -45,7 +45,7 @@ const processPullRequest = (req: express.Request, res: express.Response, payload
     const headRepo = head.repo;
     const headRepoOptions = {
         branch: `refs/heads/${head.ref}`,
-        branchname: head.ref,
+        branchName: head.ref,
         owner: headRepo.owner.name || headRepo.owner.login,
         reponame: headRepo.name,
         rev: head.sha,
@@ -55,7 +55,7 @@ const processPullRequest = (req: express.Request, res: express.Response, payload
     const baseRepo = base.repo;
     const baseRepoOptions = {
         branch: `refs/heads/${base.ref}`,
-        branchname: base.ref,
+        branchName: base.ref,
         owner: baseRepo.owner.name || baseRepo.owner.login,
         reponame: baseRepo.name,
     };
@@ -84,16 +84,16 @@ const processPullRequest = (req: express.Request, res: express.Response, payload
         return res.send("");
     }
 
-    return commentOnPullRequest(settings, options, (err, data) => {
+    return commentOnPullRequest(settings, options, (err) => {
         if (err) {
             console.log(`Unable to post comment: ${err}`);
         }
 
-        res.send(err || data);
+        res.end();
     });
 };
 
-const getPayload = (body) => {
+const getPayload = (body: any) => {
     if (!body.payload) {
         return body;
     }

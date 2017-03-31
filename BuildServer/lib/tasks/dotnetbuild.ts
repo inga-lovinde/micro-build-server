@@ -1,6 +1,6 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import sequential from "./sequential";
 
 export default ((params, processor) => sequential({
@@ -12,7 +12,8 @@ export default ((params, processor) => sequential({
         },
         {
             name: "cleanup",
+            params: {},
             type: "cleanupafterdotnetbuild",
         },
     ],
-}, processor)) as Task;
+}, processor)) as GenericTask<{}>;

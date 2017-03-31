@@ -2,7 +2,9 @@
 
 import * as glob from "glob";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+import parallel from "./parallel";
+import sequential from "./sequential";
 
 const flagDoneName = "dotnetnunitallDone";
 
@@ -12,6 +14,8 @@ export default ((params, processor) => () => {
     }
 
     processor.context.addFlag(flagDoneName);
+
+    const task = params.preventParallelTests ? sequential : parallel;
 
     glob("**/{bin,build}/**/*.{Tests,Test,UnitTests}.dll", {
         cwd: processor.context.exported,
@@ -29,15 +33,12 @@ export default ((params, processor) => () => {
             return processor.done();
         }
 
-        return processor.processTask({
-            params: {
-                tasks: files.map((file) => ({
-                    name: file,
-                    params: { assembly: file },
-                    type: "dotnetnunit",
-                })),
-            },
-            type: (params.preventParallelTests && "sequential") || "parallel",
-        }, processor.done);
+        return task({
+            tasks: files.map((file) => ({
+                name: file,
+                params: { assembly: file },
+                type: "dotnetnunit",
+            })),
+        }, processor)();
     });
-}) as Task;
+}) as GenericTask<{ readonly preventParallelTests?: boolean }>;

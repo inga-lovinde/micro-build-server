@@ -7,20 +7,20 @@ type IPartialMessageLeafContent = string[];
 type IPartialMessageRootContent = IMessage[];
 
 interface IPartialMessagesLeaf {
-    readonly $messages?: string[];
+    $messages?: string[];
 }
 
 // workaround for compatibility with PartialMessagesLeaf and PartialMessagesRoot
 interface IPartialMessagesRecursive {
-    readonly [propName: string]: Messages | IPartialMessageLeafContent;
+    [propName: string]: Messages | IPartialMessageLeafContent;
 }
 
 interface IPartialMessagesRecursiveRoot {
-    readonly [propName: string]: Messages | IPartialMessageRootContent | IPartialMessageLeafContent;
+    [propName: string]: Messages | IPartialMessageRootContent | IPartialMessageLeafContent;
 }
 
 interface IPartialMessagesRoot {
-    readonly $allMessages: IPartialMessageRootContent;
+    $allMessages: IPartialMessageRootContent;
 }
 
 export type Messages = IPartialMessagesRecursive & IPartialMessagesLeaf;

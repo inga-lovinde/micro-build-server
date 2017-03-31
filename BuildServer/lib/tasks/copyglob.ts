@@ -2,7 +2,8 @@
 
 import * as glob from "glob";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+import parallel from "./parallel";
 
 export default ((params, processor) => () => glob(params.mask, {
     cwd: processor.context.exported,
@@ -18,14 +19,11 @@ export default ((params, processor) => () => glob(params.mask, {
         return processor.done();
     }
 
-    return processor.processTask({
-        params: {
-            tasks: files.map((file) => ({
-                name: file,
-                params: { filename: file },
-                type: "copy",
-            })),
-        },
-        type: "parallel",
-    }, processor.done);
-})) as Task;
+    return parallel({
+        tasks: files.map((file) => ({
+            name: file,
+            params: { filename: file },
+            type: "copy",
+        })),
+    }, processor)();
+})) as GenericTask<{ readonly mask: string }>;

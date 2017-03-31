@@ -2,7 +2,8 @@
 
 import * as glob from "glob";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+import parallel from "./parallel";
 
 export default ((_params, processor) => () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
     cwd: processor.context.exported,
@@ -18,14 +19,11 @@ export default ((_params, processor) => () => glob("**/obj/{Debug,Release}/*.{dl
         return processor.done();
     }
 
-    return processor.processTask({
-        params: {
-            tasks: files.map((file) => ({
-                name: file,
-                params: { filename: file },
-                type: "deletefromcode",
-            })),
-        },
-        type: "parallel",
-    }, processor.done);
-})) as Task;
+    return parallel({
+        tasks: files.map((file) => ({
+            name: file,
+            params: { filename: file },
+            type: "deletefromcode",
+        })),
+    }, processor)();
+})) as GenericTask<{}>;

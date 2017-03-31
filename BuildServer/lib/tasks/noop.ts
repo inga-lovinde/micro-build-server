@@ -1,5 +1,5 @@
 "use strict";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 
-export default ((_params, processor) => processor.done()) as Task;
+export default ((_params, processor) => processor.done) as GenericTask<{}>;

@@ -4,7 +4,15 @@
         "target": "es6",
         "alwaysStrict": true,
         "forceConsistentCasingInFileNames": true,
+        "lib": [
+            "dom",
+            "es6",
+            "dom.iterable",
+            "scripthost",
+            "es7"
+        ],
         "noEmitOnError": true,
+        "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedLocals": true,
@@ -16,8 +24,7 @@
     },
     "include": [
         "*.ts",
-        "lib/**/*.ts",
-        "routes/**/*.ts"
+        "lib/**/*.ts"
     ],
     "exclude": [
         "node_modules/**/*.ts"

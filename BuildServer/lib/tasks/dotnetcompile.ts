@@ -2,8 +2,19 @@
 
 import { join } from "path";
 
-import { Task } from "../types";
+import { BuilderCompileRequest, GenericTask } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
+
+interface IParameters {
+    configuration: string;
+    overrideOutputDirectory: string;
+    skipCodeAnalysis: boolean;
+    solution: string;
+    target: string;
+    forceCodeAnalysis?: boolean;
+    skipCodeSigning?: boolean;
+    ignoreCodeAnalysis: boolean;
+}
 
 export default ((params, processor) => {
     if (processor.settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
@@ -24,17 +35,15 @@ export default ((params, processor) => {
         || params.ignoreCodeAnalysis
         || (processor.settings.ignoreCodeAnalysisByDefault && !params.forceCodeAnalysis);
 
-    const compileParams = {
+    const compileParams: BuilderCompileRequest = {
         Configuration: params.configuration,
         OutputDirectory: params.overrideOutputDirectory,
         SkipCodeAnalysis: skipCodeAnalysis,
         SolutionPath: join(processor.context.exported, params.solution),
         Target: params.target,
         command: "compile",
+        ...getAdditionalSigningParameters(),
     };
 
-    return dotnetbuilderwrapper({
-        ...compileParams,
-        ...getAdditionalSigningParameters(),
-    }, processor);
-}) as Task;
+    return dotnetbuilderwrapper(compileParams, processor);
+}) as GenericTask<IParameters>;

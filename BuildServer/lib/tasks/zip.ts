@@ -4,7 +4,12 @@ import { create as createArchiver } from "archiver";
 import { createWriteStream } from "fs";
 import { join, normalize } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
+
+interface IParameters {
+    readonly directory?: string;
+    readonly archive: string;
+}
 
 export default ((params, processor) => () => {
     const sourceDirectoryPath = normalize(join(processor.context.exported, String(params.directory || "")));
@@ -17,8 +22,8 @@ export default ((params, processor) => () => {
 
     output.on("close", processor.done);
 
-    archive.on("error", (err) => processor.onError(`Error while compressing: ${err}`));
+    archive.on("error", (err: any) => processor.onError(`Error while compressing: ${err}`));
     archive.pipe(output);
     archive.directory(sourceDirectoryPath, false);
     archive.finalize();
-}) as Task;
+}) as GenericTask<IParameters>;

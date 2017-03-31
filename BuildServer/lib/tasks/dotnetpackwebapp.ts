@@ -4,8 +4,14 @@ import { readFileSync } from "fs";
 import { render } from "mustache";
 import { join } from "path";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 import sequential from "./sequential";
+
+interface IParameters {
+    readonly configuration: string;
+    readonly isCodeAnalysisUnsupported: boolean;
+    readonly skipCodeSigning: boolean;
+}
 
 const msbuildTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.msbuild"), { encoding: "utf8" });
 const deployTemplate = readFileSync(join(__dirname, "/dotnetpackwebapp.template.bat"), { encoding: "utf8" });
@@ -46,4 +52,4 @@ export default ((params, processor) => sequential({
             type: "dotnetcompile",
         },
     ],
-}, processor)) as Task;
+}, processor)) as GenericTask<IParameters>;

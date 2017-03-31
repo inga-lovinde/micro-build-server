@@ -4,7 +4,7 @@ import { writeFile } from "fs";
 import { join, normalize } from "path";
 import { minify } from "uglify-js";
 
-import { Task } from "../types";
+import { GenericTask } from "../types";
 
 export default ((params, processor) => () => {
     const filePath = normalize(join(processor.context.exported, params.filename));
@@ -19,4 +19,4 @@ export default ((params, processor) => () => {
 
         processor.done();
     });
-}) as Task;
+}) as GenericTask<{ readonly filename: string }>;

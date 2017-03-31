@@ -13,13 +13,38 @@ import { writeReport } from "./report-processor";
 import { processTask } from "./task-processor";
 import { ReportResult, Settings } from "./types";
 
+interface IStatusOptions {
+    readonly description: string;
+    readonly owner: string;
+    readonly reponame: string;
+    readonly hash: string;
+    readonly state: "pending" | "success" | "error";
+}
+
+interface IBuildOptions {
+    readonly branch: string;
+    readonly owner: string;
+    readonly reponame: string;
+    readonly rev: string;
+    readonly skipGitLoader?: boolean;
+    readonly url: string;
+}
+
+interface ISimpleCallback {
+    (err?: any): void;
+}
+
+interface IBuildCallback {
+    (err?: any, result?: ReportResult): void;
+}
+
 const codePostfix = "";
 const mailLazinessLevel = 1000;
 const maxDescriptionLength = 140;
 const maxTmpcodepathLength = 15;
 const twoDigits = 100;
 
-const createFinalState = (isSuccess) => {
+const createFinalState = (isSuccess: boolean) => {
     if (isSuccess) {
         return "success";
     }
@@ -27,7 +52,7 @@ const createFinalState = (isSuccess) => {
     return "error";
 };
 
-const createBuildDoneMessage = (isSuccess, name) => {
+const createBuildDoneMessage = (isSuccess: boolean, name: string) => {
     if (isSuccess) {
         return `Successfully built ${name}`;
     }
@@ -35,7 +60,7 @@ const createBuildDoneMessage = (isSuccess, name) => {
     return `Build failed for ${name}`;
 };
 
-const notifyStatus = (settings: Settings, options, notifyStatusCallback) => {
+const notifyStatus = (settings: Settings, options: IStatusOptions, notifyStatusCallback: ISimpleCallback) => {
     const status = {
         description: String(options.description || "").substr(0, maxDescriptionLength),
         owner: options.owner,
@@ -57,7 +82,7 @@ const notifyStatus = (settings: Settings, options, notifyStatusCallback) => {
     });
 };
 
-const wrapGitLoader: (skipGitLoader: boolean) => typeof gitLoader = (skipGitLoader) => {
+const wrapGitLoader: (skipGitLoader?: boolean) => typeof gitLoader = (skipGitLoader) => {
     if (!skipGitLoader) {
         return gitLoader;
     }
@@ -65,7 +90,7 @@ const wrapGitLoader: (skipGitLoader: boolean) => typeof gitLoader = (skipGitLoad
     return (_gitLoaderOptions, gitLoaderCallback) => process.nextTick(gitLoaderCallback);
 };
 
-export const build = (settings: Settings, options, buildCallback) => {
+export const build = (settings: Settings, options: IBuildOptions, buildCallback: IBuildCallback) => {
     const url = options.url;
     const owner = options.owner;
     const reponame = options.reponame;
@@ -100,7 +125,7 @@ export const build = (settings: Settings, options, buildCallback) => {
     mkdirsSync(join(settings.releasepath, owner, reponame, "$revs"));
     writeFileSync(join(settings.releasepath, owner, reponame, "$revs", `${rev}.branch`), branch);
 
-    const createErrorMessageForMail = (doneErr) => {
+    const createErrorMessageForMail = (doneErr: any) => {
         if (!doneErr) {
             return "";
         }
@@ -108,7 +133,7 @@ export const build = (settings: Settings, options, buildCallback) => {
         return `Error message: ${doneErr}\r\n\r\n`;
     };
 
-    const createResultMessageForMail = (result) => {
+    const createResultMessageForMail = (result?: ReportResult) => {
         if (!result || !result.messages || !result.messages.$allMessages) {
             return JSON.stringify(result, null, "    ");
         }
@@ -116,7 +141,7 @@ export const build = (settings: Settings, options, buildCallback) => {
         return result.messages.$allMessages.map((msg) => `${msg.prefix}\t${msg.message}`).join("\r\n");
     };
 
-    const done = (doneErr, result?: ReportResult) => {
+    const done = (doneErr: any, result?: ReportResult) => {
         const allErrors = (result && result.errors && result.errors.$allMessages) || [];
         const allWarns = (result && result.warns && result.errors.$allMessages) || [];
         const allInfos = (result && result.infos && result.errors.$allMessages) || [];
@@ -136,7 +161,7 @@ export const build = (settings: Settings, options, buildCallback) => {
                 (parallelCallback) => sendMail({
                     from: settings.smtp.sender,
                     headers: { "X-Laziness-level": mailLazinessLevel },
-                    subject: createBuildDoneMessage(doneErr, `${owner}/${reponame}/${branch}`),
+                    subject: createBuildDoneMessage(!doneErr, `${owner}/${reponame}/${branch}`),
                     text: `Build status URL: ${settings.siteRoot}status/${owner}/${reponame}/${rev}\r\n\r\n${createErrorMessageForMail(doneErr)}${createResultMessageForMail(result)}`,
                     to: settings.smtp.receiver,
                 }, parallelCallback),
@@ -177,7 +202,7 @@ export const build = (settings: Settings, options, buildCallback) => {
                 return done("MBSNotFound");
             }
 
-            return readFile(join(exported, "mbs.json"), (readErr, data) => {
+            return readFile(join(exported, "mbs.json"), "utf8", (readErr, data) => {
                 if (readErr) {
                     return done(`MBSUnableToRead: ${readErr}`);
                 }

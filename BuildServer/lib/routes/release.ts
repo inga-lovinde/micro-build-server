@@ -6,14 +6,15 @@ import { join } from "path";
 
 import { readReport } from "../report-processor";
 import { getSettings } from "../settings-wrapper";
+import { Report } from "../types";
 
-const getDatePart = (report) => {
+const getDatePart = (report: Report) => {
     if (!report.date) {
         return "unknowndate";
     }
 
     const date = new Date(report.date);
-    const paddingLeft = (str, paddingValue) => String(paddingValue + str).slice(-paddingValue.length);
+    const paddingLeft = (str: string | number, paddingValue: string) => String(paddingValue + str).slice(-paddingValue.length);
 
     const year = date.getFullYear();
     const month = paddingLeft(date.getMonth() + 1, "00");
@@ -37,7 +38,7 @@ export default ((req, res, next) => {
     const releasePath = join(getSettings(req.app).releasepath, options.owner, options.reponame, options.branch, options.rev);
 
     readReport(releasePath, (err, report) => {
-        if (err) {
+        if (err || !report) {
             return next(err);
         }
 

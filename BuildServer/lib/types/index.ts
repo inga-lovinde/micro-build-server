@@ -1,7 +1,11 @@
+import * as BuilderTypes from "./dotnetbuilder-types";
 import * as GithubTypes from "./github-types";
 import * as ReportTypes from "./report-types";
 import * as SettingsTypes from "./settings-types";
 import * as TaskProcessorTypes from "./task-processor-types";
+
+export type BuilderCompileRequest = BuilderTypes.ICompileRequest;
+export type BuilderRequest = BuilderTypes.Request;
 
 export type HookPushPayload = GithubTypes.IHookPushPayload;
 export type HookPullRequestPayload = GithubTypes.IHookPullRequestPayload;
@@ -16,6 +20,7 @@ export type ReportResult = ReportTypes.IReportResult;
 export type Settings = SettingsTypes.Settings;
 
 export type ProcessTaskContext = TaskProcessorTypes.IProcessTaskContext;
+export type GenericTask<TParams> = TaskProcessorTypes.GenericTask<TParams>;
 export type Task = TaskProcessorTypes.Task;
 export type TaskInfo = TaskProcessorTypes.ITaskInfo;
 export type TaskProcessor = TaskProcessorTypes.ITaskProcessor;
