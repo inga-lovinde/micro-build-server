@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using NuGet;
-using NuGet.Commands;
+using NuGet.CommandLine;
 using NuGet.Common;
 
 namespace MicroBuildServer.DotNetBuilder
@@ -13,11 +14,6 @@ namespace MicroBuildServer.DotNetBuilder
         {
             public readonly Messages Messages = new Messages();
 
-            public bool Confirm(string description)
-            {
-                throw new NotImplementedException();
-            }
-
             public int CursorLeft
             {
                 get { throw new NotImplementedException(); }
@@ -26,33 +22,8 @@ namespace MicroBuildServer.DotNetBuilder
 
             public bool IsNonInteractive
             {
-                get { return true; }
+                get { throw new NotImplementedException(); }
                 set { throw new NotImplementedException(); }
-            }
-
-            public void PrintJustified(int startIndex, string text, int maxWidth)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PrintJustified(int startIndex, string text)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ConsoleKeyInfo ReadKey()
-            {
-                throw new NotImplementedException();
-            }
-
-            public string ReadLine()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ReadSecureString(System.Security.SecureString secureString)
-            {
-                throw new NotImplementedException();
             }
 
             public Verbosity Verbosity
@@ -67,106 +38,88 @@ namespace MicroBuildServer.DotNetBuilder
                 set { throw new NotImplementedException(); }
             }
 
-            public void Write(string format, params object[] args)
+            public bool Confirm(string description)
             {
-                Write(string.Format(format, args));
+                throw new NotImplementedException();
             }
 
-            public void Write(string value)
+            public void LogDebug(string data) => this.Messages.Add(Message.CreateInfo(data));
+
+            public void LogError(string data) => this.Messages.Add(Message.CreateError(data));
+
+            public void LogErrorSummary(string data) => this.Messages.Add(Message.CreateError(data));
+
+            public void LogInformation(string data) => this.Messages.Add(Message.CreateInfo(data));
+
+            public void LogInformationSummary(string data) => this.Messages.Add(Message.CreateInfo(data));
+
+            public void LogMinimal(string data) => this.Messages.Add(Message.CreateInfo(data));
+
+            public void LogVerbose(string data) => this.Messages.Add(Message.CreateInfo(data));
+
+            public void LogWarning(string data) => this.Messages.Add(Message.CreateWarn(data));
+
+            public void PrintJustified(int startIndex, string text)
             {
-                Messages.Add(Message.CreateInfo(value));
+                throw new NotImplementedException();
             }
 
-            public void Write(object value)
+            public void PrintJustified(int startIndex, string text, int maxWidth)
             {
-                Write(value.ToString());
+                throw new NotImplementedException();
             }
 
-            public void WriteError(string format, params object[] args)
+            public ConsoleKeyInfo ReadKey()
             {
-                WriteError(string.Format(format, args));
+                throw new NotImplementedException();
             }
 
-            public void WriteError(string value)
+            public string ReadLine()
             {
-                Messages.Add(Message.CreateError(value));
+                throw new NotImplementedException();
             }
 
-            public void WriteError(object value)
+            public void ReadSecureString(SecureString secureString)
             {
-                WriteError(value.ToString());
+                throw new NotImplementedException();
             }
 
-            public void WriteLine(ConsoleColor color, string value, params object[] args)
-            {
-                WriteLine(value, args);
-            }
+            public void Write(string value) => this.Messages.Add(Message.CreateInfo(value));
 
-            public void WriteLine(string format, params object[] args)
-            {
-                Write(format, args);
-            }
+            public void Write(object value) => this.Write(value.ToString());
 
-            public void WriteLine(string value)
-            {
-                Write(value);
-            }
+            public void Write(string format, params object[] args) => this.Write(string.Format(format, args));
 
-            public void WriteLine(object value)
-            {
-                Write(value);
-            }
+            public void WriteError(string value) => this.Messages.Add(Message.CreateError(value));
+
+            public void WriteError(object value) => this.WriteError(value.ToString());
+
+            public void WriteError(string format, params object[] args) => this.WriteError(string.Format(format, args));
 
             public void WriteLine()
             {
             }
 
-            public void WriteWarning(bool prependWarningText, string value, params object[] args)
-            {
-                WriteWarning(value, args);
-            }
+            public void WriteLine(string value) => this.Write(value);
 
-            public void WriteWarning(string value, params object[] args)
-            {
-                WriteWarning(string.Format(value, args));
-            }
+            public void WriteLine(object value) => this.Write(value);
 
-            public void WriteWarning(bool prependWarningText, string value)
-            {
-                WriteWarning(value);
-            }
+            public void WriteLine(string format, params object[] args) => this.Write(format, args);
 
-            public void WriteWarning(string value)
-            {
-                Messages.Add(Message.CreateWarn(value));
-            }
+            public void WriteLine(ConsoleColor color, string value, params object[] args) => this.Write(value, args);
 
-            public void Log(MessageLevel level, string message, params object[] args)
-            {
-                switch (level)
-                {
-                    case MessageLevel.Error:
-                        WriteError(message, args);
-                        return;
-                    case MessageLevel.Warning:
-                        WriteWarning(message, args);
-                        return;
-                    case MessageLevel.Info:
-                        Write(message, args);
-                        return;
-                }
-            }
+            public void WriteWarning(string value) => this.Messages.Add(Message.CreateWarn(value));
 
-            public FileConflictResolution ResolveFileConflict(string message)
-            {
-                throw new NotImplementedException();
-            }
+            public void WriteWarning(string value, params object[] args) => this.WriteWarning(string.Format(value, args));
+
+            public void WriteWarning(bool prependWarningText, string value) => this.WriteWarning(value);
+
+            public void WriteWarning(bool prependWarningText, string value, params object[] args) => this.WriteWarning(value, args);
         }
 
         public static Response Pack(NuGetPackRequest request)
         {
             var console = new Console();
-            PackageBuilder builder = new PackageBuilder();
             var command = new PackCommand
             {
                 BasePath = PathTools.OptimizePath(request.BaseDirectory),
@@ -174,7 +127,6 @@ namespace MicroBuildServer.DotNetBuilder
                 Version = request.Version,
                 Console = console,
                 Verbosity = Verbosity.Detailed,
-                Rules = new IPackageRule[0],
             };
             command.Arguments.Add(request.SpecPath);
 
@@ -220,7 +172,6 @@ namespace MicroBuildServer.DotNetBuilder
             PackageBuilder builder = new PackageBuilder();
             var command = new RestoreCommand
             {
-                FileSystem = new PhysicalFileSystem(PathTools.OptimizePath(request.BaseDirectory)),
                 Console = console,
                 Verbosity = Verbosity.Detailed,
             };
