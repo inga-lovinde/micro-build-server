@@ -5,8 +5,8 @@ using System.Text;
 
 namespace MicroBuildServer.DotNetBuilder
 {
-	class TestRequest
-	{
-		public string TestLibraryPath { get; set; }
-	}
+    class TestRequest
+    {
+        public string TestLibraryPath { get; set; }
+    }
 }
