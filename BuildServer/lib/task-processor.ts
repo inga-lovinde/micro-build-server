@@ -1,11 +1,13 @@
 "use strict";
 
 import tasks from "./tasks";
-import { Messages, MessagesRoot, ProcessTaskContext, ReportResult, Settings, TaskInfo, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
+import { Messages, MessagesRoot, ProcessTaskContext, ReportResult, Settings, TaskInfo, TaskInfoExternal, TaskProcessor, TaskProcessorCallback, TaskProcessorCore } from "./types";
 
 interface IFlags {
     [flagName: string]: boolean;
 }
+
+const isExternalTask = (task: TaskInfo): task is TaskInfoExternal => (task as TaskInfoExternal).type !== undefined;
 
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
@@ -31,7 +33,7 @@ const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, 
         onError,
         onWarn,
         onInfo,
-        process: () => tasks[task.type](task.params || {}, result)(),
+        process: () => (isExternalTask(task) ? tasks[task.type](task.params || {}, result) : task.task)(),
         processTask: (innerTask, innerCallback) => createTaskProcessor(innerTask, result, innerCallback).process(),
         settings: outerProcessor.settings,
     };

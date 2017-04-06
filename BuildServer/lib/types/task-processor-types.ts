@@ -27,7 +27,7 @@ export interface ITaskProcessorCore {
 
 export interface ITaskProcessor extends ITaskProcessorCore {
     readonly process: () => void;
-    readonly processTask: (task: ITaskInfo, innerCallback: TaskProcessorCallback) => void;
+    readonly processTask: (task: TaskInfo, innerCallback: TaskProcessorCallback) => void;
     readonly done: () => void;
 }
 
@@ -35,16 +35,25 @@ interface ITaskParameters {
     readonly [paramName: string]: any;
 }
 
-export interface ITaskInfo {
-    readonly name?: string;
-    readonly type: string;
-    readonly params: ITaskParameters;
-}
+type TaskWithParameters = () => void;
 
-export type GenericTask<TParams> = (params: TParams, processor: ITaskProcessor) => () => void;
+export type GenericTask<TParams> = (params: TParams, processor: ITaskProcessor) => TaskWithParameters;
 
 export type Task = GenericTask<ITaskParameters>;
 
 export interface ITasks {
     readonly [taskName: string]: Task;
 }
+
+export interface ITaskInfoExternal {
+    readonly name?: string;
+    readonly type: string;
+    readonly params?: ITaskParameters;
+}
+
+export interface ITaskInfoInternal {
+    readonly name: string;
+    readonly task: TaskWithParameters;
+}
+
+export type TaskInfo = ITaskInfoExternal | ITaskInfoInternal;
