@@ -10,7 +10,7 @@ interface IParameters {
     readonly filename: string;
 }
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const filePath = join(processor.context.exported, params.filename);
 
     processor.onInfo(`Writing to ${filePath}`);

@@ -52,7 +52,7 @@ const wrapBuilder = (builder: ChildProcess, input: string, onExit: (code: number
     }).catch((err) => onExit(0, "", err));
 };
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const input = JSON.stringify(params);
     const builder = spawn(processor.settings.builderExecutable, [params.command]);
 

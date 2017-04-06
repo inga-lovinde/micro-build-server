@@ -2,16 +2,20 @@
 
 import { GenericTask } from "../types";
 import dotnetnugetprocessinternal from "./dotnetnugetprocessinternal";
+import dotnetnugetpushonly from "./dotnetnugetpushonly";
 
-interface IParameters {
+interface IDotNetNuGetPushParameters {
+    readonly withoutCommitSha?: boolean;
+    readonly major?: string;
+    readonly version?: string;
     readonly name: string;
     readonly nuspec: string;
 }
 
-export default ((params, processor) => dotnetnugetprocessinternal({
+export default ((params) => (processor) => dotnetnugetprocessinternal({
     ...params,
     getFinalTask: (nupkg) => ({
-        params: { Package: nupkg },
-        type: "dotnetnugetpushonly",
+        name: "pushonly",
+        task: dotnetnugetpushonly({ Package: nupkg }),
     }),
-}, processor)) as GenericTask<IParameters>;
+})(processor)) as GenericTask<IDotNetNuGetPushParameters>;

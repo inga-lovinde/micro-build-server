@@ -11,7 +11,7 @@ interface IParameters {
     readonly archive: string;
 }
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const sourceDirectoryPath = normalize(join(processor.context.exported, String(params.directory || "")));
     const targetArchivePath = normalize(join(processor.context.release, params.archive));
 

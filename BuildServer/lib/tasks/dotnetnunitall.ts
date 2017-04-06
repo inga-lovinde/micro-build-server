@@ -3,12 +3,13 @@
 import * as glob from "glob";
 
 import { GenericTask } from "../types";
+import dotnetnunit from "./dotnetnunit";
 import parallel from "./parallel";
 import sequential from "./sequential";
 
 const flagDoneName = "dotnetnunitallDone";
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     if (processor.context.containsFlag(flagDoneName)) {
         processor.onWarn("dotnetnunitall task is executed more than once; this is probably a bug in your mbs.json");
     }
@@ -36,9 +37,8 @@ export default ((params, processor) => () => {
         return task({
             tasks: files.map((file) => ({
                 name: file,
-                params: { assembly: file },
-                type: "dotnetnunit",
+                task: dotnetnunit({ assembly: file }),
             })),
-        }, processor)();
+        })(processor)();
     });
 }) as GenericTask<{ readonly preventParallelTests?: boolean }>;

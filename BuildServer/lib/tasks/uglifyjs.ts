@@ -6,7 +6,7 @@ import { minify } from "uglify-js";
 
 import { GenericTask } from "../types";
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const filePath = normalize(join(processor.context.exported, params.filename));
     const result = minify(filePath);
 

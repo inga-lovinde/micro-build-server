@@ -3,9 +3,10 @@
 import { join } from "path";
 
 import { GenericTask, TaskInfo, TaskProcessor } from "../types";
+import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 import sequential from "./sequential";
 
-interface IParameters {
+interface IDotNetNuGetProcessInternalParameters {
     readonly withoutCommitSha?: boolean;
     readonly major?: string;
     readonly version?: string;
@@ -18,7 +19,7 @@ const postfixLength = 16;
 const fourDigits = 10000;
 const twoDigits = 100;
 
-const addPostfix = (version: string, params: IParameters, processor: TaskProcessor) => {
+const addPostfix = (version: string, params: IDotNetNuGetProcessInternalParameters, processor: TaskProcessor) => {
     if (params.withoutCommitSha) {
         return version;
     }
@@ -26,7 +27,7 @@ const addPostfix = (version: string, params: IParameters, processor: TaskProcess
     return `${version}-r${processor.context.rev.substr(0, postfixLength)}`;
 };
 
-export default ((params, processor) => {
+export default ((params) => (processor) => {
     const date = new Date();
     const major = params.major || "0";
     const minor = (date.getFullYear() * fourDigits) + ((date.getMonth() + 1) * twoDigits) + date.getDate();
@@ -37,16 +38,16 @@ export default ((params, processor) => {
     return sequential({
         tasks: [
             {
-                params: {
+                name: "pack",
+                task: dotnetbuilderwrapper({
                     BaseDirectory: processor.context.exported,
                     OutputDirectory: processor.context.exported,
                     SpecPath: join(processor.context.exported, params.nuspec),
                     Version: version,
                     command: "nugetpack",
-                },
-                type: "dotnetbuilderwrapper",
+                }),
             },
             params.getFinalTask(nupkg),
         ],
-    }, processor);
-}) as GenericTask<IParameters>;
+    })(processor);
+}) as GenericTask<IDotNetNuGetProcessInternalParameters>;

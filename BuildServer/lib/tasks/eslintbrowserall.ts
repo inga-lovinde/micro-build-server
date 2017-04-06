@@ -3,11 +3,12 @@
 import * as glob from "glob";
 
 import { GenericTask } from "../types";
+import eslintbrowser from "./eslintbrowser";
 import parallel from "./parallel";
 
 const flagDoneName = "eslintbrowserallDone";
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     if (processor.context.containsFlag(flagDoneName)) {
         processor.onWarn("eslintbrowserall task is executed more than once; this is probably a bug in your mbs.json");
     }
@@ -29,9 +30,8 @@ export default ((params, processor) => () => {
         return parallel({
             tasks: files.filter((file) => !excludeFiles.includes(file)).map((file) => ({
                 name: file,
-                params: { filename: file },
-                type: "eslintbrowser",
+                task: eslintbrowser({ filename: file }),
             })),
-        }, processor)();
+        })(processor)();
     });
 }) as GenericTask<{ readonly excludeFiles?: string[] }>;

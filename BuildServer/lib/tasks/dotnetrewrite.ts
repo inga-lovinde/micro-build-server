@@ -8,7 +8,7 @@ import { join } from "path";
 import { GenericTask, TaskProcessor } from "../types";
 
 interface IParameters {
-    readonly skipCodeSigning: boolean;
+    readonly skipCodeSigning?: boolean;
 }
 
 type Callback  = (err?: any, result?: string) => void;
@@ -38,7 +38,7 @@ const processAssemblyInfo = (params: IParameters, processor: TaskProcessor, appe
     return cb(null, processInformationalVersion(processInternalsVisible(originalContent)));
 };
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     if (processor.context.containsFlag(flagDoneName)) {
         return processor.done();
     }

@@ -8,7 +8,7 @@ interface IParameters {
     readonly info: string;
 }
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     if (params.error) {
         processor.onError(params.error);
     }

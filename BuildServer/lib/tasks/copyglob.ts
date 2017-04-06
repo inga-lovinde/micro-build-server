@@ -3,9 +3,10 @@
 import * as glob from "glob";
 
 import { GenericTask } from "../types";
+import copy from "./copy";
 import parallel from "./parallel";
 
-export default ((params, processor) => () => glob(params.mask, {
+export default ((params) => (processor) => () => glob(params.mask, {
     cwd: processor.context.exported,
     dot: true,
 }, (err, files) => {
@@ -22,8 +23,7 @@ export default ((params, processor) => () => glob(params.mask, {
     return parallel({
         tasks: files.map((file) => ({
             name: file,
-            params: { filename: file },
-            type: "copy",
+            task: copy({ filename: file }),
         })),
-    }, processor)();
+    })(processor)();
 })) as GenericTask<{ readonly mask: string }>;

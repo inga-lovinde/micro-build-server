@@ -5,7 +5,7 @@ import { join } from "path";
 
 import { GenericTask } from "../types";
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const sourceFilePath = join(processor.context.exported, params.filename);
     const targetFilePath = join(processor.context.release, params.filename);
 

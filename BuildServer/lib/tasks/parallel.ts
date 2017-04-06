@@ -10,4 +10,4 @@ interface IParameters {
 
 const mapper = (processor: TaskProcessor) => (task: TaskInfo) => (callback: TaskProcessorCallback) => processor.processTask(task, callback);
 
-export default ((params, processor) => () => parallel(params.tasks.map(mapper(processor)), processor.done)) as GenericTask<IParameters>;
+export default ((params) => (processor) => () => parallel(params.tasks.map(mapper(processor)), processor.done)) as GenericTask<IParameters>;

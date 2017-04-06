@@ -3,7 +3,7 @@ export interface ICompileRequest {
     readonly SolutionPath: string;
     readonly Target: string;
     readonly Configuration: string;
-    readonly OutputDirectory: string;
+    readonly OutputDirectory?: string;
     readonly SigningKey?: string;
     readonly SkipCodeAnalysis: boolean;
 }

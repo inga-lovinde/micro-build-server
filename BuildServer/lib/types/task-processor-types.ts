@@ -35,9 +35,9 @@ interface ITaskParameters {
     readonly [paramName: string]: any;
 }
 
-type TaskWithParameters = () => void;
+type TaskWithParameters = (processor: ITaskProcessor) => () => void;
 
-export type GenericTask<TParams> = (params: TParams, processor: ITaskProcessor) => TaskWithParameters;
+export type GenericTask<TParams> = (params: TParams) => TaskWithParameters;
 
 export type Task = GenericTask<ITaskParameters>;
 
@@ -52,7 +52,7 @@ export interface ITaskInfoExternal {
 }
 
 export interface ITaskInfoInternal {
-    readonly name: string;
+    readonly name?: string;
     readonly task: TaskWithParameters;
 }
 

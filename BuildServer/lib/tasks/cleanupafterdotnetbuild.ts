@@ -3,9 +3,10 @@
 import * as glob from "glob";
 
 import { GenericTask } from "../types";
+import deletefromcode from "./deletefromcode";
 import parallel from "./parallel";
 
-export default ((_params, processor) => () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
+export default ((_params) => (processor) => () => glob("**/obj/{Debug,Release}/*.{dll,pdb,xml}", {
     cwd: processor.context.exported,
     dot: true,
 }, (err, files) => {
@@ -22,8 +23,7 @@ export default ((_params, processor) => () => glob("**/obj/{Debug,Release}/*.{dl
     return parallel({
         tasks: files.map((file) => ({
             name: file,
-            params: { filename: file },
-            type: "deletefromcode",
+            task: deletefromcode({ filename: file }),
         })),
-    }, processor)();
+    })(processor)();
 })) as GenericTask<{}>;

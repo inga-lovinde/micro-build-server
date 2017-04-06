@@ -1,39 +1,44 @@
 "use strict";
 
 import { GenericTask } from "../types";
+import cssnanoall from "./cssnanoall";
+import eslintbrowserall from "./eslintbrowserall";
 import sequential from "./sequential";
+import uglifyjsall from "./uglifyjsall";
+import writefile from "./writefile";
+import zip from "./zip";
 
 interface IParameters {
-    readonly eslintExcludeFiles: boolean;
+    readonly eslintExcludeFiles?: string[];
 }
 
-export default ((params, processor) => sequential({
+export default ((params) => (processor) => sequential({
     tasks: [
         {
-            params: { excludeFiles: params.eslintExcludeFiles },
-            type: "eslintbrowserall",
+            name: "eslint",
+            task: eslintbrowserall({ excludeFiles: params.eslintExcludeFiles }),
         },
         {
-            params: { },
-            type: "uglifyjsall",
+            name: "uglifyjs",
+            task: uglifyjsall({}),
         },
         {
-            params: { },
-            type: "cssnanoall",
+            name: "cssnano",
+            task: cssnanoall({}),
         },
         {
-            params: {
+            name: "writeversion",
+            task: writefile({
                 data: processor.context.versionInfo,
                 filename: "version.txt",
-            },
-            type: "writefile",
+            }),
         },
         {
-            params: {
+            name: "zip",
+            task: zip({
                 archive: `${processor.context.reponame}.zip`,
                 directory: "",
-            },
-            type: "zip",
+            }),
         },
     ],
-}, processor)) as GenericTask<IParameters>;
+})(processor)) as GenericTask<IParameters>;

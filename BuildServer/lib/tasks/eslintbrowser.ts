@@ -7,7 +7,7 @@ import { GenericTask } from "../types";
 
 const errorSeverity = 2;
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     if (processor.settings.isCodeAnalysisUnsupported) {
         return;
     }

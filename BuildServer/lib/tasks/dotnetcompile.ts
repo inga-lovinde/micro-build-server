@@ -5,18 +5,18 @@ import { join } from "path";
 import { BuilderCompileRequest, GenericTask } from "../types";
 import dotnetbuilderwrapper from "./dotnetbuilderwrapper";
 
-interface IParameters {
-    configuration: string;
-    overrideOutputDirectory: string;
-    skipCodeAnalysis: boolean;
-    solution: string;
-    target: string;
-    forceCodeAnalysis?: boolean;
-    skipCodeSigning?: boolean;
-    ignoreCodeAnalysis: boolean;
+interface IDotNetCompileParameters {
+    readonly configuration: string;
+    readonly overrideOutputDirectory?: string;
+    readonly skipCodeAnalysis: boolean;
+    readonly solution: string;
+    readonly target: string;
+    readonly forceCodeAnalysis?: boolean;
+    readonly skipCodeSigning?: boolean;
+    readonly ignoreCodeAnalysis?: boolean;
 }
 
-export default ((params, processor) => {
+export default ((params) => (processor) => {
     if (processor.settings.isCodeAnalysisUnsupported && params.forceCodeAnalysis) {
         processor.onError("Code analysis is not supported");
 
@@ -45,5 +45,5 @@ export default ((params, processor) => {
         ...getAdditionalSigningParameters(),
     };
 
-    return dotnetbuilderwrapper(compileParams, processor);
-}) as GenericTask<IParameters>;
+    return dotnetbuilderwrapper(compileParams)(processor);
+}) as GenericTask<IDotNetCompileParameters>;

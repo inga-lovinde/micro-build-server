@@ -6,7 +6,7 @@ import { join } from "path";
 
 import { GenericTask } from "../types";
 
-export default ((params, processor) => () => {
+export default ((params) => (processor) => () => {
     const filePath = join(processor.context.exported, params.filename);
 
     readFile(filePath, "utf8", (readErr, css) => {

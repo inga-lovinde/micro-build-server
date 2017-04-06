@@ -1,24 +1,36 @@
 "use strict";
 
 import { GenericTask } from "../types";
+import cleanupafterdotnetbuild from "./cleanupafterdotnetbuild";
+import dotnetbuildwithoutcleanup from "./dotnetbuildwithoutcleanup";
+import dotnetnunitall from "./dotnetnunitall";
 import sequential from "./sequential";
 
-export default ((params, processor) => sequential({
+interface IDotNetBuildAndTestParameters {
+    readonly skipMbsCheckStyle?: boolean;
+    readonly forceCodeAnalysis?: boolean;
+    readonly ignoreCodeAnalysis?: boolean;
+    readonly skipCodeAnalysis: boolean;
+    readonly skipCodeSigning?: boolean;
+    readonly skipNugetRestore?: boolean;
+    readonly configuration: string;
+    readonly solution: string;
+    readonly ignoreCodeStyle: boolean;
+}
+
+export default ((params) => (processor) => sequential({
     tasks: [
         {
             name: "build",
-            params,
-            type: "dotnetbuildwithoutcleanup",
+            task: dotnetbuildwithoutcleanup(params),
         },
         {
             name: "test",
-            params,
-            type: "dotnetnunitall",
+            task: dotnetnunitall(params),
         },
         {
             name: "cleanup",
-            params: {},
-            type: "cleanupafterdotnetbuild",
+            task: cleanupafterdotnetbuild({}),
         },
     ],
-}, processor)) as GenericTask<{}>;
+})(processor)) as GenericTask<IDotNetBuildAndTestParameters>;

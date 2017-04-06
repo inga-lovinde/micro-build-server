@@ -9,15 +9,20 @@ interface IFlags {
 
 const isExternalTask = (task: TaskInfo): task is TaskInfoExternal => (task as TaskInfoExternal).type !== undefined;
 
+let tasksCount = 0;
+
 // TaskProcessor does not look like EventEmitter, so no need to extend EventEmitter and use `emit' here.
 const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, callback: TaskProcessorCallback) => {
+    const taskId = tasksCount++;
     const errors: string[] = [];
+    const name = task.name || (isExternalTask(task) ? task.type : null);
+    const nameWithId = String(name || "") + "#" + taskId;
     const getOuterPrefix = (prefix?: string) => {
-        if (task.name && prefix) {
-            return `${task.name}/${prefix}`;
+        if (!prefix) {
+            return nameWithId;
         }
 
-        return String(task.name || "") + String(prefix || "");
+        return `${nameWithId}/${prefix}`;
     };
     const onError = (message: string, prefix?: string) => {
         errors.push(message);
@@ -25,15 +30,22 @@ const createTaskProcessor = (task: TaskInfo, outerProcessor: TaskProcessorCore, 
     };
     const onWarn = (message: string, prefix?: string) => outerProcessor.onWarn(message, getOuterPrefix(prefix));
     const onInfo = (message: string, prefix?: string) => outerProcessor.onInfo(message, getOuterPrefix(prefix));
+    const taskWithParameters = isExternalTask(task) ? tasks[task.type](task.params || {}) : task.task;
 
     let result: TaskProcessor;
     result = {
         context: outerProcessor.context,
-        done: () => callback(errors.join("\r\n")),
+        done: () => {
+            onInfo(`Completed task ${nameWithId}`);
+            callback(errors.join("\r\n"));
+        },
         onError,
         onWarn,
         onInfo,
-        process: () => (isExternalTask(task) ? tasks[task.type](task.params || {}, result) : task.task)(),
+        process: () => {
+            onInfo(`Starting task ${nameWithId}`);
+            taskWithParameters(result)();
+        },
         processTask: (innerTask, innerCallback) => createTaskProcessor(innerTask, result, innerCallback).process(),
         settings: outerProcessor.settings,
     };
