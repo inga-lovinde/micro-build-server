@@ -46,3 +46,49 @@ git pull origin master
 npm test
 npm run build
 ```
+
+Использование
+=============
+
+В настройках нужного репозитория (и его форков) указать адрес хука: `https://micro-build-server/github/postreceive`.
+
+Добавить в корневую папку репозитория файл `mbs.pos` с содержимым следующего вида:
+
+```
+{
+	"type": "sequential",
+	"params": {
+		"tasks": [
+			{
+				"type": "dotnetbuild",
+				"params": {
+					"solution": "Legacy.Processing.Common.sln",
+					"forceCodeAnalysis": "true"
+				}
+			},
+			{
+				"type": "dotnetnugetprocess",
+				"params": {
+					"masterRepoOwner": "Legacy",
+					"nuspecName": "Legacy.Processing.Common",
+					"major": "4"
+				}
+			}
+		]
+	}
+}
+```
+
+Со списком возможных типов задач и их параметров можно ознакомиться в папке `BuildServer\lib\tasks`.
+
+Для добавления новой задачи достаточно добавить новый файл `yourtaskname.ts` в эту папку.
+
+Для получения информации о статусе сборки достаточно добавить в README.md нужного репозитория строчку
+
+```
+![Status](https://micro.build.server/status.svg)
+```
+
+Или вручную перейти на страницу с отчётом о сборке - для этого надо поменять в адресной строке адрес `https://github.enterprise/what/ever` на `https://micro.build.server/github.enterprise/what/ever`.
+
+В обоих случаях будет отображена информация о сборке нужной ветки / нужного коммита.
