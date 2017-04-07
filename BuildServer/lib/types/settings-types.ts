@@ -61,6 +61,7 @@ interface ISiteSettings {
 
 interface IGithubSettings {
     readonly createGithub: (repoOwner: string) => Github;
+    readonly githubSiteRoot: string;
 }
 
 export type Settings = IBuilderSettings & CodeAnalysisSettings & CodeSigningSettings & IStorageSettings & INugetSettings & ISmtpSettings & ISiteSettings & IGithubSettings;
