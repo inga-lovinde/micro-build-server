@@ -12,7 +12,7 @@
             "es7"
         ],
         "noEmitOnError": true,
-        "noImplicitAny": true,
+        "noImplicitAny": false,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedLocals": true,

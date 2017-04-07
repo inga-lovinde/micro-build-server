@@ -48,7 +48,7 @@ const run = (settings: Settings) => {
         .post(routes.manual.post);
 
     app.route("/status/:owner/:reponame/:branch/:rev?").get(routes.status.page);
-    app.route("/pos-github.payonline.ru/*").get(routes.status.pageFromGithub);
+    app.route(`/${settings.githubSiteRoot}/*`).get(routes.status.pageFromGithub);
     app.route("/status.svg").get(routes.status.image);
     app.route("/release/:owner/:reponame/:branch/:rev").get(routes.release);
     app.route("/artifact/:owner/:reponame/:branch/:rev/*").get(routes.artifact);

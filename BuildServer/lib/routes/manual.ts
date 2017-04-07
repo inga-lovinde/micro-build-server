@@ -13,7 +13,7 @@ export const post: express.RequestHandler = (req, res) => {
 
     const options = {
         ...req.body,
-        url: `https://pos-github.payonline.ru/${req.body.owner}/${req.body.reponame}`,
+        url: `https://${settings.githubSiteRoot}/${req.body.owner}/${req.body.reponame}`,
     };
 
     build(settings, options, (err: string, result: ReportResult) => {

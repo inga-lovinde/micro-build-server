@@ -29,6 +29,7 @@ const settings: Settings = {
     },
     eslintBrowserConfig: join(__dirname, "settings-eslint-browser.json"),
     faviconpath: join(__dirname, "public/images/favicon.png"),
+    githubSiteRoot: "github.enterprise.host",
     gitpath: "M:/g",
     ignoreCodeAnalysisByDefault: true,
     isCodeAnalysisUnsupported: false,
